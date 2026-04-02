@@ -9,6 +9,7 @@ Use this page as the entry point for package documentation.
 - [Configuration](CONFIGURATION.md)
 - [Authentication](AUTHENTICATION.md)
 - [Resources](RESOURCES.md)
+- [Data Transfer Objects (DTOs)](DTOS.md)
 - [Testing](TESTING.md)
 - [Error Handling](ERRORS.md)
 

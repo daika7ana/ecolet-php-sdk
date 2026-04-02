@@ -177,6 +177,7 @@ Useful local test env keys:
 - [Configuration](docs/CONFIGURATION.md)
 - [Authentication](docs/AUTHENTICATION.md)
 - [Resources](docs/RESOURCES.md)
+- [Data Transfer Objects (DTOs)](docs/DTOS.md)
 - [Testing](docs/TESTING.md)
 - [Error Handling](docs/ERRORS.md)
 - [Documentation Index](docs/README.md)
