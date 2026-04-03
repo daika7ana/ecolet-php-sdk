@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Daika7ana\Ecolet\Resources;
 
 use Daika7ana\Ecolet\Client;
-use Daika7ana\Ecolet\DTOs\Collection;
-use Daika7ana\Ecolet\DTOs\Order;
-use Daika7ana\Ecolet\DTOs\OrderStatus;
-use Daika7ana\Ecolet\DTOs\WaybillDocument;
+use Daika7ana\Ecolet\DTOs\Common\Collection;
+use Daika7ana\Ecolet\DTOs\Orders\Order;
+use Daika7ana\Ecolet\DTOs\Orders\OrderStatus;
+use Daika7ana\Ecolet\DTOs\Orders\WaybillDocument;
 use Daika7ana\Ecolet\Support\JsonHelper;
 use Daika7ana\Ecolet\Support\ApiResponseMapper;
 

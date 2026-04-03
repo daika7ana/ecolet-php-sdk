@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Daika7ana\Ecolet\Resources;
 
 use Daika7ana\Ecolet\Client;
-use Daika7ana\Ecolet\DTOs\Collection;
-use Daika7ana\Ecolet\DTOs\Country;
-use Daika7ana\Ecolet\DTOs\County;
-use Daika7ana\Ecolet\DTOs\Locality;
-use Daika7ana\Ecolet\DTOs\Street;
+use Daika7ana\Ecolet\DTOs\Common\Collection;
+use Daika7ana\Ecolet\DTOs\Locations\Country;
+use Daika7ana\Ecolet\DTOs\Locations\County;
+use Daika7ana\Ecolet\DTOs\Locations\Locality;
+use Daika7ana\Ecolet\DTOs\Locations\Street;
+use Daika7ana\Ecolet\DTOs\Locations\StreetPostalCode;
 use Daika7ana\Ecolet\Support\ApiResponseMapper;
 
 class LocationsResource
@@ -34,7 +35,7 @@ class LocationsResource
 
         $countries = array_map(
             static fn(array $item) => Country::fromArray($item),
-            $data,
+            $data['data'],
         );
 
         return new Collection($countries);
@@ -60,7 +61,7 @@ class LocationsResource
 
         $counties = array_map(
             static fn(array $item) => County::fromArray($item),
-            $data,
+            $data['data'],
         );
 
         return new Collection($counties);
@@ -86,7 +87,7 @@ class LocationsResource
 
         $localities = array_map(
             static fn(array $item) => Locality::fromArray($item),
-            $data,
+            $data['localities'],
         );
 
         return new Collection($localities);
@@ -95,7 +96,7 @@ class LocationsResource
     /**
      * Search streets by locality.
      *
-     * @return Collection<Street>
+     * @return Collection<string>
      *
     * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
     * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
@@ -110,18 +111,13 @@ class LocationsResource
 
         $data = ApiResponseMapper::decodeJson($response);
 
-        $streets = array_map(
-            static fn(array $item) => Street::fromArray($item),
-            $data,
-        );
-
-        return new Collection($streets);
+        return new Collection($data['streets']);
     }
 
     /**
      * Get postal codes for a street.
      *
-     * @return Collection<string>
+        * @return Collection<StreetPostalCode>
      *
     * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
     * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
@@ -136,7 +132,12 @@ class LocationsResource
 
         $data = ApiResponseMapper::decodeJson($response);
 
-        return new Collection($data);
+        $postalCodes = array_map(
+            static fn(array $item) => StreetPostalCode::fromArray($item),
+            $data['postal_codes'],
+        );
+
+        return new Collection($postalCodes);
     }
 
     /**
@@ -159,7 +160,7 @@ class LocationsResource
 
         $streets = array_map(
             static fn(array $item) => Street::fromArray($item),
-            $data,
+            $data['streets'],
         );
 
         return new Collection($streets);

@@ -23,6 +23,8 @@ $postalCodes = $client->locations()->searchStreetPostalCodes(123, 'Main Street')
 $streetsByPostalCode = $client->locations()->searchStreetsByPostalCode('RO', '010101');
 ```
 
+`searchStreetPostalCodes()` returns a `Collection<StreetPostalCode>` with `code`, `number`, and `block` fields.
+
 ## Orders
 
 ```php

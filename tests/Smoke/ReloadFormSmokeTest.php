@@ -4,36 +4,30 @@ declare(strict_types=1);
 
 namespace Daika7ana\Ecolet\Tests\Smoke;
 
-use Daika7ana\Ecolet\Client;
 use Daika7ana\Ecolet\Config\ClientConfig;
-use Daika7ana\Ecolet\DTOs\AdditionalServices;
-use Daika7ana\Ecolet\DTOs\AddParcelRequest;
-use Daika7ana\Ecolet\DTOs\AddParcelResult;
-use Daika7ana\Ecolet\DTOs\CourierInfo;
-use Daika7ana\Ecolet\DTOs\CourierPickup;
-use Daika7ana\Ecolet\DTOs\ParcelDetails;
-use Daika7ana\Ecolet\DTOs\ParcelDimensions;
-use Daika7ana\Ecolet\DTOs\RecipientAddress;
+use Daika7ana\Ecolet\DTOs\AddParcel\AdditionalServices;
+use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelRequest;
+use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelResult;
+use Daika7ana\Ecolet\DTOs\AddParcel\CourierInfo;
+use Daika7ana\Ecolet\DTOs\AddParcel\CourierPickup;
+use Daika7ana\Ecolet\Enums\CourierPickupType;
+use Daika7ana\Ecolet\Enums\ParcelShape;
+use Daika7ana\Ecolet\Enums\ParcelType;
+use Daika7ana\Ecolet\DTOs\AddParcel\ParcelDetails;
+use Daika7ana\Ecolet\DTOs\AddParcel\ParcelDimensions;
+use Daika7ana\Ecolet\DTOs\AddParcel\RecipientAddress;
+use Daika7ana\Ecolet\Tests\Smoke\Concerns\InteractsWithAuthenticatedSmokeClient;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class ReloadFormSmokeTest extends TestCase
 {
+    use InteractsWithAuthenticatedSmokeClient;
+
     #[Group('smoke')]
     public function testReloadFormAgainstStagingApi(): void
     {
-        $username = getenv('ECOLET_TEST_USERNAME') ?: '';
-        $password = getenv('ECOLET_TEST_PASSWORD') ?: '';
-        $clientId = getenv('ECOLET_TEST_CLIENT_ID') ?: '';
-        $clientSecret = getenv('ECOLET_TEST_CLIENT_SECRET') ?: '';
-
-        if ($username === '' || $password === '' || $clientId === '' || $clientSecret === '') {
-            $this->markTestSkipped('Set ECOLET_TEST_USERNAME, ECOLET_TEST_PASSWORD, ECOLET_TEST_CLIENT_ID, ECOLET_TEST_CLIENT_SECRET to run smoke reload-form test.');
-        }
-
-        $config = new ClientConfig(baseUrl: ClientConfig::BASE_URL_STAGING);
-        $client = Client::create(config: $config);
-        $client->authenticate($username, $password, $clientId, $clientSecret);
+        $client = $this->makeAuthenticatedClient('reload-form', ClientConfig::BASE_URL_STAGING);
 
         $result = $client->addParcel()->reloadForm($this->buildPayload());
 
@@ -48,18 +42,7 @@ final class ReloadFormSmokeTest extends TestCase
     #[Group('smoke')]
     public function testReloadFormResponseContainsPricingInfo(): void
     {
-        $username = getenv('ECOLET_TEST_USERNAME') ?: '';
-        $password = getenv('ECOLET_TEST_PASSWORD') ?: '';
-        $clientId = getenv('ECOLET_TEST_CLIENT_ID') ?: '';
-        $clientSecret = getenv('ECOLET_TEST_CLIENT_SECRET') ?: '';
-
-        if ($username === '' || $password === '' || $clientId === '' || $clientSecret === '') {
-            $this->markTestSkipped('Set ECOLET_TEST_USERNAME, ECOLET_TEST_PASSWORD, ECOLET_TEST_CLIENT_ID, ECOLET_TEST_CLIENT_SECRET to run smoke reload-form test.');
-        }
-
-        $config = new ClientConfig(baseUrl: ClientConfig::BASE_URL_STAGING);
-        $client = Client::create(config: $config);
-        $client->authenticate($username, $password, $clientId, $clientSecret);
+        $client = $this->makeAuthenticatedClient('reload-form', ClientConfig::BASE_URL_STAGING);
 
         $result = $client->addParcel()->reloadForm($this->buildPayload());
 
@@ -79,18 +62,7 @@ final class ReloadFormSmokeTest extends TestCase
     #[Group('smoke')]
     public function testReloadFormResponseHasServiceStatuses(): void
     {
-        $username = getenv('ECOLET_TEST_USERNAME') ?: '';
-        $password = getenv('ECOLET_TEST_PASSWORD') ?: '';
-        $clientId = getenv('ECOLET_TEST_CLIENT_ID') ?: '';
-        $clientSecret = getenv('ECOLET_TEST_CLIENT_SECRET') ?: '';
-
-        if ($username === '' || $password === '' || $clientId === '' || $clientSecret === '') {
-            $this->markTestSkipped('Set ECOLET_TEST_USERNAME, ECOLET_TEST_PASSWORD, ECOLET_TEST_CLIENT_ID, ECOLET_TEST_CLIENT_SECRET to run smoke reload-form test.');
-        }
-
-        $config = new ClientConfig(baseUrl: ClientConfig::BASE_URL_STAGING);
-        $client = Client::create(config: $config);
-        $client->authenticate($username, $password, $clientId, $clientSecret);
+        $client = $this->makeAuthenticatedClient('reload-form', ClientConfig::BASE_URL_STAGING);
 
         $result = $client->addParcel()->reloadForm($this->buildPayload());
 
@@ -113,18 +85,7 @@ final class ReloadFormSmokeTest extends TestCase
     #[Group('smoke')]
     public function testReloadFormResponseContainsPickupDates(): void
     {
-        $username = getenv('ECOLET_TEST_USERNAME') ?: '';
-        $password = getenv('ECOLET_TEST_PASSWORD') ?: '';
-        $clientId = getenv('ECOLET_TEST_CLIENT_ID') ?: '';
-        $clientSecret = getenv('ECOLET_TEST_CLIENT_SECRET') ?: '';
-
-        if ($username === '' || $password === '' || $clientId === '' || $clientSecret === '') {
-            $this->markTestSkipped('Set ECOLET_TEST_USERNAME, ECOLET_TEST_PASSWORD, ECOLET_TEST_CLIENT_ID, ECOLET_TEST_CLIENT_SECRET to run smoke reload-form test.');
-        }
-
-        $config = new ClientConfig(baseUrl: ClientConfig::BASE_URL_STAGING);
-        $client = Client::create(config: $config);
-        $client->authenticate($username, $password, $clientId, $clientSecret);
+        $client = $this->makeAuthenticatedClient('reload-form', ClientConfig::BASE_URL_STAGING);
 
         $result = $client->addParcel()->reloadForm($this->buildPayload());
 
@@ -144,18 +105,7 @@ final class ReloadFormSmokeTest extends TestCase
     #[Group('smoke')]
     public function testReloadFormResponseHasNoErrors(): void
     {
-        $username = getenv('ECOLET_TEST_USERNAME') ?: '';
-        $password = getenv('ECOLET_TEST_PASSWORD') ?: '';
-        $clientId = getenv('ECOLET_TEST_CLIENT_ID') ?: '';
-        $clientSecret = getenv('ECOLET_TEST_CLIENT_SECRET') ?: '';
-
-        if ($username === '' || $password === '' || $clientId === '' || $clientSecret === '') {
-            $this->markTestSkipped('Set ECOLET_TEST_USERNAME, ECOLET_TEST_PASSWORD, ECOLET_TEST_CLIENT_ID, ECOLET_TEST_CLIENT_SECRET to run smoke reload-form test.');
-        }
-
-        $config = new ClientConfig(baseUrl: ClientConfig::BASE_URL_STAGING);
-        $client = Client::create(config: $config);
-        $client->authenticate($username, $password, $clientId, $clientSecret);
+        $client = $this->makeAuthenticatedClient('reload-form', ClientConfig::BASE_URL_STAGING);
 
         $result = $client->addParcel()->reloadForm($this->buildPayload());
 
@@ -216,9 +166,9 @@ final class ReloadFormSmokeTest extends TestCase
                 phone: '0214824089',
             ),
             parcel: new ParcelDetails(
-                type: 'package',
+                type: ParcelType::Package,
                 weight: 1,
-                shape: 'standard',
+                shape: ParcelShape::Standard,
                 observations: 'FRAGILE',
                 amount: 1,
             ),
@@ -227,11 +177,11 @@ final class ReloadFormSmokeTest extends TestCase
                 codAmount: 500,
             ),
             courier: new CourierInfo(
-                pickup: new CourierPickup(type: 'courier'),
+                pickup: new CourierPickup(type: CourierPickupType::Courier),
             ),
             parcels: [
                 new ParcelDetails(
-                    type: 'package',
+                    type: ParcelType::Package,
                     weight: 1,
                     dimensions: new ParcelDimensions(length: 10, width: 10, height: 10),
                     content: 'Biscuits 400gr',

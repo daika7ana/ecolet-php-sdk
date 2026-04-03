@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Daika7ana\Ecolet\Resources;
 
 use Daika7ana\Ecolet\Client;
-use Daika7ana\Ecolet\DTOs\AddParcelRequest;
-use Daika7ana\Ecolet\DTOs\AddParcelResult;
+use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelRequest;
+use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelResult;
 use Daika7ana\Ecolet\Support\ApiResponseMapper;
 use Daika7ana\Ecolet\Support\JsonHelper;
 

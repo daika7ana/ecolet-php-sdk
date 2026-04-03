@@ -54,7 +54,7 @@ final class ClientConfig
         return new self(baseUrl: self::baseUrlFromTestMode($mode === false ? '' : $mode));
     }
 
-    public static function baseUrlFromTestMode(string $mode): string
+    protected static function baseUrlFromTestMode(string $mode): string
     {
         $isTestMode = filter_var($mode, FILTER_VALIDATE_BOOLEAN);
 

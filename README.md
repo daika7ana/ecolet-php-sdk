@@ -1,25 +1,59 @@
 # Ecolet PHP API Wrapper
 
-A PSR-first, framework-agnostic PHP client for the Ecolet API.
+<div align="center">
 
-The package is designed to work well in Laravel and other PHP frameworks while keeping the core contract standards-based through PSR-7, PSR-17, and PSR-18.
+[![PHP 8.3+](https://img.shields.io/badge/PHP-8.3%2B-777BB4?style=flat-square&logo=php)](https://www.php.net/)
+[![PHPUnit](https://img.shields.io/badge/PHPUnit-12.x-0A7BBB?style=flat-square)](docs/TESTING.md)
+[![Smoke Tests](https://img.shields.io/badge/Smoke%20Tests-Live%20API-orange?style=flat-square)](docs/TESTING.md)
+[![PSR Standards](https://img.shields.io/badge/PSR-7%2F17%2F18-blue?style=flat-square)](https://www.php-fig.org/)
+[![License](https://img.shields.io/badge/license-GPL--3.0--or--later-green?style=flat-square)](LICENSE)
+
+A modern, type-safe PHP client for the **Ecolet Courier API**
+
+</div>
+
+> 🚀 Framework-agnostic, OAuth-powered, fully typed with DTOs, and production-ready.
+
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Configuration](#configuration)
+- [Authentication](#authentication)
+- [Supported Resources](#supported-resources)
+- [Framework Support](#framework-support)
+- [Testing](#testing)
+- [Documentation](#documentation)
 
 ## Features
 
-- OAuth password-grant authentication
-- Refresh-token support
-- PSR-18 HTTP client abstraction with Guzzle as the default adapter
-- Environment-aware production/staging base URL selection
-- Typed DTOs for supported resources
-- Optional Symfony HttpFoundation bridge utilities
-- PHPUnit smoke and unit test coverage
+### Core Strengths
+
+- ✅ **OAuth 2.0 Password Grant** — Industry-standard authentication
+- ✅ **Automatic Token Refresh** — No manual token management needed
+- ✅ **PSR-18 HTTP Client** — Pluggable, with Guzzle adapter by default
+- ✅ **Environment-Aware URLs** — Production/staging detection via ENV variables
+- ✅ **Fully Typed DTOs** — Type-safe request/response handling
+- ✅ **Symfony/Laravel Bridge** — Optional `HttpFoundationBridge` for seamless integration
+- ✅ **Comprehensive Tests** — Unit and smoke test suites included
+
+### Perfect For
+
+- 🎯 Laravel applications or any PHP framework
+- 🎯 Microservices and standalone PHP projects
+- 🎯 Type-safe courier management workflows
+- 🎯 Production deployments with full test coverage
 
 ## Requirements
 
-- PHP `>= 8.3`
+- **PHP 8.3+** with `json` and `curl` extensions
 - PSR-7 / PSR-17 / PSR-18 compatible environment
 
 ## Installation
+
+### Via Composer
 
 ```bash
 composer require daika7ana/ecolet-php-api
@@ -27,17 +61,19 @@ composer require daika7ana/ecolet-php-api
 
 ## Quick Start
 
+Working with the Ecolet API is straightforward:
+
 ```php
 use Daika7ana\Ecolet\Client;
 
 $client = Client::create();
 
 $client->authenticate(
-	username: 'user@example.com',
-	password: 'your-password',
-	clientId: 'your-client-id',
-	clientSecret: 'your-client-secret',
-	scope: ''
+    username: 'user@example.com',
+    password: 'your-password',
+    clientId: 'your-client-id',
+    clientSecret: 'your-client-secret',
+    scope: ''
 );
 
 $user = $client->users()->getMe();
@@ -45,46 +81,56 @@ $user = $client->users()->getMe();
 echo $user->email;
 ```
 
-## Base URL Selection
+That's it! You've got a fully authenticated client ready to fetch courier data.
 
-When no custom config is passed, the client resolves the Ecolet base URL from `ECOLET_TEST_MODE`:
+## Configuration
 
-- `true`, `1`, `yes`, `on` => staging
-- anything else => production
+### Automatic Environment Detection
 
-Available constants:
+By default, the client reads `ECOLET_TEST_MODE` to select your environment:
 
-- `ClientConfig::BASE_URL_PRODUCTION`
-- `ClientConfig::BASE_URL_STAGING`
+- `true`, `1`, `yes`, `on` ➜ **Staging**
+- Anything else ➜ **Production**
 
-Example:
+### Custom Base URL
+
+Need full control? Use explicit configuration:
 
 ```php
 use Daika7ana\Ecolet\Client;
 use Daika7ana\Ecolet\Config\ClientConfig;
 
+// Use staging
 $config = new ClientConfig(baseUrl: ClientConfig::BASE_URL_STAGING);
+$client = Client::create(config: $config);
+
+// Or production
+$config = new ClientConfig(baseUrl: ClientConfig::BASE_URL_PRODUCTION);
 $client = Client::create(config: $config);
 ```
 
 ## Authentication
 
-The package currently implements the OAuth password grant flow.
+### OAuth 2.0 Password Grant
 
-Required values:
+The package uses industry-standard OAuth 2.0 password grant flow. You'll need:
 
 - Ecolet account email
 - Ecolet account password
 - OAuth `client_id`
 - OAuth `client_secret`
 
-Refresh example:
+### Automatic Token Refresh
+
+Tokens refresh automatically when expired. Or refresh manually:
 
 ```php
 $client->refreshToken();
 ```
 
-If you already have a token, you can restore it directly:
+### Token Restoration
+
+Already have a cached token? Restore it directly:
 
 ```php
 use Daika7ana\Ecolet\Auth\Token;
@@ -93,14 +139,57 @@ $token = Token::fromArray($cachedTokenData);
 $client->setToken($token);
 ```
 
-## HTTP Client and Token Storage
+## Supported Resources
 
-- `Client::create()` uses a Guzzle-backed adapter by default
-- you can inject your own `HttpClientInterface` implementation
-- the default token store is in-memory
-- you can pass a custom `TokenStoreInterface` implementation to persist tokens
+### v1 Resources (General API)
 
-Example custom client injection:
+- `users()->getMe()` — Get authenticated user info
+- `services()->getServices()` — List available services
+- `locations()->getCountries()` — Get countries
+- `locations()->getCounties()` — Get counties for country
+- `locations()->searchLocalities()` — Search localities
+- `locations()->searchStreets()` — Search streets
+- `locations()->searchStreetPostalCodes()` — Get postal codes
+- `locations()->searchStreetsByPostalCode()` — Search streets by postal code
+- `orders()->getOrder()` — Retrieve order details
+- `orders()->deleteOrder()` — Cancel an order
+- `orders()->downloadWaybill()` — Get waybill document
+- `orders()->getStatusesForManyOrders()` — Batch status check
+- `ordersToSend()->getOrderToSend()` — Get order ready to send
+- `mapPoints()->getMapPoints()` — Get pickup points
+
+### v2 Resources (Add Parcel Operations)
+
+- `addParcel()->reloadForm()` — Reload form with defaults
+- `addParcel()->sendOrder()` — Submit and send order
+- `addParcel()->saveOrderToSend()` — Save order for later
+
+### API Versioning
+
+- General resources and authentication use `/api/v1`
+- Add Parcel operations use `/api/v2` exclusively
+- v1 Add Parcel endpoints are intentionally excluded
+- Authorization-code OAuth flow is out of scope
+
+## Framework Support
+
+### Zero Framework Dependencies
+
+This package works equally well everywhere:
+
+- 🌐 **Laravel** applications
+- 🌐 **Symfony** projects
+- 🌐 **Standalone PHP** applications
+- 🌐 **Microservices**
+- 🌐 Any **PHP 8.3+** environment
+
+### Optional: HttpFoundation Bridge
+
+Using Laravel or Symfony? Our optional `HttpFoundationBridge` provides seamless integration without breaking the PSR-based core API.
+
+### Custom HTTP Client
+
+Need a custom HTTP client? Pass any PSR-18 implementation:
 
 ```php
 use Daika7ana\Ecolet\Client;
@@ -110,74 +199,84 @@ use Daika7ana\Ecolet\Http\HttpClientInterface;
 $client = Client::create(httpClient: $customClient);
 ```
 
-## Supported Resources
+### Custom Token Storage
 
-### v1 resources
+Implement the `TokenStoreInterface` to persist tokens:
 
-- `users()->getMe()`
-- `services()->getServices()`
-- `locations()->getCountries()`
-- `locations()->getCounties()`
-- `locations()->searchLocalities()`
-- `locations()->searchStreets()`
-- `locations()->searchStreetPostalCodes()`
-- `locations()->searchStreetsByPostalCode()`
-- `orders()->getOrder()`
-- `orders()->deleteOrder()`
-- `orders()->downloadWaybill()`
-- `orders()->getStatusesForManyOrders()`
-- `ordersToSend()->getOrderToSend()`
-- `mapPoints()->getMapPoints()`
+```php
+use Daika7ana\Ecolet\Client;
+use Daika7ana\Ecolet\Auth\TokenStoreInterface;
 
-### v2 resources
-
-- `addParcel()->reloadForm()`
-- `addParcel()->sendOrder()`
-- `addParcel()->saveOrderToSend()`
-
-## API Versioning Notes
-
-- General resources and authentication flow use `/api/v1`
-- Add Parcel operations are intentionally implemented on `/api/v2` only
-- v1 Add Parcel endpoints are intentionally excluded
-- Authorization-code OAuth flow is intentionally out of scope
-
-## Framework Interoperability
-
-The package is framework-agnostic by design.
-
-If you need Symfony/Laravel HttpFoundation interop, use the optional `HttpFoundationBridge` helper. This is additive support only and does not replace the PSR-based core API.
+/** @var TokenStoreInterface $tokenStore */
+$client = Client::create(tokenStore: $tokenStore);
+```
 
 ## Testing
 
-Run the full test suite:
+### Run Full Test Suite
 
 ```bash
+composer test
+# or
 php vendor/bin/phpunit -c phpunit.xml
 ```
 
-Run only the live auth smoke test:
+Pass PHPUnit arguments through Composer with `--`:
 
 ```bash
-php vendor/bin/phpunit --filter=AuthSmokeTest -c phpunit.xml
+composer test -- --filter=AuthSmokeTest
+composer test -- tests/Unit/Resources/LocationsResourceTest.php
 ```
 
-Useful local test env keys:
+### Run Specific Tests
 
-- `ECOLET_TEST_MODE`
-- `ECOLET_TEST_USERNAME`
-- `ECOLET_TEST_PASSWORD`
-- `ECOLET_TEST_CLIENT_ID`
-- `ECOLET_TEST_CLIENT_SECRET`
+```bash
+# Run only auth smoke test
+php vendor/bin/phpunit --filter=AuthSmokeTest -c phpunit.xml
+
+# Run only user smoke tests
+php vendor/bin/phpunit --filter=UserSmokeTest -c phpunit.xml
+
+# Run all smoke tests
+php vendor/bin/phpunit --filter=Smoke -c phpunit.xml
+```
+
+### Test Environment Variables
+
+Configure these in `phpunit.xml` to enable smoke tests:
+
+| Variable | Purpose |
+|----------|---------|
+| `ECOLET_TEST_MODE` | `true` = staging, `false` = production (defaults to `true`) |
+| `ECOLET_TEST_USERNAME` | Test account email |
+| `ECOLET_TEST_PASSWORD` | Test account password |
+| `ECOLET_TEST_CLIENT_ID` | OAuth client ID |
+| `ECOLET_TEST_CLIENT_SECRET` | OAuth client secret |
+
+[See detailed testing docs →](docs/TESTING.md)
 
 ## Documentation
 
-- [Quickstart](docs/QUICKSTART.md)
-- [Installation](docs/INSTALLATION.md)
-- [Configuration](docs/CONFIGURATION.md)
-- [Authentication](docs/AUTHENTICATION.md)
-- [Resources](docs/RESOURCES.md)
-- [Data Transfer Objects (DTOs)](docs/DTOS.md)
-- [Testing](docs/TESTING.md)
-- [Error Handling](docs/ERRORS.md)
-- [Documentation Index](docs/README.md)
+Complete guides and references:
+
+| Guide | Purpose |
+|-------|---------|
+| 📖 [Quickstart](docs/QUICKSTART.md) | Jump right in with working examples |
+| 🔧 [Installation](docs/INSTALLATION.md) | Detailed setup instructions |
+| ⚙️ [Configuration](docs/CONFIGURATION.md) | Environment setup and options |
+| 🔐 [Authentication](docs/AUTHENTICATION.md) | OAuth flow and token management |
+| 🔗 [Resources](docs/RESOURCES.md) | Complete resource reference |
+| 📦 [DTOs](docs/DTOS.md) | Data Transfer Objects and enums |
+| ✅ [Testing](docs/TESTING.md) | Unit and smoke test coverage |
+| ❌ [Errors](docs/ERRORS.md) | Exception handling guide |
+| 📚 [All Docs](docs/README.md) | Documentation index |
+
+---
+
+<div align="center">
+
+Made with ❤️
+
+**Questions?** [Check the docs](docs/README.md) or [open an issue](../../issues)
+
+</div>

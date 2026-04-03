@@ -17,9 +17,11 @@ class UserResourceTest extends TestCase
     {
         $httpClient = new FakeHttpClient(
             static fn() => new Response(200, [], json_encode([
-                'id' => 10,
-                'email' => 'john@example.com',
-                'name' => 'John Doe',
+                'user' => [
+                    'id' => 10,
+                    'email' => 'john@example.com',
+                    'name' => 'John Doe',
+                ],
             ], JSON_THROW_ON_ERROR)),
         );
         $factory = new HttpFactory();

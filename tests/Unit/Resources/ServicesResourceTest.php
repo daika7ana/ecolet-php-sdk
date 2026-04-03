@@ -17,8 +17,10 @@ class ServicesResourceTest extends TestCase
     {
         $httpClient = new FakeHttpClient(
             static fn() => new Response(200, [], json_encode([
-                ['id' => 1, 'name' => 'Express', 'active' => true],
-                ['id' => 2, 'name' => 'Standard', 'active' => false],
+                'services' => [
+                    ['id' => 1, 'name' => 'Express', 'active' => true],
+                    ['id' => 2, 'name' => 'Standard', 'active' => false],
+                ],
             ], JSON_THROW_ON_ERROR)),
         );
         $factory = new HttpFactory();

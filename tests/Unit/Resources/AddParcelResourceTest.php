@@ -6,12 +6,14 @@ namespace Daika7ana\Ecolet\Tests\Unit\Resources;
 
 use Daika7ana\Ecolet\Client;
 use Daika7ana\Ecolet\Config\ClientConfig;
-use Daika7ana\Ecolet\DTOs\AdditionalServices;
-use Daika7ana\Ecolet\DTOs\AddParcelRequest;
-use Daika7ana\Ecolet\DTOs\CourierInfo;
-use Daika7ana\Ecolet\DTOs\CourierPickup;
-use Daika7ana\Ecolet\DTOs\ParcelDetails;
-use Daika7ana\Ecolet\DTOs\RecipientAddress;
+use Daika7ana\Ecolet\DTOs\AddParcel\AdditionalServices;
+use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelRequest;
+use Daika7ana\Ecolet\DTOs\AddParcel\CourierInfo;
+use Daika7ana\Ecolet\DTOs\AddParcel\CourierPickup;
+use Daika7ana\Ecolet\DTOs\AddParcel\ParcelDetails;
+use Daika7ana\Ecolet\DTOs\AddParcel\RecipientAddress;
+use Daika7ana\Ecolet\Enums\CourierPickupType;
+use Daika7ana\Ecolet\Enums\ParcelType;
 use Daika7ana\Ecolet\Tests\Support\FakeHttpClient;
 use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\Response;
@@ -60,7 +62,7 @@ class AddParcelResourceTest extends TestCase
         );
 
         $parcel = new ParcelDetails(
-            type: 'package',
+            type: ParcelType::Package,
             weight: 1500,
         );
 
@@ -70,10 +72,10 @@ class AddParcelResourceTest extends TestCase
             parcel: $parcel,
             additionalServices: new AdditionalServices(),
             courier: new CourierInfo(
-                pickup: new CourierPickup(type: 'self'),
+                pickup: new CourierPickup(type: CourierPickupType::Self),
             ),
             parcels: [
-                new ParcelDetails(type: 'package', weight: 1500),
+                new ParcelDetails(type: ParcelType::Package, weight: 1500),
             ],
         );
 
@@ -131,14 +133,14 @@ class AddParcelResourceTest extends TestCase
         $payload = new AddParcelRequest(
             sender: $sender,
             receiver: $receiver,
-            parcel: new ParcelDetails(type: 'package', weight: 2000),
+            parcel: new ParcelDetails(type: ParcelType::Package, weight: 2000),
             additionalServices: new AdditionalServices(),
             courier: new CourierInfo(
-                pickup: new CourierPickup(type: 'self'),
+                pickup: new CourierPickup(type: CourierPickupType::Self),
             ),
             parcels: [
-                new ParcelDetails(type: 'package', weight: 1000),
-                new ParcelDetails(type: 'package', weight: 2000),
+                new ParcelDetails(type: ParcelType::Package, weight: 1000),
+                new ParcelDetails(type: ParcelType::Package, weight: 2000),
             ],
         );
 
@@ -214,13 +216,13 @@ class AddParcelResourceTest extends TestCase
         $payload = new AddParcelRequest(
             sender: $sender,
             receiver: $receiver,
-            parcel: new ParcelDetails(type: 'package', weight: 1100),
+            parcel: new ParcelDetails(type: ParcelType::Package, weight: 1100),
             additionalServices: new AdditionalServices(),
             courier: new CourierInfo(
-                pickup: new CourierPickup(type: 'self'),
+                pickup: new CourierPickup(type: CourierPickupType::Self),
             ),
             parcels: [
-                new ParcelDetails(type: 'package', weight: 1100),
+                new ParcelDetails(type: ParcelType::Package, weight: 1100),
             ],
         );
 
@@ -298,13 +300,13 @@ class AddParcelResourceTest extends TestCase
         $payload = new AddParcelRequest(
             sender: $sender,
             receiver: $receiver,
-            parcel: new ParcelDetails(type: 'package', weight: 1000),
+            parcel: new ParcelDetails(type: ParcelType::Package, weight: 1000),
             additionalServices: new AdditionalServices(),
             courier: new CourierInfo(
-                pickup: new CourierPickup(type: 'self'),
+                pickup: new CourierPickup(type: CourierPickupType::Self),
             ),
             parcels: [
-                new ParcelDetails(type: 'package', weight: 1000),
+                new ParcelDetails(type: ParcelType::Package, weight: 1000),
             ],
         );
 

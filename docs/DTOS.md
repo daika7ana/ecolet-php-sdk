@@ -2,6 +2,44 @@
 
 The Ecolet API wrapper uses strongly-typed DTOs for both requests and responses, providing compile-time safety and IDE autocomplete.
 
+## Enums
+
+Common enum types for request validation:
+
+### ParcelType (String BackedEnum)
+
+Valid parcel package types:
+
+```php
+use Daika7ana\Ecolet\Enums\ParcelType;
+
+ParcelType::Package  // 'package'
+ParcelType::Envelope // 'envelope'
+ParcelType::Pallet   // 'pallet'
+```
+
+### ParcelShape (String BackedEnum)
+
+Parcel shape classifications:
+
+```php
+use Daika7ana\Ecolet\Enums\ParcelShape;
+
+ParcelShape::Standard    // 'standard'
+ParcelShape::Nonstandard // 'nonstandard'
+```
+
+### CourierPickupType (String BackedEnum)
+
+Pickup method types:
+
+```php
+use Daika7ana\Ecolet\Enums\CourierPickupType;
+
+CourierPickupType::Courier // 'courier' — pickup by courier
+CourierPickupType::Self    // 'self' — self-pickup at location
+```
+
 ## Request DTOs
 
 All add-parcel operations use `AddParcelRequest` as the main wrapper. It composes several nested DTOs:
@@ -49,18 +87,21 @@ $address = new RecipientAddress(
 
 ### ParcelDetails
 
-Describes a single parcel's properties.
+Describes a single parcel's properties. Uses `ParcelType` and optional `ParcelShape` enums.
 
 ```php
+use Daika7ana\Ecolet\Enums\ParcelShape;
+use Daika7ana\Ecolet\Enums\ParcelType;
+
 $parcel = new ParcelDetails(
-    type: string,                      // 'package', 'envelope', 'pallet'
-    weight: int,                       // in grams
-    dimensions?: ParcelDimensions,     // length, width, height in cm
-    shape?: string,                    // 'standard', etc.
-    declaredValue?: int,               // in cents for currency
-    content?: string,                  // description
-    observations?: string,             // special handling notes
-    amount: int,                       // quantity of this parcel type
+    type: ParcelType::Package,        // required: enum
+    weight: int,                      // in grams
+    dimensions?: ParcelDimensions,    // length, width, height in cm
+    shape?: ParcelShape::Standard,    // optional: enum
+    declaredValue?: int,              // in cents for currency
+    content?: string,                 // description
+    observations?: string,            // special handling notes
+    amount: int,                      // quantity of this parcel type
 );
 ```
 
@@ -106,8 +147,14 @@ $services = new AdditionalServices(
 Service and pickup method selection.
 
 ```php
+use Daika7ana\Ecolet\Enums\CourierPickupType;
+
 $courier = new CourierInfo(
-    pickup: CourierPickup,             // required
+    pickup: new CourierPickup(
+        type: CourierPickupType::Courier,  // required: enum
+        date?: string,                     // optional: 'YYYY-MM-DD' format
+        time?: string,                     // optional: time window
+    ),
     serviceSlug?: string,              // e.g., 'dpd_standard'
     contractId?: string,
 );
@@ -115,12 +162,14 @@ $courier = new CourierInfo(
 
 ### CourierPickup
 
-Pickup method configuration.
+Pickup method configuration. Uses `CourierPickupType` enum.
 
 ```php
+use Daika7ana\Ecolet\Enums\CourierPickupType;
+
 $pickup = new CourierPickup(
-    type: string,                      // 'courier' or 'self'
-    date?: DateTime,                   // optional: specific pickup date
+    type: CourierPickupType::Self,     // required: enum
+    date?: string,                     // optional: 'YYYY-MM-DD' format
     time?: string,                     // optional: time window
 );
 ```

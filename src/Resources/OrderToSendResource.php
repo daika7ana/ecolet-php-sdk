@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Daika7ana\Ecolet\Resources;
 
 use Daika7ana\Ecolet\Client;
-use Daika7ana\Ecolet\DTOs\OrderToSend;
+use Daika7ana\Ecolet\DTOs\Orders\OrderToSend;
 use Daika7ana\Ecolet\Support\ApiResponseMapper;
 
 class OrderToSendResource

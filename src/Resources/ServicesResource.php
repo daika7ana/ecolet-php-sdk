@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Daika7ana\Ecolet\Resources;
 
 use Daika7ana\Ecolet\Client;
-use Daika7ana\Ecolet\DTOs\Collection;
-use Daika7ana\Ecolet\DTOs\Service;
+use Daika7ana\Ecolet\DTOs\Common\Collection;
+use Daika7ana\Ecolet\DTOs\Services\Service;
 use Daika7ana\Ecolet\Support\ApiResponseMapper;
 
 class ServicesResource
@@ -32,7 +32,7 @@ class ServicesResource
 
         $services = array_map(
             static fn(array $item) => Service::fromArray($item),
-            $data,
+            $data['services'],
         );
 
         return new Collection($services);

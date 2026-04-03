@@ -13,6 +13,8 @@ When no custom config is passed to `Client::create()`, the package reads `ECOLET
 - `true`, `1`, `yes`, `on` => staging
 - `false`, `0`, `no`, `off`, empty/unrecognized => production
 
+**Note:** In smoke tests, `ECOLET_TEST_MODE` defaults to `true` (staging) if not defined in `phpunit.xml`.
+
 Production base URL:
 
 ```text
