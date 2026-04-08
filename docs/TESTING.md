@@ -6,7 +6,6 @@ Use local `phpunit.xml` to store test credentials and avoid committing secrets.
 
 Example env keys:
 
-- `ECOLET_TEST_MODE` — defaults to `true` (staging) if not defined
 - `ECOLET_TEST_USERNAME`
 - `ECOLET_TEST_PASSWORD`
 - `ECOLET_TEST_CLIENT_ID`
@@ -44,7 +43,7 @@ php vendor/bin/phpunit --filter=ReloadFormSmokeTest -c phpunit.xml
 
 ## Smoke Tests
 
-Smoke tests validate against the live staging API and require valid credentials in `phpunit.xml`. All smoke tests default `ECOLET_TEST_MODE` to `true` (staging) if not defined.
+Smoke tests validate against the live staging API and require valid credentials in `phpunit.xml`. The smoke helper enables staging via `ClientConfig::setTestMode(true)` when no explicit base URL is passed.
 
 ### Authentication Smoke Test
 

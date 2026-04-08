@@ -8,12 +8,24 @@
 
 ## Base URL Selection
 
-When no custom config is passed to `Client::create()`, the package reads `ECOLET_TEST_MODE`.
+When no custom config is passed to `Client::create()`, the package uses **production** by default.
 
-- `true`, `1`, `yes`, `on` => staging
-- `false`, `0`, `no`, `off`, empty/unrecognized => production
+- **Default (test mode disabled):** Production base URL
+- **Test mode enabled:** Staging base URL
 
-**Note:** In smoke tests, `ECOLET_TEST_MODE` defaults to `true` (staging) if not defined in `phpunit.xml`.
+To switch to staging globally:
+
+```php
+use Daika7ana\Ecolet\Config\ClientConfig;
+
+ClientConfig::setTestMode(true);  // Staging
+```
+
+To return to production:
+
+```php
+ClientConfig::setTestMode(false);  // Production
+```
 
 Production base URL:
 

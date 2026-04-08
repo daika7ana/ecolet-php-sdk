@@ -85,6 +85,11 @@ class Client
         return $this->config;
     }
 
+    public function getToken(): ?Token
+    {
+        return $this->tokenStore->getToken() ?? $this->config->token;
+    }
+
     public function setToken(Token|string $token): self
     {
         $resolvedToken = is_string($token) ? new Token($token) : $token;

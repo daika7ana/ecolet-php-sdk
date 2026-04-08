@@ -85,26 +85,29 @@ That's it! You've got a fully authenticated client ready to fetch courier data.
 
 ## Configuration
 
-### Automatic Environment Detection
+### Base URL & Environment
 
-By default, the client reads `ECOLET_TEST_MODE` to select your environment:
+By default, the client runs against **production**. To enable staging globally:
 
-- `true`, `1`, `yes`, `on` ➜ **Staging**
-- Anything else ➜ **Production**
+```php
+use Daika7ana\Ecolet\Config\ClientConfig;
 
-### Custom Base URL
+ClientConfig::setTestMode(true);  // Enable staging
+```
 
-Need full control? Use explicit configuration:
+### Explicit Base URL
+
+For explicit control without global state:
 
 ```php
 use Daika7ana\Ecolet\Client;
 use Daika7ana\Ecolet\Config\ClientConfig;
 
-// Use staging
+// Staging
 $config = new ClientConfig(baseUrl: ClientConfig::BASE_URL_STAGING);
 $client = Client::create(config: $config);
 
-// Or production
+// Or production (the default)
 $config = new ClientConfig(baseUrl: ClientConfig::BASE_URL_PRODUCTION);
 $client = Client::create(config: $config);
 ```
@@ -247,7 +250,6 @@ Configure these in `phpunit.xml` to enable smoke tests:
 
 | Variable | Purpose |
 |----------|---------|
-| `ECOLET_TEST_MODE` | `true` = staging, `false` = production (defaults to `true`) |
 | `ECOLET_TEST_USERNAME` | Test account email |
 | `ECOLET_TEST_PASSWORD` | Test account password |
 | `ECOLET_TEST_CLIENT_ID` | OAuth client ID |

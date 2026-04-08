@@ -12,6 +12,8 @@ final class ClientConfig
 
     public const BASE_URL_STAGING = 'https://staging.ecolet.ro/api';
 
+    protected static bool $testMode = false;
+
     public function __construct(
         public string $baseUrl = self::BASE_URL_PRODUCTION,
         public ?Token $token = null,
@@ -49,15 +51,13 @@ final class ClientConfig
 
     public static function fromEnvironment(): self
     {
-        $mode = getenv('ECOLET_TEST_MODE');
+        $baseUrl = self::$testMode ? self::BASE_URL_STAGING : self::BASE_URL_PRODUCTION;
 
-        return new self(baseUrl: self::baseUrlFromTestMode($mode === false ? '' : $mode));
+        return new self(baseUrl: $baseUrl);
     }
 
-    protected static function baseUrlFromTestMode(string $mode): string
+    public static function setTestMode(bool $testMode): void
     {
-        $isTestMode = filter_var($mode, FILTER_VALIDATE_BOOLEAN);
-
-        return $isTestMode ? self::BASE_URL_STAGING : self::BASE_URL_PRODUCTION;
+        self::$testMode = $testMode;
     }
 }

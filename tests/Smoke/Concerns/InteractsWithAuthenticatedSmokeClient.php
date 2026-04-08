@@ -10,7 +10,7 @@ use Daika7ana\Ecolet\Config\ClientConfig;
 trait InteractsWithAuthenticatedSmokeClient
 {
     /**
-     * @return array{username: string, password: string, clientId: string, clientSecret: string, testMode: string}
+     * @return array{username: string, password: string, clientId: string, clientSecret: string}
      */
     protected function smokeCredentials(string $context): array
     {
@@ -19,7 +19,6 @@ trait InteractsWithAuthenticatedSmokeClient
             'password' => getenv('ECOLET_TEST_PASSWORD') ?: '',
             'clientId' => getenv('ECOLET_TEST_CLIENT_ID') ?: '',
             'clientSecret' => getenv('ECOLET_TEST_CLIENT_SECRET') ?: '',
-            'testMode' => getenv('ECOLET_TEST_MODE') ?: 'true',
         ];
 
         if (
@@ -40,7 +39,17 @@ trait InteractsWithAuthenticatedSmokeClient
     protected function makeAuthenticatedClient(string $context, ?string $baseUrl = null): Client
     {
         $credentials = $this->smokeCredentials($context);
+
+        if ($baseUrl === null) {
+            ClientConfig::setTestMode(true);
+        }
+
         $config = $baseUrl ? new ClientConfig(baseUrl: $baseUrl) : ClientConfig::fromEnvironment();
+
+        if ($baseUrl === null) {
+            assert(ClientConfig::BASE_URL_STAGING === $config->baseUrl, 'Expected staging base URL when test mode is enabled');
+        }
+
         $client = Client::create(config: $config);
         $client->authenticate(
             $credentials['username'],

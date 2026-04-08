@@ -14,6 +14,18 @@ use PHPUnit\Framework\TestCase;
 
 class ClientTest extends TestCase
 {
+    public function testFromEnvironmentUsesConfiguredTestModeFlag(): void
+    {
+        ClientConfig::setTestMode(true);
+        $stagingConfig = ClientConfig::fromEnvironment();
+
+        ClientConfig::setTestMode(false);
+        $productionConfig = ClientConfig::fromEnvironment();
+
+        $this->assertSame(ClientConfig::BASE_URL_STAGING, $stagingConfig->baseUrl);
+        $this->assertSame(ClientConfig::BASE_URL_PRODUCTION, $productionConfig->baseUrl);
+    }
+
     public function testClientCanBeCreated(): void
     {
         $resolvedConfig = ClientConfig::fromEnvironment();
@@ -28,6 +40,10 @@ class ClientTest extends TestCase
     {
         $client = Client::create();
         $client->setToken('test-token-123');
+
+        $token = $client->getToken();
+        $this->assertNotNull($token);
+        $this->assertSame('test-token-123', $token->accessToken);
 
         $config = $client->getConfig();
         $this->assertNotNull($config->token);
@@ -90,6 +106,11 @@ class ClientTest extends TestCase
         $this->assertNotNull($config->token);
         $this->assertSame('access-123', $config->token->accessToken);
         $this->assertSame('refresh-123', $config->token->refreshToken);
+
+        $token = $client->getToken();
+        $this->assertNotNull($token);
+        $this->assertSame('access-123', $token->accessToken);
+        $this->assertSame('refresh-123', $token->refreshToken);
     }
 
     public function testRefreshTokenWorksForRestoredClientWhenOAuthCredentialsExistInConfig(): void

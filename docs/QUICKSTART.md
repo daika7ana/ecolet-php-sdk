@@ -16,7 +16,7 @@ use Daika7ana\Ecolet\Client;
 $client = Client::create();
 ```
 
-`Client::create()` resolves base URL from `ECOLET_TEST_MODE` when no custom config is passed.
+By default, `Client::create()` uses **production** base URL. Test mode is disabled by default.
 
 ## 3. Authenticate
 
@@ -38,7 +38,19 @@ $user = $client->users()->getMe();
 echo $user->email;
 ```
 
-## 5. Optional: Force Staging or Production
+## 5. Optional: Use Staging Environment
+
+**Via test mode flag (global):**
+
+```php
+use Daika7ana\Ecolet\Config\ClientConfig;
+use Daika7ana\Ecolet\Client;
+
+ClientConfig::setTestMode(true);  // Enable staging
+$client = Client::create();
+```
+
+**Via explicit base URL (no global state):**
 
 ```php
 use Daika7ana\Ecolet\Client;
