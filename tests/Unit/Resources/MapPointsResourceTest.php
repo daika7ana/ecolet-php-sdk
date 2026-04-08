@@ -72,7 +72,7 @@ class MapPointsResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $result = $client->mapPoints()->getMapPoints('RO', ['service_id' => 2]);

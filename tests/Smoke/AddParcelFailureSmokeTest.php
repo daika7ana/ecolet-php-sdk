@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Daika7ana\Ecolet\Tests\Smoke;
 
-use Daika7ana\Ecolet\Config\ClientConfig;
 use Daika7ana\Ecolet\DTOs\AddParcel\AdditionalServices;
 use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelRequest;
 use Daika7ana\Ecolet\DTOs\AddParcel\CourierInfo;
@@ -28,7 +27,7 @@ final class AddParcelFailureSmokeTest extends TestCase
     #[Group('smoke')]
     public function testReloadFormRejectsMalformedPayloadOnStaging(): void
     {
-        $client = $this->makeAuthenticatedClient('add-parcel-reload-failure', ClientConfig::BASE_URL_STAGING);
+        $client = $this->makeAuthenticatedClient('add-parcel-reload-failure');
 
         try {
             $client->addParcel()->reloadForm($this->buildMalformedPayload());
@@ -44,7 +43,7 @@ final class AddParcelFailureSmokeTest extends TestCase
     #[Group('smoke')]
     public function testSendOrderRejectsMalformedPayloadOnStaging(): void
     {
-        $client = $this->makeAuthenticatedClient('add-parcel-send-failure', ClientConfig::BASE_URL_STAGING);
+        $client = $this->makeAuthenticatedClient('add-parcel-send-failure');
 
         try {
             $client->addParcel()->sendOrder($this->buildMalformedPayload());
@@ -61,7 +60,7 @@ final class AddParcelFailureSmokeTest extends TestCase
     #[Group('smoke')]
     public function testSaveOrderToSendRejectsMalformedPayloadOnStaging(): void
     {
-        $client = $this->makeAuthenticatedClient('add-parcel-save-failure', ClientConfig::BASE_URL_STAGING);
+        $client = $this->makeAuthenticatedClient('add-parcel-save-failure');
 
         try {
             $client->addParcel()->saveOrderToSend($this->buildMalformedPayload());
@@ -77,7 +76,7 @@ final class AddParcelFailureSmokeTest extends TestCase
     #[Group('smoke')]
     public function testGetOrderToSendRejectsUnknownIdOnStaging(): void
     {
-        $client = $this->makeAuthenticatedClient('order-to-send-not-found', ClientConfig::BASE_URL_STAGING);
+        $client = $this->makeAuthenticatedClient('order-to-send-not-found');
 
         try {
             $client->ordersToSend()->getOrderToSend(self::NONEXISTENT_REMOTE_ID);
@@ -90,7 +89,7 @@ final class AddParcelFailureSmokeTest extends TestCase
     #[Group('smoke')]
     public function testGetOrderRejectsUnknownIdOnStaging(): void
     {
-        $client = $this->makeAuthenticatedClient('order-not-found', ClientConfig::BASE_URL_STAGING);
+        $client = $this->makeAuthenticatedClient('order-not-found');
 
         try {
             $client->orders()->getOrder(self::NONEXISTENT_REMOTE_ID);

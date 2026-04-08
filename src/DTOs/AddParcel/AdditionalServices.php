@@ -32,7 +32,7 @@ final readonly class AdditionalServices
             codAmount: isset($data['cod']['amount']) ? (float) $data['cod']['amount'] : null,
             openPackage: (bool) ($data['open_package']['status'] ?? false),
             rod: (bool) ($data['rod']['status'] ?? false),
-            rodCode: (string) ($data['rod']['rod_code'] ?? null),
+            rodCode: isset($data['rod']['rod_code']) ? (string) $data['rod']['rod_code'] : null,
             rop: (bool) ($data['rop']['status'] ?? false),
             saturdayDelivery: (bool) ($data['saturday_delivery']['status'] ?? false),
             smsNotify: (bool) ($data['sms_notify']['status'] ?? false),

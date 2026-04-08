@@ -22,7 +22,7 @@ final readonly class CourierInfo
     {
         return new self(
             pickup: CourierPickup::fromArray($data['pickup']),
-            service: (string) ($data['service'] ?? null),
+            service: isset($data['service']) ? (string) $data['service'] : null,
             contractId: isset($data['contract_id']) ? (int) $data['contract_id'] : null,
         );
     }

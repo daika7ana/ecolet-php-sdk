@@ -30,7 +30,7 @@ class UserResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $user = $client->users()->getMe();

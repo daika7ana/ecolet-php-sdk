@@ -21,7 +21,7 @@ final readonly class ShipmentDetails
     public static function fromArray(array $data): self
     {
         return new self(
-            uitCode: (string) ($data['uit_code'] ?? null),
+            uitCode: isset($data['uit_code']) ? (string) $data['uit_code'] : null,
             senderForklift: (bool) ($data['sender_forklift'] ?? false),
             receiverForklift: (bool) ($data['receiver_forklift'] ?? false),
         );

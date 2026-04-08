@@ -27,7 +27,7 @@ final class ReloadFormSmokeTest extends TestCase
     #[Group('smoke')]
     public function testReloadFormAgainstStagingApi(): void
     {
-        $client = $this->makeAuthenticatedClient('reload-form', ClientConfig::BASE_URL_STAGING);
+        $client = $this->makeAuthenticatedClient('reload-form');
 
         $result = $client->addParcel()->reloadForm($this->buildPayload());
 
@@ -42,7 +42,7 @@ final class ReloadFormSmokeTest extends TestCase
     #[Group('smoke')]
     public function testReloadFormResponseContainsPricingInfo(): void
     {
-        $client = $this->makeAuthenticatedClient('reload-form', ClientConfig::BASE_URL_STAGING);
+        $client = $this->makeAuthenticatedClient('reload-form');
 
         $result = $client->addParcel()->reloadForm($this->buildPayload());
 
@@ -62,7 +62,7 @@ final class ReloadFormSmokeTest extends TestCase
     #[Group('smoke')]
     public function testReloadFormResponseHasServiceStatuses(): void
     {
-        $client = $this->makeAuthenticatedClient('reload-form', ClientConfig::BASE_URL_STAGING);
+        $client = $this->makeAuthenticatedClient('reload-form');
 
         $result = $client->addParcel()->reloadForm($this->buildPayload());
 
@@ -85,7 +85,7 @@ final class ReloadFormSmokeTest extends TestCase
     #[Group('smoke')]
     public function testReloadFormResponseContainsPickupDates(): void
     {
-        $client = $this->makeAuthenticatedClient('reload-form', ClientConfig::BASE_URL_STAGING);
+        $client = $this->makeAuthenticatedClient('reload-form');
 
         $result = $client->addParcel()->reloadForm($this->buildPayload());
 
@@ -105,7 +105,7 @@ final class ReloadFormSmokeTest extends TestCase
     #[Group('smoke')]
     public function testReloadFormResponseHasNoErrors(): void
     {
-        $client = $this->makeAuthenticatedClient('reload-form', ClientConfig::BASE_URL_STAGING);
+        $client = $this->makeAuthenticatedClient('reload-form');
 
         $result = $client->addParcel()->reloadForm($this->buildPayload());
 

@@ -30,7 +30,7 @@ class LocationsResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $countries = $client->locations()->getCountries();
@@ -55,7 +55,7 @@ class LocationsResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $postalCodes = $client->locations()->searchStreetPostalCodes(13751, 'Piaţă Romană');

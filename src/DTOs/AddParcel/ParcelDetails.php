@@ -38,8 +38,8 @@ final readonly class ParcelDetails
             shape: isset($data['shape']) ? ParcelShape::tryFrom($data['shape']) : null,
             declaredValue: isset($data['declared_value']) ? (float) $data['declared_value'] : null,
             amount: (int) ($data['amount'] ?? 1),
-            content: (string) ($data['content'] ?? null),
-            observations: (string) ($data['observations'] ?? null),
+            content: isset($data['content']) ? (string) $data['content'] : null,
+            observations: isset($data['observations']) ? (string) $data['observations'] : null,
         );
     }
 

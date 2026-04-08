@@ -34,7 +34,7 @@ class AddParcelResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $sender = new RecipientAddress(
@@ -103,7 +103,7 @@ class AddParcelResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $payload = new AddParcelRequest(
@@ -171,7 +171,7 @@ class AddParcelResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $sender = new RecipientAddress(
@@ -254,7 +254,7 @@ class AddParcelResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $sender = new RecipientAddress(
@@ -338,7 +338,7 @@ class AddParcelResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $sender = new RecipientAddress(
@@ -423,7 +423,7 @@ class AddParcelResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $payload = new AddParcelRequest(
@@ -486,7 +486,7 @@ class AddParcelResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $payload = new AddParcelRequest(
@@ -549,7 +549,7 @@ class AddParcelResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $payload = new AddParcelRequest(
@@ -609,7 +609,7 @@ class AddParcelResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $payload = new AddParcelRequest(

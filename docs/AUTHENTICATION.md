@@ -47,6 +47,16 @@ $client->setToken(Token::fromArray($cachedTokenData));
 $client->setToken('your-access-token');
 ```
 
+## Clearing a Stored Token
+
+If you are working with `ClientConfig` directly and need to remove its stored token snapshot, use:
+
+```php
+$config = $config->withoutToken();
+```
+
+This only clears the token stored on the config object itself. If you are also using a custom token store, clear that store as well.
+
 ## Refresh Token Flow
 
 When the current token includes a `refresh_token`, you can request a new token:

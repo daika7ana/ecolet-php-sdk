@@ -81,6 +81,12 @@ $client->setToken('your-access-token');
 $client->setToken(Token::fromArray($cachedTokenData));
 ```
 
+If you are managing `ClientConfig` directly, you can also clear its stored token explicitly:
+
+```php
+$config = $config->withoutToken();
+```
+
 ## Token Storage Behavior
 
 - By default, the client uses an in-memory token store (`InMemoryTokenStore`).

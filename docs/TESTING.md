@@ -43,7 +43,7 @@ php vendor/bin/phpunit --filter=ReloadFormSmokeTest -c phpunit.xml
 
 ## Smoke Tests
 
-Smoke tests validate against the live staging API and require valid credentials in `phpunit.xml`. Most smoke tests pass `ClientConfig::BASE_URL_STAGING` explicitly; the shared helper can also enable staging via `ClientConfig::setTestMode(true)` when no base URL is passed.
+Smoke tests validate against the live staging API and require valid credentials in `phpunit.xml`. The shared helper now builds staging clients with an explicit staging base URL, so smoke execution does not depend on mutating the global test-mode flag.
 
 ### Authentication Smoke Test
 

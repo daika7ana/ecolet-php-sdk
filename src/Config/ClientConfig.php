@@ -31,6 +31,14 @@ final class ClientConfig
         return $config;
     }
 
+    public function withoutToken(): self
+    {
+        $config = clone $this;
+        $config->token = null;
+
+        return $config;
+    }
+
     public function withBaseUrl(string $baseUrl): self
     {
         $config = clone $this;

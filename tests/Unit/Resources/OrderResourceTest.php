@@ -32,7 +32,7 @@ class OrderResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $order = $client->orders()->getOrder(123);
@@ -57,7 +57,7 @@ class OrderResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $waybill = $client->orders()->downloadWaybill(123);
@@ -83,7 +83,7 @@ class OrderResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         try {
@@ -110,7 +110,7 @@ class OrderResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $this->expectException(UnexpectedStatusException::class);

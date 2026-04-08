@@ -10,5 +10,5 @@ interface TokenStoreInterface
 
     public function setToken(Token $token): void;
 
-    public function clear(): void;
+    public function clearToken(): void;
 }

@@ -58,43 +58,32 @@ class Client
         $this->config = $config ?? new ClientConfig();
         $this->tokenStore = $tokenStore ?? new InMemoryTokenStore();
 
-        if ($this->config->token !== null) {
+        $storedToken = $this->tokenStore->getToken();
+        if ($storedToken !== null) {
+            $this->config = $this->config->withToken($storedToken);
+        } elseif ($this->config->token !== null) {
             $this->tokenStore->setToken($this->config->token);
         }
 
-        $storedToken = $this->tokenStore->getToken();
-        if ($this->config->token === null && $storedToken !== null) {
-            $this->config = $this->config->withToken($storedToken);
-        }
-
-        $this->authenticator = $authenticator ?? new PasswordAuthenticator(
-            httpClient: $this->httpClient,
-            requestFactory: $this->requestFactory,
-            streamFactory: $this->streamFactory,
-            username: '',
-            password: '',
-            clientId: $this->config->clientId,
-            clientSecret: $this->config->clientSecret,
-            baseUrl: $this->config->baseUrl,
-            scope: $this->config->scope,
-        );
+        $this->authenticator = $authenticator ?? $this->makeAuthenticator();
     }
 
     public function getConfig(): ClientConfig
     {
+        $this->currentToken();
+
         return $this->config;
     }
 
     public function getToken(): ?Token
     {
-        return $this->tokenStore->getToken() ?? $this->config->token;
+        return $this->currentToken();
     }
 
     public function setToken(Token|string $token): self
     {
         $resolvedToken = is_string($token) ? new Token($token) : $token;
-        $this->tokenStore->setToken($resolvedToken);
-        $this->config = $this->config->withToken($resolvedToken);
+        $this->storeToken($resolvedToken);
 
         return $this;
     }
@@ -108,21 +97,10 @@ class Client
     ): void {
         $this->config = $this->config->withOAuthCredentials($clientId, $clientSecret, $scope);
 
-        $this->authenticator = new PasswordAuthenticator(
-            httpClient: $this->httpClient,
-            requestFactory: $this->requestFactory,
-            streamFactory: $this->streamFactory,
-            username: $username,
-            password: $password,
-            clientId: $this->config->clientId,
-            clientSecret: $this->config->clientSecret,
-            baseUrl: $this->config->baseUrl,
-            scope: $this->config->scope,
-        );
+        $this->authenticator = $this->makeAuthenticator($username, $password);
 
         $token = $this->authenticator->authenticate();
-        $this->tokenStore->setToken($token);
-        $this->config = $this->config->withToken($token);
+        $this->storeToken($token);
     }
 
     /**
@@ -131,7 +109,7 @@ class Client
      */
     public function refreshToken(): void
     {
-        $currentToken = $this->tokenStore->getToken() ?? $this->config->token;
+        $currentToken = $this->currentToken();
 
         if ($currentToken?->refreshToken === null || $currentToken->refreshToken === '') {
             throw new AuthenticationException('Cannot refresh token: refresh_token is missing.');
@@ -141,21 +119,10 @@ class Client
             throw new AuthenticationException('Cannot refresh token: OAuth client credentials are missing.');
         }
 
-        $this->authenticator = new PasswordAuthenticator(
-            httpClient: $this->httpClient,
-            requestFactory: $this->requestFactory,
-            streamFactory: $this->streamFactory,
-            username: '',
-            password: '',
-            clientId: $this->config->clientId,
-            clientSecret: $this->config->clientSecret,
-            baseUrl: $this->config->baseUrl,
-            scope: $this->config->scope,
-        );
+        $this->authenticator = $this->makeAuthenticator();
 
         $token = $this->authenticator->refresh($currentToken->refreshToken);
-        $this->tokenStore->setToken($token);
-        $this->config = $this->config->withToken($token);
+        $this->storeToken($token);
     }
 
     public function createRequest(string $method, string $path): RequestInterface
@@ -163,11 +130,10 @@ class Client
         $uri = $this->config->baseUrl . $path;
         $request = $this->requestFactory->createRequest($method, $uri);
 
-        if ($this->config->token !== null) {
-            $request = $request->withHeader(
-                'Authorization',
-                sprintf('%s %s', $this->config->token->tokenType, $this->config->token->accessToken),
-            );
+        $token = $this->currentToken();
+
+        if ($token !== null) {
+            $request = $this->withAuthorizationHeader($request, $token);
         }
 
         $request = $request
@@ -179,6 +145,19 @@ class Client
 
     public function send(RequestInterface $request): ResponseInterface
     {
+        if ($request->hasHeader('Authorization')) {
+            $token = $this->currentToken();
+
+            if ($token !== null && $token->isExpired()) {
+                $this->refreshToken();
+                $token = $this->currentToken();
+            }
+
+            if ($token !== null) {
+                $request = $this->withAuthorizationHeader($request, $token);
+            }
+        }
+
         return $this->httpClient->sendRequest($request);
     }
 
@@ -253,5 +232,53 @@ class Client
         }
 
         return new self($httpClient, $requestFactory, $streamFactory, $config, null, $tokenStore);
+    }
+
+    private function makeAuthenticator(string $username = '', string $password = ''): PasswordAuthenticator
+    {
+        return new PasswordAuthenticator(
+            httpClient: $this->httpClient,
+            requestFactory: $this->requestFactory,
+            streamFactory: $this->streamFactory,
+            username: $username,
+            password: $password,
+            clientId: $this->config->clientId,
+            clientSecret: $this->config->clientSecret,
+            baseUrl: $this->config->baseUrl,
+            scope: $this->config->scope,
+        );
+    }
+
+    private function currentToken(): ?Token
+    {
+        $token = $this->tokenStore->getToken();
+
+        if ($token === null) {
+            if ($this->config->token !== null) {
+                $this->config = $this->config->withoutToken();
+            }
+
+            return null;
+        }
+
+        if ($this->config->token != $token) {
+            $this->config = $this->config->withToken($token);
+        }
+
+        return $token;
+    }
+
+    private function storeToken(Token $token): void
+    {
+        $this->tokenStore->setToken($token);
+        $this->config = $this->config->withToken($token);
+    }
+
+    private function withAuthorizationHeader(RequestInterface $request, Token $token): RequestInterface
+    {
+        return $request->withoutHeader('Authorization')->withHeader(
+            'Authorization',
+            sprintf('%s %s', $token->tokenType, $token->accessToken),
+        );
     }
 }

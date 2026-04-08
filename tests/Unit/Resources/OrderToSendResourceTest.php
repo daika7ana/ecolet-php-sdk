@@ -101,7 +101,7 @@ class OrderToSendResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $orderToSend = $client->ordersToSend()->getOrderToSend(321);
@@ -133,7 +133,7 @@ class OrderToSendResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $orderToSend = $client->ordersToSend()->getOrderToSend(999);
@@ -161,7 +161,7 @@ class OrderToSendResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         try {
@@ -188,7 +188,7 @@ class OrderToSendResourceTest extends TestCase
             httpClient: $httpClient,
             requestFactory: $factory,
             streamFactory: $factory,
-            config: ClientConfig::fromEnvironment(),
+            config: new ClientConfig(),
         );
 
         $this->expectException(UnexpectedStatusException::class);

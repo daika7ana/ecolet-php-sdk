@@ -18,7 +18,7 @@ final class InMemoryTokenStore implements TokenStoreInterface
         $this->token = $token;
     }
 
-    public function clear(): void
+    public function clearToken(): void
     {
         $this->token = null;
     }

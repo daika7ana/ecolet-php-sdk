@@ -40,15 +40,7 @@ trait InteractsWithAuthenticatedSmokeClient
     {
         $credentials = $this->smokeCredentials($context);
 
-        if ($baseUrl === null) {
-            ClientConfig::setTestMode(true);
-        }
-
-        $config = $baseUrl ? new ClientConfig(baseUrl: $baseUrl) : ClientConfig::fromEnvironment();
-
-        if ($baseUrl === null) {
-            assert(ClientConfig::BASE_URL_STAGING === $config->baseUrl, 'Expected staging base URL when test mode is enabled');
-        }
+        $config = new ClientConfig(baseUrl: $baseUrl ?? ClientConfig::BASE_URL_STAGING);
 
         $client = Client::create(config: $config);
         $client->authenticate(

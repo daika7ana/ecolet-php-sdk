@@ -47,11 +47,11 @@ final readonly class RecipientAddress
             phone: $data['phone'],
             hasMapPoint: (bool) ($data['has_map_point'] ?? false),
             mapPointId: isset($data['map_point_id']) ? (int) $data['map_point_id'] : null,
-            county: (string) ($data['county'] ?? null),
-            block: (string) ($data['block'] ?? null),
-            entrance: (string) ($data['entrance'] ?? null),
-            floor: (string) ($data['floor'] ?? null),
-            flat: (string) ($data['flat'] ?? null),
+            county: isset($data['county']) ? (string) $data['county'] : null,
+            block: isset($data['block']) ? (string) $data['block'] : null,
+            entrance: isset($data['entrance']) ? (string) $data['entrance'] : null,
+            floor: isset($data['floor']) ? (string) $data['floor'] : null,
+            flat: isset($data['flat']) ? (string) $data['flat'] : null,
         );
     }
 

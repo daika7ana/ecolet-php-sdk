@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Daika7ana\Ecolet\Tests\Smoke;
 
 use Daika7ana\Ecolet\Client;
-use Daika7ana\Ecolet\Config\ClientConfig;
 use Daika7ana\Ecolet\DTOs\AddParcel\AdditionalServices;
 use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelRequest;
 use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelResult;
@@ -30,7 +29,7 @@ final class AddParcelWorkflowSmokeTest extends TestCase
     #[Group('smoke')]
     public function testCanCompleteAddParcelWorkflowAndDownloadWaybillOnStaging(): void
     {
-        $client = $this->makeAuthenticatedClient('add-parcel-workflow', ClientConfig::BASE_URL_STAGING);
+        $client = $this->makeAuthenticatedClient('add-parcel-workflow');
         ['orderToSend' => $orderToSend, 'order' => $order] = $this->completeWorkflow($client);
 
         $this->assertNotNull($orderToSend->orderId);
