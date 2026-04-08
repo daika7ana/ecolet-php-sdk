@@ -24,12 +24,13 @@ final class LocationsSmokeTest extends TestCase
         $client = $this->makeAuthenticatedClient('locations');
 
         $countries = $client->locations()->getCountries();
+        $firstCountry = $countries->first();
 
         $this->assertInstanceOf(Collection::class, $countries);
-        $this->assertNotEmpty($countries->items);
-        $this->assertInstanceOf(Country::class, $countries->items[0]);
-        $this->assertNotSame('', $countries->items[0]->code);
-        $this->assertNotSame('', $countries->items[0]->name);
+        $this->assertGreaterThan(0, $countries->count());
+        $this->assertInstanceOf(Country::class, $firstCountry);
+        $this->assertNotSame('', $firstCountry->code);
+        $this->assertNotSame('', $firstCountry->name);
     }
 
     #[Group('smoke')]
@@ -38,12 +39,13 @@ final class LocationsSmokeTest extends TestCase
         $client = $this->makeAuthenticatedClient('locations');
 
         $counties = $client->locations()->getCounties('RO');
+        $firstCounty = $counties->first();
 
         $this->assertInstanceOf(Collection::class, $counties);
-        $this->assertNotEmpty($counties->items);
-        $this->assertInstanceOf(County::class, $counties->items[0]);
-        $this->assertGreaterThan(0, $counties->items[0]->id);
-        $this->assertNotSame('', $counties->items[0]->name);
+        $this->assertGreaterThan(0, $counties->count());
+        $this->assertInstanceOf(County::class, $firstCounty);
+        $this->assertGreaterThan(0, $firstCounty->id);
+        $this->assertNotSame('', $firstCounty->name);
     }
 
     #[Group('smoke')]
@@ -52,12 +54,13 @@ final class LocationsSmokeTest extends TestCase
         $client = $this->makeAuthenticatedClient('locations');
 
         $localities = $client->locations()->searchLocalities('RO', 'Cluj');
+        $firstLocality = $localities->first();
 
         $this->assertInstanceOf(Collection::class, $localities);
-        $this->assertNotEmpty($localities->items);
-        $this->assertInstanceOf(Locality::class, $localities->items[0]);
-        $this->assertGreaterThan(0, $localities->items[0]->id);
-        $this->assertNotSame('', $localities->items[0]->name);
+        $this->assertGreaterThan(0, $localities->count());
+        $this->assertInstanceOf(Locality::class, $firstLocality);
+        $this->assertGreaterThan(0, $firstLocality->id);
+        $this->assertNotSame('', $firstLocality->name);
     }
 
     #[Group('smoke')]
@@ -66,14 +69,18 @@ final class LocationsSmokeTest extends TestCase
         $client = $this->makeAuthenticatedClient('locations');
 
         $localities = $client->locations()->searchLocalities('RO', 'Cluj-Napoca');
-        $this->assertNotEmpty($localities->items);
+        $firstLocality = $localities->first();
 
-        $localityId = $localities->items[0]->id;
+        $this->assertGreaterThan(0, $localities->count());
+        $this->assertInstanceOf(Locality::class, $firstLocality);
+
+        $localityId = $firstLocality->id;
         $streets = $client->locations()->searchStreets($localityId, 'Mihai');
+        $firstStreet = $streets->first();
 
         $this->assertInstanceOf(Collection::class, $streets);
-        $this->assertNotEmpty($streets->items);
-        $this->assertIsString($streets->items[0]);
+        $this->assertGreaterThan(0, $streets->count());
+        $this->assertIsString($firstStreet);
     }
 
     #[Group('smoke')]
@@ -82,15 +89,18 @@ final class LocationsSmokeTest extends TestCase
         $client = $this->makeAuthenticatedClient('locations');
 
         $localities = $client->locations()->searchLocalities('RO', 'Cluj-Napoca');
-        $this->assertNotEmpty($localities->items);
+        $firstLocality = $localities->first();
 
-        $localityId = $localities->items[0]->id;
+        $this->assertGreaterThan(0, $localities->count());
+        $this->assertInstanceOf(Locality::class, $firstLocality);
+
+        $localityId = $firstLocality->id;
         $postalCodes = $client->locations()->searchStreetPostalCodes($localityId, 'Ierbii');
 
         $this->assertInstanceOf(Collection::class, $postalCodes);
-        $this->assertNotEmpty($postalCodes->items);
+        $this->assertGreaterThan(0, $postalCodes->count());
 
-        foreach ($postalCodes->items as $code) {
+        foreach ($postalCodes as $code) {
             $this->assertInstanceOf(StreetPostalCode::class, $code);
             $this->assertNotSame('', $code->code);
         }
@@ -102,10 +112,11 @@ final class LocationsSmokeTest extends TestCase
         $client = $this->makeAuthenticatedClient('locations');
 
         $streets = $client->locations()->searchStreetsByPostalCode('RO', '400001');
+        $firstStreet = $streets->first();
 
         $this->assertInstanceOf(Collection::class, $streets);
-        $this->assertNotEmpty($streets->items);
-        $this->assertInstanceOf(Street::class, $streets->items[0]);
+        $this->assertGreaterThan(0, $streets->count());
+        $this->assertInstanceOf(Street::class, $firstStreet);
     }
 
 }

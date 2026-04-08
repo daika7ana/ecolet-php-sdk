@@ -22,7 +22,7 @@ final class ServicesSmokeTest extends TestCase
         $services = $client->services()->getServices();
 
         $this->assertInstanceOf(Collection::class, $services);
-        $this->assertNotEmpty($services->items);
+        $this->assertGreaterThan(0, $services->count());
     }
 
     #[Group('smoke')]
@@ -32,7 +32,7 @@ final class ServicesSmokeTest extends TestCase
 
         $services = $client->services()->getServices();
 
-        foreach ($services->items as $service) {
+        foreach ($services as $service) {
             $this->assertInstanceOf(Service::class, $service);
             $this->assertGreaterThan(0, $service->id);
             $this->assertNotSame('', $service->name);

@@ -292,3 +292,60 @@ Using DTOs ensures:
 - **IDE autocomplete**: Full IntelliSense for nested properties
 - **Schema enforcement**: API requires proper field types and nesting
 - **Backward compatibility**: Resources still accept arrays but encourage typed DTOs
+
+## Collection DTO Helper Methods
+
+List-style endpoints (services, locations, statuses, map points, etc.) return `Daika7ana\\Ecolet\\DTOs\\Common\\Collection`.
+
+### Basic Accessors
+
+```php
+$services = $client->services()->getServices();
+
+$count = $services->count();          // int
+$first = $services->first();          // first item or null
+$last = $services->last();            // last item or null
+$all = $services->get();              // full keyed array of items
+$one = $services->get(0);             // single item by key/index or null
+$values = $services->values();        // reindexed list of values
+```
+
+### Iteration
+
+`Collection` is iterable, so you can loop directly:
+
+```php
+foreach ($services as $service) {
+    echo $service->name;
+}
+```
+
+### Transformations
+
+```php
+$serviceNames = $services->map(static fn($service) => $service->name);
+
+$servicesById = $services->mapWithKeys(
+    static fn($service) => [$service->id => $service]
+);
+```
+
+- `map(callable $callback)` keeps original keys.
+- `mapWithKeys(callable $callback)` lets you define new keys.
+- Both return a new `Collection` (immutable style).
+
+### Pluck
+
+Use `pluck` to extract values from arrays/objects in each item.
+
+```php
+$names = $services->pluck('name');
+// Collection with original keys: [0 => 'Express', 1 => 'Standard']
+
+$namesById = $services->pluck('name', 'id');
+// Collection keyed by item id: [10 => 'Express', 20 => 'Standard']
+```
+
+- First parameter: value key to extract.
+- Second parameter (optional): key key to use for the resulting collection keys.
+- If the optional key cannot be used as an array key, it falls back to the original item key.

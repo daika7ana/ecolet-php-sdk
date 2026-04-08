@@ -59,12 +59,13 @@ class LocationsResourceTest extends TestCase
         );
 
         $postalCodes = $client->locations()->searchStreetPostalCodes(13751, 'Piaţă Romană');
+        $firstPostalCode = $postalCodes->first();
 
         $this->assertSame(2, $postalCodes->count());
-        $this->assertInstanceOf(StreetPostalCode::class, $postalCodes->items[0]);
-        $this->assertSame('010371', $postalCodes->items[0]->code);
-        $this->assertSame('1-7', $postalCodes->items[0]->number);
-        $this->assertNull($postalCodes->items[0]->block);
+        $this->assertInstanceOf(StreetPostalCode::class, $firstPostalCode);
+        $this->assertSame('010371', $firstPostalCode->code);
+        $this->assertSame('1-7', $firstPostalCode->number);
+        $this->assertNull($firstPostalCode->block);
         $this->assertSame('/api/v1/locations/13751/search-street-postal-codes/Pia%C5%A3%C4%83+Roman%C4%83', $httpClient->lastRequest?->getUri()->getPath());
     }
 }
