@@ -29,15 +29,27 @@ $streetsByPostalCode = $client->locations()->searchStreetsByPostalCode('RO', '01
 
 ```php
 $order = $client->orders()->getOrder(12345);
-$client->orders()->deleteOrder(12345);
-$waybillStream = $client->orders()->downloadWaybill(12345);
+$trackingNumber = $order->number;
+
+$waybill = $client->orders()->downloadWaybill(12345);
+$filename = $waybill->getFilename();
+$headers = $waybill->getDownloadHeaders();
+$pdf = $waybill->getContents();
+
 $statuses = $client->orders()->getStatusesForManyOrders([12345, 67890]);
+$client->orders()->deleteOrder(12345);
 ```
+
+`downloadWaybill()` returns `Daika7ana\Ecolet\DTOs\Orders\WaybillDocument`, not a raw stream. Use its helper methods when converting it into a framework response.
 
 ## Order To Send
 
 ```php
 $orderToSend = $client->ordersToSend()->getOrderToSend(555);
+
+$status = $orderToSend->status;
+$createdOrderId = $orderToSend->orderId;
+$lastError = $orderToSend->error;
 ```
 
 ## Add Parcel (v2 only)
@@ -47,20 +59,19 @@ These methods intentionally use v2 endpoints only. All add-parcel operations acc
 ### Reload Form (Preview Pricing & Services)
 
 ```php
-use Daika7ana\Ecolet\DTOs\AddParcelRequest;
-use Daika7ana\Ecolet\DTOs\RecipientAddress;
-use Daika7ana\Ecolet\DTOs\ParcelDetails;
-use Daika7ana\Ecolet\DTOs\ParcelDimensions;
-use Daika7ana\Ecolet\DTOs\AdditionalServices;
-use Daika7ana\Ecolet\DTOs\CourierInfo;
-use Daika7ana\Ecolet\DTOs\CourierPickup;
+use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelRequest;
+use Daika7ana\Ecolet\DTOs\AddParcel\CourierInfo;
+use Daika7ana\Ecolet\DTOs\AddParcel\CourierPickup;
+use Daika7ana\Ecolet\DTOs\AddParcel\ParcelDetails;
+use Daika7ana\Ecolet\DTOs\AddParcel\RecipientAddress;
+use Daika7ana\Ecolet\Enums\CourierPickupType;
 
 $request = new AddParcelRequest(
     sender: new RecipientAddress(...),
     receiver: new RecipientAddress(...),
     parcel: new ParcelDetails(...),
     courier: new CourierInfo(
-        pickup: new CourierPickup(type: 'courier'),
+        pickup: new CourierPickup(type: CourierPickupType::Courier),
     ),
 );
 
@@ -77,10 +88,12 @@ if ($result->isFormResponse()) {
     // Check for validation errors
     if ($result->formResponse->hasErrors()) {
         $errorMessages = $result->formResponse->getErrorMessages();
-        // array<string, array<string>>
+        // string[]
     }
 }
 ```
+
+When preparing the final send-order request, set `CourierInfo::$service` from the selected service slug and pass any selected pickup `day`, `date`, and `time` on `CourierPickup`.
 
 ### Send Order (Create Shipment)
 
@@ -123,9 +136,18 @@ All add-parcel responses return `AddParcelResult` with:
 - `isOrderResponse(): bool` — Detects send/save response (contains order ID)
 - `formResponse?: AddParcelFormResponse` — Pricing, services, validation errors
   - `pricing: ServicePricingInfo` — Net/gross prices, fees, service statuses, pickup dates
-  - `hasErrors(): bool` — Whether form has validation errors
-  - `getErrorMessages(): array<string, array<string>>` — Field-grouped error messages
+    - `hasErrors(): bool` — Whether the response contains any real validation messages
+    - `getErrorMessages(): string[]` — Flattened validation messages
 - `orderToSendId?: int` — Order ID when send/save succeeds
+
+### Typical Add Parcel Workflow
+
+1. Call `reloadForm()` to get availability, pricing, and pickup slots.
+2. Pick a service from `pricing->statuses` / `pricing->additionalServices`.
+3. Submit `sendOrder()` or `saveOrderToSend()` with the chosen `service` and pickup schedule.
+4. Poll `ordersToSend()->getOrderToSend()` until `orderId` is available.
+5. Fetch the created order with `orders()->getOrder()`.
+6. Download the waybill with `orders()->downloadWaybill()`.
 
 ## Map Points
 

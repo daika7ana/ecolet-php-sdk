@@ -29,6 +29,19 @@ class ApiResponseMapperTest extends TestCase
         ApiResponseMapper::decodeJson($response);
     }
 
+    public function testDecodeJsonUsesGeneralErrorAsValidationExceptionMessage(): void
+    {
+        $response = new Response(422, [], '{"general_error":"Service unavailable."}');
+
+        try {
+            ApiResponseMapper::decodeJson($response);
+            $this->fail('Expected ValidationException to be thrown.');
+        } catch (ValidationException $exception) {
+            $this->assertSame('Service unavailable.', $exception->getMessage());
+            $this->assertSame([], $exception->errors);
+        }
+    }
+
     public function testDecodeJsonThrowsUnexpectedStatusForNonExpectedStatus(): void
     {
         $response = new Response(500, [], '{"message":"Server error"}');

@@ -152,11 +152,12 @@ use Daika7ana\Ecolet\Enums\CourierPickupType;
 $courier = new CourierInfo(
     pickup: new CourierPickup(
         type: CourierPickupType::Courier,  // required: enum
+        day?: string,                      // optional: weekday token returned by reloadForm
         date?: string,                     // optional: 'YYYY-MM-DD' format
         time?: string,                     // optional: time window
     ),
-    serviceSlug?: string,              // e.g., 'dpd_standard'
-    contractId?: string,
+    service?: string,                  // e.g., 'fan_courier_standard'
+    contractId?: int,
 );
 ```
 
@@ -169,6 +170,7 @@ use Daika7ana\Ecolet\Enums\CourierPickupType;
 
 $pickup = new CourierPickup(
     type: CourierPickupType::Self,     // required: enum
+    day?: string,                      // optional: weekday token returned by reloadForm
     date?: string,                     // optional: 'YYYY-MM-DD' format
     time?: string,                     // optional: time window
 );
@@ -241,6 +243,8 @@ if ($form->hasErrors()) {
 }
 ```
 
+`hasErrors()` checks the flattened validation messages, so empty courier-specific error buckets do not count as an error state.
+
 ### ServicePricingInfo
 
 Pricing and availability data by service.
@@ -267,6 +271,42 @@ $fees = $pricing->fees;                 // array<serviceSlug => float>
 // Standard service indicators
 $isStandard = $pricing->isStandard;     // array<serviceSlug => bool>
 ```
+
+## Order DTOs
+
+### Order
+
+```php
+$order = $client->orders()->getOrder(12345);
+
+$id = $order->id;
+$number = $order->number;   // populated from Ecolet's number or awb field
+$status = $order->status;
+```
+
+### OrderToSend
+
+```php
+$orderToSend = $client->ordersToSend()->getOrderToSend(555);
+
+$id = $orderToSend->id;
+$status = $orderToSend->status;
+$error = $orderToSend->error;
+$orderId = $orderToSend->orderId;
+$originalRequest = $orderToSend->order; // AddParcelRequest|null
+```
+
+### WaybillDocument
+
+```php
+$waybill = $client->orders()->downloadWaybill(12345);
+
+$filename = $waybill->getFilename();
+$pdfContents = $waybill->getContents();
+$headers = $waybill->getDownloadHeaders();
+```
+
+`WaybillDocument` keeps the PSR stream plus normalized helpers for common framework integrations.
 
 ## Creating From Arrays (Backward Compatibility)
 

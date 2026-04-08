@@ -43,7 +43,7 @@ php vendor/bin/phpunit --filter=ReloadFormSmokeTest -c phpunit.xml
 
 ## Smoke Tests
 
-Smoke tests validate against the live staging API and require valid credentials in `phpunit.xml`. The smoke helper enables staging via `ClientConfig::setTestMode(true)` when no explicit base URL is passed.
+Smoke tests validate against the live staging API and require valid credentials in `phpunit.xml`. Most smoke tests pass `ClientConfig::BASE_URL_STAGING` explicitly; the shared helper can also enable staging via `ClientConfig::setTestMode(true)` when no base URL is passed.
 
 ### Authentication Smoke Test
 
@@ -122,6 +122,37 @@ Run all reload-form tests:
 php vendor/bin/phpunit --filter=ReloadFormSmokeTest -c phpunit.xml
 ```
 
+### Add Parcel Workflow Smoke Test
+
+Tests the end-to-end staging workflow in a single test run:
+
+- `reloadForm()` returns a valid form response
+- a COD-capable service and pickup slot can be selected
+- `sendOrder()` creates an `order_to_send_id`
+- `getOrderToSend()` eventually yields `orderId`
+- `getOrder()` returns a typed order
+- `downloadWaybill()` returns a non-empty PDF document with attachment metadata
+
+This workflow was intentionally combined into one test so a single run creates only one staging order and one AWB.
+
+```bash
+php vendor/bin/phpunit --filter=AddParcelWorkflowSmokeTest -c phpunit.xml
+```
+
+### Add Parcel Failure Smoke Tests
+
+Tests live failure handling against staging:
+
+- malformed `reloadForm()` payload returns `ValidationException`
+- malformed `sendOrder()` payload returns `ValidationException`
+- malformed `saveOrderToSend()` payload returns `ValidationException`
+- unknown `order_to_send` IDs return `UnexpectedStatusException` with `404`
+- unknown order IDs return `UnexpectedStatusException` with `404`
+
+```bash
+php vendor/bin/phpunit --filter=AddParcelFailureSmokeTest -c phpunit.xml
+```
+
 ### Example: Checking Smoke Test Response Validation
 
 The smoke tests validate the strongly-typed response DTOs:
@@ -136,9 +167,6 @@ $this->assertIsArray($result->formResponse->pricing->pricesGross);
 
 // Error structure validation
 if ($result->formResponse->hasErrors()) {
-    foreach ($result->formResponse->errors as $field => $messages) {
-        // Each field has array of message strings
-        $this->assertIsArray($messages);
-    }
+    $this->assertNotEmpty($result->formResponse->getErrorMessages());
 }
 ```

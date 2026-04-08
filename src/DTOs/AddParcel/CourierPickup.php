@@ -13,6 +13,7 @@ final readonly class CourierPickup
 {
     public function __construct(
         public CourierPickupType $type,
+        public ?string $day = null,
         public ?string $date = null,
         public ?string $time = null,
     ) {}
@@ -21,8 +22,9 @@ final readonly class CourierPickup
     {
         return new self(
             type: CourierPickupType::tryFrom($data['type'] ?? '') ?? CourierPickupType::Courier,
-            date: (string) ($data['date'] ?? null),
-            time: (string) ($data['time'] ?? null),
+            day: isset($data['day']) ? (string) $data['day'] : null,
+            date: isset($data['date']) ? (string) $data['date'] : null,
+            time: isset($data['time']) ? (string) $data['time'] : null,
         );
     }
 
@@ -34,6 +36,10 @@ final readonly class CourierPickup
         $data = [
             'type' => $this->type->value,
         ];
+
+        if ($this->day !== null) {
+            $data['day'] = $this->day;
+        }
 
         if ($this->date !== null) {
             $data['date'] = $this->date;

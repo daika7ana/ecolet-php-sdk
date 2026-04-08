@@ -30,7 +30,15 @@ $client->authenticate(
 );
 ```
 
-## 4. Call First Endpoint
+## 4. Read the Token (Optional)
+
+```php
+$token = $client->getToken();
+
+echo $token?->accessToken;
+```
+
+## 5. Call First Endpoint
 
 ```php
 $user = $client->users()->getMe();
@@ -38,7 +46,7 @@ $user = $client->users()->getMe();
 echo $user->email;
 ```
 
-## 5. Optional: Use Staging Environment
+## 6. Optional: Use Staging Environment
 
 **Via test mode flag (global):**
 
@@ -60,12 +68,18 @@ $config = new ClientConfig(baseUrl: ClientConfig::BASE_URL_STAGING);
 $client = Client::create(config: $config);
 ```
 
-## 6. Add Parcel Example (Optional)
+## 7. Add Parcel Example (Optional)
 
 To get pricing and test a shipment:
 
 ```php
-use Daika7ana\Ecolet\DTOs\{AddParcelRequest, RecipientAddress, ParcelDetails, CourierInfo, CourierPickup};
+use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelRequest;
+use Daika7ana\Ecolet\DTOs\AddParcel\CourierInfo;
+use Daika7ana\Ecolet\DTOs\AddParcel\CourierPickup;
+use Daika7ana\Ecolet\DTOs\AddParcel\ParcelDetails;
+use Daika7ana\Ecolet\DTOs\AddParcel\RecipientAddress;
+use Daika7ana\Ecolet\Enums\CourierPickupType;
+use Daika7ana\Ecolet\Enums\ParcelType;
 
 $request = new AddParcelRequest(
     sender: new RecipientAddress(
@@ -95,12 +109,13 @@ $request = new AddParcelRequest(
         phone: '0214824089',
     ),
     parcel: new ParcelDetails(
-        type: 'package',
+        type: ParcelType::Package,
         weight: 1000,    // grams
         content: 'Books',
+        amount: 1,
     ),
     courier: new CourierInfo(
-        pickup: new CourierPickup(type: 'courier'),
+        pickup: new CourierPickup(type: CourierPickupType::Courier),
     ),
 );
 
@@ -114,9 +129,11 @@ if ($result->isFormResponse()) {
 }
 ```
 
+When you are ready to place the shipment, build a second request using the selected courier `service` plus any `day`, `date`, and `time` values returned by `reloadForm()`.
+
 See [DTOS.md](DTOS.md) for complete DTO documentation.
 
-## 7. Smoke Test
+## 8. Smoke Test
 
 ```bash
 php vendor/bin/phpunit --filter=AuthSmokeTest -c phpunit.xml

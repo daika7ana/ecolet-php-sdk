@@ -10,6 +10,8 @@
 
 When no custom config is passed to `Client::create()`, the package uses **production** by default.
 
+Base URL selection is controlled through `ClientConfig`.
+
 - **Default (test mode disabled):** Production base URL
 - **Test mode enabled:** Staging base URL
 
@@ -72,7 +74,11 @@ $client = Client::create(httpClient: $customClient);
 ## Manual Token Injection
 
 ```php
+use Daika7ana\Ecolet\Auth\Token;
+
 $client->setToken('your-access-token');
+
+$client->setToken(Token::fromArray($cachedTokenData));
 ```
 
 ## Token Storage Behavior

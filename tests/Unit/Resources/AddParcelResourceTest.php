@@ -6,6 +6,8 @@ namespace Daika7ana\Ecolet\Tests\Unit\Resources;
 
 use Daika7ana\Ecolet\Client;
 use Daika7ana\Ecolet\Config\ClientConfig;
+use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
+use Daika7ana\Ecolet\Exceptions\ValidationException;
 use Daika7ana\Ecolet\DTOs\AddParcel\AdditionalServices;
 use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelRequest;
 use Daika7ana\Ecolet\DTOs\AddParcel\CourierInfo;
@@ -88,6 +90,74 @@ class AddParcelResourceTest extends TestCase
         $requestBody = (string) $httpClient->lastRequest?->getBody();
         $decoded = json_decode($requestBody, true, flags: JSON_THROW_ON_ERROR);
         $this->assertCount(1, $decoded['parcels']);
+    }
+
+    public function testSendOrderIncludesCourierServiceAndPickupSchedule(): void
+    {
+        $httpClient = new FakeHttpClient(
+            static fn() => new Response(200, [], json_encode(['order_to_send_id' => 42], JSON_THROW_ON_ERROR)),
+        );
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: ClientConfig::fromEnvironment(),
+        );
+
+        $payload = new AddParcelRequest(
+            sender: new RecipientAddress(
+                name: 'Test Company',
+                country: 'ro',
+                locality: 'Bucuresti',
+                localityId: 323,
+                postalCode: '011318',
+                streetName: 'Test Street',
+                streetNumber: '123',
+                contactPerson: 'John Doe',
+                email: 'john@example.com',
+                phone: '0123456789',
+            ),
+            receiver: new RecipientAddress(
+                name: 'Test Recipient',
+                country: 'ro',
+                locality: 'Bucuresti',
+                localityId: 323,
+                postalCode: '011318',
+                streetName: 'Recipient Street',
+                streetNumber: '456',
+                contactPerson: 'Jane Doe',
+                email: 'jane@example.com',
+                phone: '0987654321',
+            ),
+            parcel: new ParcelDetails(
+                type: ParcelType::Package,
+                weight: 1500,
+            ),
+            additionalServices: new AdditionalServices(),
+            courier: new CourierInfo(
+                pickup: new CourierPickup(
+                    type: CourierPickupType::Courier,
+                    day: 'Friday',
+                    date: '2026-04-10',
+                    time: '10:00',
+                ),
+                service: 'dpd_standard',
+            ),
+            parcels: [
+                new ParcelDetails(type: ParcelType::Package, weight: 1500),
+            ],
+        );
+
+        $client->addParcel()->sendOrder($payload);
+
+        $decoded = json_decode((string) $httpClient->lastRequest?->getBody(), true, flags: JSON_THROW_ON_ERROR);
+
+        $this->assertSame('dpd_standard', $decoded['courier']['service']);
+        $this->assertSame('Friday', $decoded['courier']['pickup']['day']);
+        $this->assertSame('2026-04-10', $decoded['courier']['pickup']['date']);
+        $this->assertSame('10:00', $decoded['courier']['pickup']['time']);
     }
 
     public function testSaveOrderSupportsMultipackPayload(): void
@@ -321,5 +391,264 @@ class AddParcelResourceTest extends TestCase
         $this->assertCount(2, $errorMessages);
         $this->assertContains('The sender name is required.', $errorMessages);
         $this->assertContains('The postal code is invalid.', $errorMessages);
+    }
+
+    public function testReloadFormIgnoresEmptyErrorBuckets(): void
+    {
+        $response = [
+            'form' => [
+                'statuses' => ['dpd_standard' => true],
+                'additional_services' => ['dpd_standard' => ['cod' => true]],
+                'pickup_dates' => [],
+                'prices_net' => ['dpd_standard' => '16.28'],
+                'prices_gross' => ['dpd_standard' => '19.37'],
+                'fees' => [],
+                'is_standard' => ['dpd_standard' => true],
+                'billing_weight' => 1,
+                'vat' => 19,
+                'info' => [],
+                'errors' => [
+                    'dpd_standard' => [],
+                    'gls_standard' => [],
+                ],
+            ],
+        ];
+
+        $httpClient = new FakeHttpClient(
+            static fn() => new Response(200, [], json_encode($response, JSON_THROW_ON_ERROR)),
+        );
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: ClientConfig::fromEnvironment(),
+        );
+
+        $payload = new AddParcelRequest(
+            sender: new RecipientAddress(
+                name: 'Test Company',
+                country: 'ro',
+                locality: 'Bucuresti',
+                localityId: 323,
+                postalCode: '011318',
+                streetName: 'Test Street',
+                streetNumber: '123',
+                contactPerson: 'John Doe',
+                email: 'john@example.com',
+                phone: '0123456789',
+            ),
+            receiver: new RecipientAddress(
+                name: 'Test Recipient',
+                country: 'ro',
+                locality: 'Bucuresti',
+                localityId: 323,
+                postalCode: '011318',
+                streetName: 'Recipient Street',
+                streetNumber: '456',
+                contactPerson: 'Jane Doe',
+                email: 'jane@example.com',
+                phone: '0987654321',
+            ),
+            parcel: new ParcelDetails(type: ParcelType::Package, weight: 1000),
+            additionalServices: new AdditionalServices(),
+            courier: new CourierInfo(
+                pickup: new CourierPickup(type: CourierPickupType::Self),
+            ),
+            parcels: [
+                new ParcelDetails(type: ParcelType::Package, weight: 1000),
+            ],
+        );
+
+        $result = $client->addParcel()->reloadForm($payload);
+
+        $this->assertTrue($result->isFormResponse());
+        $this->assertNotNull($result->formResponse);
+        $this->assertFalse($result->formResponse->hasErrors());
+        $this->assertSame([], $result->formResponse->getErrorMessages());
+    }
+
+    public function testSendOrderThrowsValidationExceptionForInvalidPayload(): void
+    {
+        $httpClient = new FakeHttpClient(
+            static fn() => new Response(422, [], json_encode([
+                'message' => 'The given data was invalid.',
+                'errors' => [
+                    'courier.pickup.day' => ['The pickup day field is required when pickup type is courier.'],
+                    'courier.pickup.time' => ['The pickup time field is required when pickup type is courier.'],
+                ],
+            ], JSON_THROW_ON_ERROR)),
+        );
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: ClientConfig::fromEnvironment(),
+        );
+
+        $payload = new AddParcelRequest(
+            sender: new RecipientAddress(
+                name: 'Test Company',
+                country: 'ro',
+                locality: 'Bucuresti',
+                localityId: 323,
+                postalCode: '011318',
+                streetName: 'Test Street',
+                streetNumber: '123',
+                contactPerson: 'John Doe',
+                email: 'john@example.com',
+                phone: '0123456789',
+            ),
+            receiver: new RecipientAddress(
+                name: 'Test Recipient',
+                country: 'ro',
+                locality: 'Bucuresti',
+                localityId: 323,
+                postalCode: '011318',
+                streetName: 'Recipient Street',
+                streetNumber: '456',
+                contactPerson: 'Jane Doe',
+                email: 'jane@example.com',
+                phone: '0987654321',
+            ),
+            parcel: new ParcelDetails(type: ParcelType::Package, weight: 1000),
+            additionalServices: new AdditionalServices(),
+            courier: new CourierInfo(
+                pickup: new CourierPickup(type: CourierPickupType::Courier),
+            ),
+            parcels: [
+                new ParcelDetails(type: ParcelType::Package, weight: 1000),
+            ],
+        );
+
+        try {
+            $client->addParcel()->sendOrder($payload);
+            $this->fail('Expected ValidationException to be thrown.');
+        } catch (ValidationException $exception) {
+            $this->assertSame('The given data was invalid.', $exception->getMessage());
+            $this->assertSame([
+                'courier.pickup.day' => ['The pickup day field is required when pickup type is courier.'],
+                'courier.pickup.time' => ['The pickup time field is required when pickup type is courier.'],
+            ], $exception->errors);
+        }
+    }
+
+    public function testSaveOrderToSendThrowsValidationExceptionForGeneralError(): void
+    {
+        $httpClient = new FakeHttpClient(
+            static fn() => new Response(422, [], json_encode([
+                'general_error' => 'Service unavailable.',
+            ], JSON_THROW_ON_ERROR)),
+        );
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: ClientConfig::fromEnvironment(),
+        );
+
+        $payload = new AddParcelRequest(
+            sender: new RecipientAddress(
+                name: 'Test Company',
+                country: 'ro',
+                locality: 'Bucuresti',
+                localityId: 323,
+                postalCode: '011318',
+                streetName: 'Test Street',
+                streetNumber: '123',
+                contactPerson: 'John Doe',
+                email: 'john@example.com',
+                phone: '0123456789',
+            ),
+            receiver: new RecipientAddress(
+                name: 'Test Recipient',
+                country: 'ro',
+                locality: 'Bucuresti',
+                localityId: 323,
+                postalCode: '011318',
+                streetName: 'Recipient Street',
+                streetNumber: '456',
+                contactPerson: 'Jane Doe',
+                email: 'jane@example.com',
+                phone: '0987654321',
+            ),
+            parcel: new ParcelDetails(type: ParcelType::Package, weight: 1000),
+            additionalServices: new AdditionalServices(),
+            courier: new CourierInfo(
+                pickup: new CourierPickup(type: CourierPickupType::Self),
+            ),
+            parcels: [
+                new ParcelDetails(type: ParcelType::Package, weight: 1000),
+            ],
+        );
+
+        try {
+            $client->addParcel()->saveOrderToSend($payload);
+            $this->fail('Expected ValidationException to be thrown.');
+        } catch (ValidationException $exception) {
+            $this->assertSame('Service unavailable.', $exception->getMessage());
+            $this->assertSame([], $exception->errors);
+        }
+    }
+
+    public function testSendOrderThrowsUnexpectedStatusExceptionForServerError(): void
+    {
+        $httpClient = new FakeHttpClient(
+            static fn() => new Response(500, [], json_encode([
+                'message' => 'Internal server error.',
+            ], JSON_THROW_ON_ERROR)),
+        );
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: ClientConfig::fromEnvironment(),
+        );
+
+        $payload = new AddParcelRequest(
+            sender: new RecipientAddress(
+                name: 'Test Company',
+                country: 'ro',
+                locality: 'Bucuresti',
+                localityId: 323,
+                postalCode: '011318',
+                streetName: 'Test Street',
+                streetNumber: '123',
+                contactPerson: 'John Doe',
+                email: 'john@example.com',
+                phone: '0123456789',
+            ),
+            receiver: new RecipientAddress(
+                name: 'Test Recipient',
+                country: 'ro',
+                locality: 'Bucuresti',
+                localityId: 323,
+                postalCode: '011318',
+                streetName: 'Recipient Street',
+                streetNumber: '456',
+                contactPerson: 'Jane Doe',
+                email: 'jane@example.com',
+                phone: '0987654321',
+            ),
+            parcel: new ParcelDetails(type: ParcelType::Package, weight: 1000),
+            additionalServices: new AdditionalServices(),
+            courier: new CourierInfo(
+                pickup: new CourierPickup(type: CourierPickupType::Self),
+            ),
+            parcels: [
+                new ParcelDetails(type: ParcelType::Package, weight: 1000),
+            ],
+        );
+
+        $this->expectException(UnexpectedStatusException::class);
+
+        $client->addParcel()->sendOrder($payload);
     }
 }

@@ -24,6 +24,29 @@ $client->authenticate(
 
 On success, the token is stored in client config and sent automatically as `Authorization: Bearer ...` for subsequent requests.
 
+## Reading the Current Token
+
+```php
+$token = $client->getToken();
+
+if ($token !== null) {
+    echo $token->accessToken;
+}
+```
+
+`Client::getToken()` returns the current `Daika7ana\Ecolet\Auth\Token` from the token store/runtime config, or `null` if the client is not authenticated yet.
+
+## Restoring a Cached Token
+
+```php
+use Daika7ana\Ecolet\Auth\Token;
+
+$client->setToken(Token::fromArray($cachedTokenData));
+
+// A raw access token string is also accepted for simple cases.
+$client->setToken('your-access-token');
+```
+
 ## Refresh Token Flow
 
 When the current token includes a `refresh_token`, you can request a new token:

@@ -77,9 +77,13 @@ final class ApiResponseMapper
             ];
         }
 
-        $message = isset($decoded['message']) && is_string($decoded['message'])
-            ? $decoded['message']
-            : 'Validation failed';
+        $message = 'Validation failed';
+
+        if (isset($decoded['message']) && is_string($decoded['message'])) {
+            $message = $decoded['message'];
+        } elseif (isset($decoded['general_error']) && is_string($decoded['general_error'])) {
+            $message = $decoded['general_error'];
+        }
 
         $rawErrors = $decoded['errors'] ?? [];
         $errors = [];

@@ -33,21 +33,23 @@ final readonly class AddParcelRequest
      */
     public static function fromArray(array $data): self
     {
+        $payload = is_array($data['data'] ?? null) ? $data['data'] : $data;
+
         // Build parcels list
         $parcelsList = [];
-        foreach ($data['parcels'] as $parcelData) {
+        foreach (($payload['parcels'] ?? []) as $parcelData) {
             $parcelsList[] = ParcelDetails::fromArray($parcelData);
         }
 
         return new self(
-            sender: RecipientAddress::fromArray($data['sender']),
-            receiver: RecipientAddress::fromArray($data['receiver']),
-            parcel: ParcelDetails::fromArray($data['parcel']),
-            additionalServices: AdditionalServices::fromArray($data['additional_services'] ?? []),
-            courier: CourierInfo::fromArray($data['courier']),
+            sender: RecipientAddress::fromArray($payload['sender']),
+            receiver: RecipientAddress::fromArray($payload['receiver']),
+            parcel: ParcelDetails::fromArray($payload['parcel']),
+            additionalServices: AdditionalServices::fromArray($payload['additional_services'] ?? []),
+            courier: CourierInfo::fromArray($payload['courier']),
             parcels: $parcelsList,
-            shipmentDetails: isset($data['shipment_details']) ? ShipmentDetails::fromArray($data['shipment_details']) : null,
-            coupon: isset($data['coupon']) ? CouponInfo::fromArray($data['coupon']) : null,
+            shipmentDetails: isset($payload['shipment_details']) ? ShipmentDetails::fromArray($payload['shipment_details']) : null,
+            coupon: isset($payload['coupon']) ? CouponInfo::fromArray($payload['coupon']) : null,
         );
     }
 

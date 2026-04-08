@@ -33,9 +33,12 @@ A modern, type-safe PHP client for the **Ecolet Courier API**
 
 - ✅ **OAuth 2.0 Password Grant** — Industry-standard authentication
 - ✅ **Automatic Token Refresh** — No manual token management needed
+- ✅ **Token Inspection & Restore** — Read the current token or inject a cached one
 - ✅ **PSR-18 HTTP Client** — Pluggable, with Guzzle adapter by default
-- ✅ **Environment-Aware URLs** — Production/staging detection via ENV variables
+- ✅ **Explicit Environment Selection** — Production by default, staging via `ClientConfig` when needed
 - ✅ **Fully Typed DTOs** — Type-safe request/response handling
+- ✅ **Iterable Collections** — `first`, `last`, `get`, `values`, `map`, `mapWithKeys`, `pluck`
+- ✅ **Waybill Helpers** — Filename, contents, and download headers on `WaybillDocument`
 - ✅ **Symfony/Laravel Bridge** — Optional `HttpFoundationBridge` for seamless integration
 - ✅ **Comprehensive Tests** — Unit and smoke test suites included
 
@@ -129,6 +132,13 @@ Tokens refresh automatically when expired. Or refresh manually:
 
 ```php
 $client->refreshToken();
+```
+
+### Access Current Token
+
+```php
+$token = $client->getToken();
+$accessToken = $token?->accessToken;
 ```
 
 ### Token Restoration
@@ -237,12 +247,17 @@ composer test -- tests/Unit/Resources/LocationsResourceTest.php
 # Run only auth smoke test
 php vendor/bin/phpunit --filter=AuthSmokeTest -c phpunit.xml
 
-# Run only user smoke tests
-php vendor/bin/phpunit --filter=UserSmokeTest -c phpunit.xml
+# Run the combined add-parcel workflow + waybill smoke test
+php vendor/bin/phpunit --filter=AddParcelWorkflowSmokeTest -c phpunit.xml
+
+# Run negative staging smoke tests
+php vendor/bin/phpunit --filter=AddParcelFailureSmokeTest -c phpunit.xml
 
 # Run all smoke tests
-php vendor/bin/phpunit --filter=Smoke -c phpunit.xml
+php vendor/bin/phpunit --group=smoke -c phpunit.xml
 ```
+
+Smoke tests hit the live staging API and require valid credentials in `phpunit.xml`.
 
 ### Test Environment Variables
 

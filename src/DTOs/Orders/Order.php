@@ -14,10 +14,12 @@ final readonly class Order
 
     public static function fromArray(array $data): self
     {
+        $order = is_array($data['data'] ?? null) ? $data['data'] : $data;
+
         return new self(
-            id: $data['id'],
-            number: $data['number'],
-            status: $data['status'] ?? null,
+            id: (int) $order['id'],
+            number: (string) ($order['number'] ?? $order['awb'] ?? ''),
+            status: isset($order['status']) ? (string) $order['status'] : null,
         );
     }
 }

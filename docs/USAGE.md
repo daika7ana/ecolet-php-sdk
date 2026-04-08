@@ -21,3 +21,6 @@ Use this page as the entry point for package documentation.
 - Add Parcel operations are implemented on v2 endpoints.
 - General resources and auth endpoints use v1 paths unless documented otherwise.
 - Collection helpers (`count`, `first`, `last`, `get`, `values`, `map`, `mapWithKeys`, `pluck`) are documented in [Data Transfer Objects (DTOs)](DTOS.md#collection-dto-helper-methods).
+- Token access and restore flows (`getToken()`, `setToken()`) are documented in [Authentication](AUTHENTICATION.md).
+- Waybill download helpers are documented in [Resources](RESOURCES.md#orders) and [Data Transfer Objects (DTOs)](DTOS.md#waybilldocument).
+- Live happy-path and failure smoke coverage is documented in [Testing](TESTING.md).
