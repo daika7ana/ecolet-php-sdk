@@ -311,7 +311,7 @@ Complete guides and references:
 | 📦 [DTOs](docs/DTOS.md) | Data Transfer Objects and enums |
 | ✅ [Testing](docs/TESTING.md) | Unit and smoke test coverage |
 | ❌ [Errors](docs/ERRORS.md) | Exception handling guide |
-| 📚 [All Docs](docs/README.md) | Documentation index |
+| 📚 [All Docs](docs/USAGE.md) | Documentation index |
 
 ---
 
@@ -319,6 +319,6 @@ Complete guides and references:
 
 Made with ❤️
 
-**Questions?** [Check the docs](docs/README.md) or [open an issue](../../issues)
+**Questions?** [Check the docs](docs/USAGE.md) or [open an issue](../../issues)
 
 </div>

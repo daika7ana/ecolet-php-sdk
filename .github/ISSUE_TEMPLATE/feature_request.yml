@@ -1,0 +1,75 @@
+name: Feature Request
+description: Suggest an improvement or new capability for the Ecolet PHP SDK
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement.
+
+        The most useful requests explain the problem, the intended API, and the expected developer experience.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What are you trying to achieve, and what is currently missing or difficult?
+      placeholder: Describe the integration problem or missing capability.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the API, behavior, or feature you would like to see.
+      placeholder: Describe the proposed SDK addition or change.
+    validations:
+      required: true
+  - type: textarea
+    id: example-api
+    attributes:
+      label: Proposed API example
+      description: If relevant, show how you would like the feature to be used.
+      render: php
+  - type: dropdown
+    id: area
+    attributes:
+      label: Related area
+      options:
+        - Authentication
+        - Users
+        - Services
+        - Locations
+        - Map points
+        - Orders
+        - Orders to send
+        - Add Parcel
+        - HTTP client / transport
+        - DTOs / collections
+        - Documentation
+        - Testing / developer tooling
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe any workarounds or alternative approaches you have tried.
+  - type: textarea
+    id: impact
+    attributes:
+      label: Why this matters
+      description: Explain the value of this change for your integration or other users.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have checked the README and docs to confirm this is not already supported.
+          required: true
+        - label: I am willing to provide more details or a sample use case if needed.
+          required: false

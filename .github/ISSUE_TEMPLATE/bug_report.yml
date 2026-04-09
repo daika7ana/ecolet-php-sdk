@@ -1,0 +1,111 @@
+name: Bug Report
+description: Report a bug or regression in the Ecolet PHP SDK
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug.
+
+        Please provide a minimal, reproducible report so the issue can be investigated quickly.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What is broken?
+      placeholder: A short description of the bug.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include exact steps, request flow, or a minimal code sample.
+      placeholder: |
+        1. Create the client with ...
+        2. Call orders()->getOrder(...)
+        3. Receive the unexpected result
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: Describe what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      placeholder: Describe what actually happened, including error messages or incorrect output.
+    validations:
+      required: true
+  - type: textarea
+    id: code-sample
+    attributes:
+      label: Minimal reproducible code
+      description: Paste the smallest possible example that reproduces the issue.
+      render: php
+  - type: input
+    id: sdk-version
+    attributes:
+      label: SDK version
+      placeholder: e.g. 1.0.0
+    validations:
+      required: true
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP version
+      placeholder: e.g. 8.3.6
+    validations:
+      required: true
+  - type: input
+    id: install-method
+    attributes:
+      label: Installation method
+      description: How is the package installed in your project?
+      placeholder: e.g. composer require daika7ana/ecolet-php-sdk
+  - type: dropdown
+    id: api-area
+    attributes:
+      label: Affected API area
+      options:
+        - Authentication
+        - Users
+        - Services
+        - Locations
+        - Map points
+        - Orders
+        - Orders to send
+        - Add Parcel
+        - HTTP client / transport
+        - DTO mapping
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production API
+        - Staging API
+        - Local / mocked tests only
+        - Unknown
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error output or stack trace
+      description: Paste any relevant exception message, response body, or stack trace.
+      render: shell
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add anything else that could help reproduce or understand the issue.

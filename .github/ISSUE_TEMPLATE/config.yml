@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/daika7ana/ecolet-php-sdk/blob/master/docs/USAGE.md
+    about: Check the USAGE and package documentation before opening a support request.
