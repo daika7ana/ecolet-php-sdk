@@ -1,5 +1,15 @@
 # Testing
 
+## Static Analysis
+
+Run PHPStan against the library source code:
+
+```bash
+vendor/bin/phpstan --no-progress
+```
+
+PHPStan is configured in `phpstan.neon` and currently analyzes `src/`.
+
 ## PHPUnit Config
 
 Use local `phpunit.xml` to store test credentials and avoid committing secrets.
@@ -22,6 +32,16 @@ php vendor/bin/phpunit -c phpunit.xml
 ```
 
 Use `--` after `composer test` to forward PHPUnit arguments.
+
+## Run The Same Checks As CI
+
+```bash
+vendor/bin/pint --test
+vendor/bin/phpstan --no-progress
+vendor/bin/phpunit tests/Unit
+```
+
+The GitHub Actions workflow runs Pint, PHPStan, and the unit test suite on pushes to `master` and on pull requests targeting `master`.
 
 ## Run Unit Tests Only
 

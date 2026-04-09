@@ -66,6 +66,9 @@ final readonly class Token
         );
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public static function fromResponse(array $data): self
     {
         $expiresAt = null;

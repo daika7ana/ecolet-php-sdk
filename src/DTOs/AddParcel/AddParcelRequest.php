@@ -56,7 +56,7 @@ final readonly class AddParcelRequest
     /**
      * Create a simple single-parcel request with typed objects.
      *
-     * @param ParcelDetails[] $parcels
+     * @param list<ParcelDetails> $parcels
      */
     public static function singleParcel(
         RecipientAddress $sender,

@@ -11,6 +11,8 @@ use Daika7ana\Ecolet\DTOs\Locations\County;
 use Daika7ana\Ecolet\DTOs\Locations\Locality;
 use Daika7ana\Ecolet\DTOs\Locations\Street;
 use Daika7ana\Ecolet\DTOs\Locations\StreetPostalCode;
+use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
+use Daika7ana\Ecolet\Exceptions\ValidationException;
 use Daika7ana\Ecolet\Support\ApiResponseMapper;
 
 class LocationsResource
@@ -22,10 +24,10 @@ class LocationsResource
     /**
      * Get all available countries.
      *
-     * @return Collection<Country>
+     * @return Collection<int, Country>
      *
-     * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-     * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+    * @throws UnexpectedStatusException
+    * @throws ValidationException
      */
     public function getCountries(): Collection
     {
@@ -44,10 +46,10 @@ class LocationsResource
     /**
      * Get counties for a specific country.
      *
-     * @return Collection<County>
+     * @return Collection<int, County>
      *
-    * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-    * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+    * @throws UnexpectedStatusException
+    * @throws ValidationException
      */
     public function getCounties(string $countryCode): Collection
     {
@@ -70,10 +72,10 @@ class LocationsResource
     /**
      * Search localities by country code and search query.
      *
-     * @return Collection<Locality>
+     * @return Collection<int, Locality>
      *
-    * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-    * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+    * @throws UnexpectedStatusException
+    * @throws ValidationException
      */
     public function searchLocalities(string $countryCode, string $searchQuery): Collection
     {
@@ -96,10 +98,10 @@ class LocationsResource
     /**
      * Search streets by locality.
      *
-     * @return Collection<string>
+     * @return Collection<int, string>
      *
-    * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-    * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+    * @throws UnexpectedStatusException
+    * @throws ValidationException
      */
     public function searchStreets(int $localityId, string $searchQuery): Collection
     {
@@ -117,10 +119,10 @@ class LocationsResource
     /**
      * Get postal codes for a street.
      *
-        * @return Collection<StreetPostalCode>
+     * @return Collection<int, StreetPostalCode>
      *
-    * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-    * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+    * @throws UnexpectedStatusException
+    * @throws ValidationException
      */
     public function searchStreetPostalCodes(int $localityId, string $streetName): Collection
     {
@@ -132,9 +134,12 @@ class LocationsResource
 
         $data = ApiResponseMapper::decodeJson($response);
 
+        /** @var list<array{code: string, number?: string|null, block?: string|null}> $postalCodeData */
+        $postalCodeData = $data['postal_codes'];
+
         $postalCodes = array_map(
-            static fn(array $item) => StreetPostalCode::fromArray($item),
-            $data['postal_codes'],
+            static fn(array $item): StreetPostalCode => StreetPostalCode::fromArray($item),
+            $postalCodeData,
         );
 
         return new Collection($postalCodes);
@@ -143,10 +148,10 @@ class LocationsResource
     /**
      * Search streets by postal code and country.
      *
-     * @return Collection<Street>
+     * @return Collection<int, Street>
      *
-    * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-    * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+    * @throws UnexpectedStatusException
+    * @throws ValidationException
      */
     public function searchStreetsByPostalCode(string $countryCode, string $postalCode): Collection
     {

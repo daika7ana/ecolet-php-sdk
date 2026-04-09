@@ -7,6 +7,8 @@ namespace Daika7ana\Ecolet\Resources;
 use Daika7ana\Ecolet\Client;
 use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelRequest;
 use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelResult;
+use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
+use Daika7ana\Ecolet\Exceptions\ValidationException;
 use Daika7ana\Ecolet\Support\ApiResponseMapper;
 use Daika7ana\Ecolet\Support\JsonHelper;
 
@@ -22,10 +24,10 @@ class AddParcelResource
     /**
      * Reload the form (v2 endpoint).
      *
-    * @param AddParcelRequest|array<string, mixed> $data Form data
+        * @param AddParcelRequest|array<string, mixed> $data Form data
      *
-    * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-    * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+        * @throws UnexpectedStatusException
+        * @throws ValidationException
      */
     public function reloadForm(AddParcelRequest|array $data): AddParcelResult
     {
@@ -46,10 +48,10 @@ class AddParcelResource
     /**
      * Send an order (v2 endpoint).
      *
-    * @param AddParcelRequest|array<string, mixed> $data Order data (supports multiple parcels)
+        * @param AddParcelRequest|array<string, mixed> $data Order data (supports multiple parcels)
      *
-    * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-    * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+        * @throws UnexpectedStatusException
+        * @throws ValidationException
      */
     public function sendOrder(AddParcelRequest|array $data): AddParcelResult
     {
@@ -70,10 +72,10 @@ class AddParcelResource
     /**
      * Save order to send (v2 endpoint).
      *
-    * @param AddParcelRequest|array<string, mixed> $data Order data (supports multiple parcels)
+        * @param AddParcelRequest|array<string, mixed> $data Order data (supports multiple parcels)
      *
-    * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-    * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+        * @throws UnexpectedStatusException
+        * @throws ValidationException
      */
     public function saveOrderToSend(AddParcelRequest|array $data): AddParcelResult
     {

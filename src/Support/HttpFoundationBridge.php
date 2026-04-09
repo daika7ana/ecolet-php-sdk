@@ -70,7 +70,12 @@ final class HttpFoundationBridge
         $psrRequest = $requestFactory->createRequest($request->getMethod(), $uri);
 
         foreach ($request->headers->all() as $name => $values) {
-            $psrRequest = $psrRequest->withHeader($name, $values);
+            $headerValues = array_map(
+                static fn(?string $value): string => (string) $value,
+                $values,
+            );
+
+            $psrRequest = $psrRequest->withHeader($name, $headerValues);
         }
 
         $content = $request->getContent();

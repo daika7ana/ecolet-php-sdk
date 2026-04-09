@@ -7,6 +7,8 @@ namespace Daika7ana\Ecolet\Resources;
 use Daika7ana\Ecolet\Client;
 use Daika7ana\Ecolet\DTOs\Common\Collection;
 use Daika7ana\Ecolet\DTOs\Services\Service;
+use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
+use Daika7ana\Ecolet\Exceptions\ValidationException;
 use Daika7ana\Ecolet\Support\ApiResponseMapper;
 
 class ServicesResource
@@ -18,10 +20,10 @@ class ServicesResource
     /**
      * Get all available services.
      *
-     * @return Collection<Service>
+     * @return Collection<int, Service>
      *
-     * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-     * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
     public function getServices(): Collection
     {

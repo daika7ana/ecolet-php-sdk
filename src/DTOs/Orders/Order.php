@@ -12,6 +12,9 @@ final readonly class Order
         public ?string $status = null,
     ) {}
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public static function fromArray(array $data): self
     {
         $order = is_array($data['data'] ?? null) ? $data['data'] : $data;

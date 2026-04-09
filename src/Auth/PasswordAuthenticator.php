@@ -9,6 +9,7 @@ use Daika7ana\Ecolet\Exceptions\TransportException;
 use Daika7ana\Ecolet\Http\HttpClientInterface;
 use Daika7ana\Ecolet\Support\JsonHelper;
 use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
 class PasswordAuthenticator
@@ -103,7 +104,7 @@ class PasswordAuthenticator
     /**
      * @param array<string, string> $params
      */
-    private function buildTokenRequest(array $params)
+    private function buildTokenRequest(array $params): RequestInterface
     {
         $request = $this->requestFactory->createRequest(
             'POST',

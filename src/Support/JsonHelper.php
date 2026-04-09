@@ -10,6 +10,7 @@ final class JsonHelper
 {
     /**
      * @throws JsonException
+     * @return array<string, mixed>
      */
     public static function decode(string $json): array
     {

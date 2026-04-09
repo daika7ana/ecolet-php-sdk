@@ -2,6 +2,7 @@
 
 <div align="center">
 
+[![CI](https://github.com/daika7ana/ecolet-php-api/actions/workflows/ci.yml/badge.svg)](https://github.com/daika7ana/ecolet-php-api/actions/workflows/ci.yml)
 [![PHP 8.3+](https://img.shields.io/badge/PHP-8.3%2B-777BB4?style=flat-square&logo=php)](https://www.php.net/)
 [![PHPUnit](https://img.shields.io/badge/PHPUnit-12.x-0A7BBB?style=flat-square)](docs/TESTING.md)
 [![Smoke Tests](https://img.shields.io/badge/Smoke%20Tests-Live%20API-orange?style=flat-square)](docs/TESTING.md)
@@ -37,6 +38,7 @@ A modern, type-safe PHP client for the **Ecolet Courier API**
 - ✅ **PSR-18 HTTP Client** — Pluggable, with Guzzle adapter by default
 - ✅ **Explicit Environment Selection** — Production by default, staging via `ClientConfig` when needed
 - ✅ **Fully Typed DTOs** — Type-safe request/response handling
+- ✅ **Static Analysis with PHPStan** — Strict type checks for the `src/` codebase
 - ✅ **Iterable Collections** — `first`, `last`, `get`, `values`, `map`, `mapWithKeys`, `pluck`
 - ✅ **Waybill Helpers** — Filename, contents, and download headers on `WaybillDocument`
 - ✅ **Symfony/Laravel Bridge** — Optional `HttpFoundationBridge` for seamless integration
@@ -226,6 +228,14 @@ $client = Client::create(tokenStore: $tokenStore);
 
 ## Testing
 
+### Run Static Analysis
+
+```bash
+vendor/bin/phpstan --no-progress
+```
+
+PHPStan is configured via `phpstan.neon` and analyzes the `src/` directory at a strict level.
+
 ### Run Full Test Suite
 
 ```bash
@@ -255,6 +265,14 @@ php vendor/bin/phpunit --filter=AddParcelFailureSmokeTest -c phpunit.xml
 
 # Run all smoke tests
 php vendor/bin/phpunit --group=smoke -c phpunit.xml
+```
+
+### Run The Same Checks As CI
+
+```bash
+vendor/bin/pint --test
+vendor/bin/phpstan --no-progress
+vendor/bin/phpunit tests/Unit
 ```
 
 Smoke tests hit the live staging API and require valid credentials in `phpunit.xml`.

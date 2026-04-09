@@ -13,6 +13,9 @@ final readonly class User
         public ?string $phone = null,
     ) {}
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public static function fromArray(array $data): self
     {
         return new self(

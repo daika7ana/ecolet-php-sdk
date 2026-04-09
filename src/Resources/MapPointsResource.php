@@ -6,6 +6,8 @@ namespace Daika7ana\Ecolet\Resources;
 
 use Daika7ana\Ecolet\Client;
 use Daika7ana\Ecolet\DTOs\MapPoints\MapPointsResult;
+use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
+use Daika7ana\Ecolet\Exceptions\ValidationException;
 use Daika7ana\Ecolet\Support\ApiResponseMapper;
 use Daika7ana\Ecolet\Support\JsonHelper;
 
@@ -21,8 +23,8 @@ class MapPointsResource
      * @param string $countryCode ISO country code
      * @param array<mixed> $filters Optional filters for the map points
      *
-    * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-    * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+        * @throws UnexpectedStatusException
+        * @throws ValidationException
      */
     public function getMapPoints(string $countryCode, array $filters = []): MapPointsResult
     {

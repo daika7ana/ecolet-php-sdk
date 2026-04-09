@@ -6,6 +6,8 @@ namespace Daika7ana\Ecolet\Resources;
 
 use Daika7ana\Ecolet\Client;
 use Daika7ana\Ecolet\DTOs\Orders\OrderToSend;
+use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
+use Daika7ana\Ecolet\Exceptions\ValidationException;
 use Daika7ana\Ecolet\Support\ApiResponseMapper;
 
 class OrderToSendResource
@@ -17,8 +19,8 @@ class OrderToSendResource
     /**
      * Get an order to send by ID.
      *
-     * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-     * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+        * @throws UnexpectedStatusException
+        * @throws ValidationException
      */
     public function getOrderToSend(int $id): OrderToSend
     {

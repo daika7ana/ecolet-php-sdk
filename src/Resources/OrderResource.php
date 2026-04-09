@@ -9,8 +9,10 @@ use Daika7ana\Ecolet\DTOs\Common\Collection;
 use Daika7ana\Ecolet\DTOs\Orders\Order;
 use Daika7ana\Ecolet\DTOs\Orders\OrderStatus;
 use Daika7ana\Ecolet\DTOs\Orders\WaybillDocument;
-use Daika7ana\Ecolet\Support\JsonHelper;
+use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
+use Daika7ana\Ecolet\Exceptions\ValidationException;
 use Daika7ana\Ecolet\Support\ApiResponseMapper;
+use Daika7ana\Ecolet\Support\JsonHelper;
 
 class OrderResource
 {
@@ -21,8 +23,8 @@ class OrderResource
     /**
      * Get an order by ID.
      *
-    * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-    * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+        * @throws UnexpectedStatusException
+        * @throws ValidationException
      */
     public function getOrder(int $id): Order
     {
@@ -37,8 +39,8 @@ class OrderResource
     /**
      * Delete an order by ID.
      *
-    * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-    * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+        * @throws UnexpectedStatusException
+        * @throws ValidationException
      */
     public function deleteOrder(int $id): void
     {
@@ -51,8 +53,8 @@ class OrderResource
     /**
      * Download waybill for an order as a stream.
      *
-    * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-    * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+        * @throws UnexpectedStatusException
+        * @throws ValidationException
      */
     public function downloadWaybill(int $id): WaybillDocument
     {
@@ -73,10 +75,10 @@ class OrderResource
      *
      * @param list<int> $orderIds
      *
-     * @return Collection<OrderStatus>
+     * @return Collection<int, OrderStatus>
      *
-    * @throws \Daika7ana\Ecolet\Exceptions\UnexpectedStatusException
-    * @throws \Daika7ana\Ecolet\Exceptions\ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
     public function getStatusesForManyOrders(array $orderIds): Collection
     {
@@ -95,6 +97,6 @@ class OrderResource
             $data,
         );
 
-        return new Collection($statuses);
+        return new Collection(array_values($statuses));
     }
 }
