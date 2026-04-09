@@ -1,7 +1,22 @@
 {
     "name": "daika7ana/ecolet-php-sdk",
     "description": "Typed PHP SDK for the Ecolet Courier API.",
+    "type": "library",
     "license": "GPL-3.0-or-later",
+    "keywords": [
+        "ecolet",
+        "courier",
+        "shipping",
+        "sdk",
+        "api",
+        "psr-18"
+    ],
+    "homepage": "https://github.com/daika7ana/ecolet-php-sdk",
+    "support": {
+        "issues": "https://github.com/daika7ana/ecolet-php-sdk/issues",
+        "source": "https://github.com/daika7ana/ecolet-php-sdk",
+        "docs": "https://github.com/daika7ana/ecolet-php-sdk#readme"
+    },
     "autoload": {
         "psr-4": {
             "Daika7ana\\Ecolet\\": "src/"
@@ -14,8 +29,7 @@
     },
     "authors": [
         {
-            "name": "Dan-Radu Pana",
-            "email": "11703528+daika7ana@users.noreply.github.com"
+            "name": "Dan-Radu Pana"
         }
     ],
     "require": {
