@@ -3,7 +3,7 @@
 Install with Composer in your project:
 
 ```bash
-composer require daika7ana/ecolet-php-api
+composer require daika7ana/ecolet-php-sdk
 ```
 
 Create a client:

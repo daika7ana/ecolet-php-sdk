@@ -1,6 +1,6 @@
 {
-    "name": "daika7ana/ecolet-php-api",
-    "description": "A PHP wrapper for the Ecolet platform.",
+    "name": "daika7ana/ecolet-php-sdk",
+    "description": "Typed PHP SDK for the Ecolet Courier API.",
     "license": "GPL-3.0-or-later",
     "autoload": {
         "psr-4": {
@@ -32,6 +32,14 @@
         "phpstan/phpstan": "^2.1"
     },
     "scripts": {
-        "test": "@php vendor/bin/phpunit"
+        "pint": "@php vendor/bin/pint --test",
+        "stan": "@php vendor/bin/phpstan --no-progress",
+        "test": "@php vendor/bin/phpunit",
+        "test:unit": "@php vendor/bin/phpunit tests/Unit",
+        "ci": [
+            "@pint",
+            "@stan",
+            "@test:unit"
+        ]
     }
 }

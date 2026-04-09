@@ -5,7 +5,7 @@ This guide shows the fastest path to authenticate and call your first endpoint.
 ## 1. Install
 
 ```bash
-composer require daika7ana/ecolet-php-api
+composer require daika7ana/ecolet-php-sdk
 ```
 
 ## 2. Create a Client

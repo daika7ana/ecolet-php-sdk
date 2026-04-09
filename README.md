@@ -1,15 +1,15 @@
-# Ecolet PHP API Wrapper
+# Ecolet PHP SDK
 
 <div align="center">
 
-[![CI](https://github.com/daika7ana/ecolet-php-api/actions/workflows/ci.yml/badge.svg)](https://github.com/daika7ana/ecolet-php-api/actions/workflows/ci.yml)
+[![CI](https://github.com/daika7ana/ecolet-php-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/daika7ana/ecolet-php-sdk/actions/workflows/ci.yml)
 [![PHP 8.3+](https://img.shields.io/badge/PHP-8.3%2B-777BB4?style=flat-square&logo=php)](https://www.php.net/)
 [![PHPUnit](https://img.shields.io/badge/PHPUnit-12.x-0A7BBB?style=flat-square)](docs/TESTING.md)
 [![Smoke Tests](https://img.shields.io/badge/Smoke%20Tests-Live%20API-orange?style=flat-square)](docs/TESTING.md)
 [![PSR Standards](https://img.shields.io/badge/PSR-7%2F17%2F18-blue?style=flat-square)](https://www.php-fig.org/)
 [![License](https://img.shields.io/badge/license-GPL--3.0--or--later-green?style=flat-square)](LICENSE)
 
-A modern, type-safe PHP client for the **Ecolet Courier API**
+A modern, type-safe PHP SDK for the **Ecolet Courier API**
 
 </div>
 
@@ -61,7 +61,7 @@ A modern, type-safe PHP client for the **Ecolet Courier API**
 ### Via Composer
 
 ```bash
-composer require daika7ana/ecolet-php-api
+composer require daika7ana/ecolet-php-sdk
 ```
 
 ## Quick Start
@@ -231,6 +231,8 @@ $client = Client::create(tokenStore: $tokenStore);
 ### Run Static Analysis
 
 ```bash
+composer stan
+# or
 vendor/bin/phpstan --no-progress
 ```
 
@@ -270,10 +272,15 @@ php vendor/bin/phpunit --group=smoke -c phpunit.xml
 ### Run The Same Checks As CI
 
 ```bash
-vendor/bin/pint --test
-vendor/bin/phpstan --no-progress
-vendor/bin/phpunit tests/Unit
+composer ci
 ```
+
+Available Composer scripts:
+
+- `composer pint` runs Pint in test mode
+- `composer stan` runs PHPStan against `src/`
+- `composer test:unit` runs the unit test suite
+- `composer ci` runs the same local checks as CI
 
 Smoke tests hit the live staging API and require valid credentials in `phpunit.xml`.
 

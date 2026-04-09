@@ -1,4 +1,4 @@
-# Ecolet PHP API Wrapper - Usage Guide
+# Ecolet PHP SDK - Usage Guide
 
 Use this page as the entry point for package documentation.
 

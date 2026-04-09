@@ -5,6 +5,8 @@
 Run PHPStan against the library source code:
 
 ```bash
+composer stan
+# or
 vendor/bin/phpstan --no-progress
 ```
 
@@ -36,16 +38,23 @@ Use `--` after `composer test` to forward PHPUnit arguments.
 ## Run The Same Checks As CI
 
 ```bash
-vendor/bin/pint --test
-vendor/bin/phpstan --no-progress
-vendor/bin/phpunit tests/Unit
+composer ci
 ```
 
 The GitHub Actions workflow runs Pint, PHPStan, and the unit test suite on pushes to `master` and on pull requests targeting `master`.
 
+Available Composer scripts:
+
+- `composer pint`
+- `composer stan`
+- `composer test:unit`
+- `composer ci`
+
 ## Run Unit Tests Only
 
 ```bash
+composer test:unit
+# or
 php vendor/bin/phpunit tests/Unit/ -c phpunit.xml
 ```
 
