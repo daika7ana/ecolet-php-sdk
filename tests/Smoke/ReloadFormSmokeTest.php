@@ -5,18 +5,9 @@ declare(strict_types=1);
 namespace Daika7ana\Ecolet\Tests\Smoke;
 
 use Daika7ana\Ecolet\Config\ClientConfig;
-use Daika7ana\Ecolet\DTOs\AddParcel\AdditionalServices;
-use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelRequest;
 use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelResult;
-use Daika7ana\Ecolet\DTOs\AddParcel\CourierInfo;
-use Daika7ana\Ecolet\DTOs\AddParcel\CourierPickup;
-use Daika7ana\Ecolet\Enums\CourierPickupType;
-use Daika7ana\Ecolet\Enums\ParcelShape;
-use Daika7ana\Ecolet\Enums\ParcelType;
-use Daika7ana\Ecolet\DTOs\AddParcel\ParcelDetails;
-use Daika7ana\Ecolet\DTOs\AddParcel\ParcelDimensions;
-use Daika7ana\Ecolet\DTOs\AddParcel\RecipientAddress;
 use Daika7ana\Ecolet\Tests\Smoke\Concerns\InteractsWithAuthenticatedSmokeClient;
+use Daika7ana\Ecolet\Tests\Smoke\Support\AddParcelSmokePayloadFactory;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -29,7 +20,7 @@ final class ReloadFormSmokeTest extends TestCase
     {
         $client = $this->makeAuthenticatedClient('reload-form');
 
-        $result = $client->addParcel()->reloadForm($this->buildPayload());
+        $result = $client->addParcel()->reloadForm(AddParcelSmokePayloadFactory::workflowPayload());
 
         $this->assertSame(ClientConfig::BASE_URL_STAGING, $client->getConfig()->baseUrl);
         $this->assertInstanceOf(AddParcelResult::class, $result);
@@ -44,7 +35,7 @@ final class ReloadFormSmokeTest extends TestCase
     {
         $client = $this->makeAuthenticatedClient('reload-form');
 
-        $result = $client->addParcel()->reloadForm($this->buildPayload());
+        $result = $client->addParcel()->reloadForm(AddParcelSmokePayloadFactory::workflowPayload());
 
         // Verify pricing structure
         $this->assertIsArray($result->formResponse->pricing->pricesNet);
@@ -64,7 +55,7 @@ final class ReloadFormSmokeTest extends TestCase
     {
         $client = $this->makeAuthenticatedClient('reload-form');
 
-        $result = $client->addParcel()->reloadForm($this->buildPayload());
+        $result = $client->addParcel()->reloadForm(AddParcelSmokePayloadFactory::workflowPayload());
 
         // Verify service statuses are present and valid
         $statuses = $result->formResponse->pricing->statuses;
@@ -87,7 +78,7 @@ final class ReloadFormSmokeTest extends TestCase
     {
         $client = $this->makeAuthenticatedClient('reload-form');
 
-        $result = $client->addParcel()->reloadForm($this->buildPayload());
+        $result = $client->addParcel()->reloadForm(AddParcelSmokePayloadFactory::workflowPayload());
 
         // Pickup dates should be available (may be empty or populated)
         $pickupDates = $result->formResponse->pricing->pickupDates;
@@ -107,7 +98,7 @@ final class ReloadFormSmokeTest extends TestCase
     {
         $client = $this->makeAuthenticatedClient('reload-form');
 
-        $result = $client->addParcel()->reloadForm($this->buildPayload());
+        $result = $client->addParcel()->reloadForm(AddParcelSmokePayloadFactory::workflowPayload());
 
         // Verify error and info structures are present (they may or may not contain data)
         $this->assertIsArray($result->formResponse->errors);
@@ -123,72 +114,5 @@ final class ReloadFormSmokeTest extends TestCase
                 }
             }
         }
-    }
-
-    /**
-     * Build a tightly-typed reload-form request with the provided test data.
-     */
-    private function buildPayload(): AddParcelRequest
-    {
-        return new AddParcelRequest(
-            sender: new RecipientAddress(
-                name: 'Test Company',
-                country: 'ro',
-                county: 'Constanta',
-                locality: 'Constanta',
-                localityId: 3150,
-                postalCode: '900003',
-                streetName: 'Str. Interioara',
-                streetNumber: '103',
-                block: '1',
-                entrance: 'A2',
-                floor: '1',
-                flat: 'A3a',
-                contactPerson: 'Test Test',
-                email: 'user@example.com',
-                phone: '0214824089',
-            ),
-            receiver: new RecipientAddress(
-                name: 'Test Company',
-                country: 'ro',
-                county: 'Constanta',
-                locality: 'Constanta',
-                localityId: 3150,
-                postalCode: '900003',
-                streetName: 'Str. Dezrobirii',
-                streetNumber: '296',
-                block: '1',
-                entrance: 'A2',
-                floor: '1',
-                flat: 'A3a',
-                contactPerson: 'Test Test',
-                email: 'user@example.com',
-                phone: '0214824089',
-            ),
-            parcel: new ParcelDetails(
-                type: ParcelType::Package,
-                weight: 1,
-                shape: ParcelShape::Standard,
-                observations: 'FRAGILE',
-                amount: 1,
-            ),
-            additionalServices: new AdditionalServices(
-                cod: true,
-                codAmount: 500,
-            ),
-            courier: new CourierInfo(
-                pickup: new CourierPickup(type: CourierPickupType::Courier),
-            ),
-            parcels: [
-                new ParcelDetails(
-                    type: ParcelType::Package,
-                    weight: 1,
-                    dimensions: new ParcelDimensions(length: 10, width: 10, height: 10),
-                    content: 'Biscuits 400gr',
-                    declaredValue: 50,
-                    amount: 1,
-                ),
-            ],
-        );
     }
 }

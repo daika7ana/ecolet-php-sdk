@@ -14,12 +14,13 @@ final class MapPointsSmokeTest extends TestCase
 {
     use InteractsWithAuthenticatedSmokeClient;
 
+    private const CONTEXT = 'map points';
+    private const COUNTRY = 'RO';
+
     #[Group('smoke')]
     public function testGetMapPointsReturnsResult(): void
     {
-        $client = $this->makeAuthenticatedClient('map points');
-
-        $result = $client->mapPoints()->getMapPoints('RO');
+        $result = $this->fetchMapPoints();
 
         $this->assertInstanceOf(MapPointsResult::class, $result);
         $this->assertNotEmpty($result->mapPoints->mapPoints);
@@ -28,9 +29,7 @@ final class MapPointsSmokeTest extends TestCase
     #[Group('smoke')]
     public function testGetMapPointsItemsAreProperlyTyped(): void
     {
-        $client = $this->makeAuthenticatedClient('map points');
-
-        $result = $client->mapPoints()->getMapPoints('RO');
+        $result = $this->fetchMapPoints();
 
         $this->assertNotEmpty($result->mapPoints->mapPoints);
 
@@ -44,9 +43,7 @@ final class MapPointsSmokeTest extends TestCase
     #[Group('smoke')]
     public function testGetMapPointsHasBoundingBox(): void
     {
-        $client = $this->makeAuthenticatedClient('map points');
-
-        $result = $client->mapPoints()->getMapPoints('RO');
+        $result = $this->fetchMapPoints();
 
         $this->assertNotEmpty($result->mapPoints->boundingBox);
         $this->assertCount(2, $result->mapPoints->boundingBox);
@@ -55,14 +52,20 @@ final class MapPointsSmokeTest extends TestCase
     #[Group('smoke')]
     public function testGetMapPointsWithDestinationFilter(): void
     {
-        $client = $this->makeAuthenticatedClient('map points');
+        $client = $this->makeAuthenticatedClient(self::CONTEXT);
 
-        $senderResult = $client->mapPoints()->getMapPoints('RO', ['destination' => 'sender']);
-        $receiverResult = $client->mapPoints()->getMapPoints('RO', ['destination' => 'receiver']);
+        $senderResult = $client->mapPoints()->getMapPoints(self::COUNTRY, ['destination' => 'sender']);
+        $receiverResult = $client->mapPoints()->getMapPoints(self::COUNTRY, ['destination' => 'receiver']);
 
         $this->assertInstanceOf(MapPointsResult::class, $senderResult);
         $this->assertInstanceOf(MapPointsResult::class, $receiverResult);
         $this->assertNotEmpty($receiverResult->mapPoints->mapPoints);
     }
 
+    private function fetchMapPoints(): MapPointsResult
+    {
+        $client = $this->makeAuthenticatedClient(self::CONTEXT);
+
+        return $client->mapPoints()->getMapPoints(self::COUNTRY);
+    }
 }

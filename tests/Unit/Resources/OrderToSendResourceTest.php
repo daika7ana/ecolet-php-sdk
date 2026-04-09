@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Daika7ana\Ecolet\Tests\Unit\Resources;
 
-use Daika7ana\Ecolet\Client;
-use Daika7ana\Ecolet\Config\ClientConfig;
 use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
 use Daika7ana\Ecolet\Exceptions\ValidationException;
-use Daika7ana\Ecolet\Tests\Support\FakeHttpClient;
-use GuzzleHttp\Psr7\HttpFactory;
+use Daika7ana\Ecolet\Tests\Support\ResponseFixtureFactory;
+use Daika7ana\Ecolet\Tests\Support\TestClientFactory;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 
@@ -17,7 +15,7 @@ class OrderToSendResourceTest extends TestCase
 {
     public function testGetOrderToSendReturnsTypedDto(): void
     {
-        $httpClient = new FakeHttpClient(
+        [$client, $httpClient] = TestClientFactory::create(
             static fn() => new Response(200, [], json_encode([
                 'order_to_send' => [
                     'id' => 321,
@@ -95,15 +93,6 @@ class OrderToSendResourceTest extends TestCase
             ], JSON_THROW_ON_ERROR)),
         );
 
-        $factory = new HttpFactory();
-
-        $client = Client::create(
-            httpClient: $httpClient,
-            requestFactory: $factory,
-            streamFactory: $factory,
-            config: new ClientConfig(),
-        );
-
         $orderToSend = $client->ordersToSend()->getOrderToSend(321);
 
         $this->assertSame(321, $orderToSend->id);
@@ -117,7 +106,7 @@ class OrderToSendResourceTest extends TestCase
 
     public function testGetOrderToSendParsesErrorStatusWithoutOrderPayload(): void
     {
-        $httpClient = new FakeHttpClient(
+        [$client, ] = TestClientFactory::create(
             static fn() => new Response(200, [], json_encode([
                 'order_to_send' => [
                     'id' => 999,
@@ -126,14 +115,6 @@ class OrderToSendResourceTest extends TestCase
                     'order_id' => null,
                 ],
             ], JSON_THROW_ON_ERROR)),
-        );
-        $factory = new HttpFactory();
-
-        $client = Client::create(
-            httpClient: $httpClient,
-            requestFactory: $factory,
-            streamFactory: $factory,
-            config: new ClientConfig(),
         );
 
         $orderToSend = $client->ordersToSend()->getOrderToSend(999);
@@ -147,21 +128,17 @@ class OrderToSendResourceTest extends TestCase
 
     public function testGetOrderToSendThrowsValidationExceptionForInvalidId(): void
     {
-        $httpClient = new FakeHttpClient(
-            static fn() => new Response(422, [], json_encode([
-                'message' => 'The given data was invalid.',
-                'errors' => [
-                    'id' => ['The selected id is invalid.'],
-                ],
-            ], JSON_THROW_ON_ERROR)),
-        );
-        $factory = new HttpFactory();
-
-        $client = Client::create(
-            httpClient: $httpClient,
-            requestFactory: $factory,
-            streamFactory: $factory,
-            config: new ClientConfig(),
+        [$client, ] = TestClientFactory::create(
+            static fn() => new Response(
+                422,
+                [],
+                json_encode(
+                    ResponseFixtureFactory::validationError([
+                        'id' => ['The selected id is invalid.'],
+                    ]),
+                    JSON_THROW_ON_ERROR,
+                ),
+            ),
         );
 
         try {
@@ -177,18 +154,12 @@ class OrderToSendResourceTest extends TestCase
 
     public function testGetOrderToSendThrowsUnexpectedStatusExceptionForServerError(): void
     {
-        $httpClient = new FakeHttpClient(
-            static fn() => new Response(500, [], json_encode([
-                'message' => 'Internal server error.',
-            ], JSON_THROW_ON_ERROR)),
-        );
-        $factory = new HttpFactory();
-
-        $client = Client::create(
-            httpClient: $httpClient,
-            requestFactory: $factory,
-            streamFactory: $factory,
-            config: new ClientConfig(),
+        [$client, ] = TestClientFactory::create(
+            static fn() => new Response(
+                500,
+                [],
+                json_encode(ResponseFixtureFactory::serverError(), JSON_THROW_ON_ERROR),
+            ),
         );
 
         $this->expectException(UnexpectedStatusException::class);

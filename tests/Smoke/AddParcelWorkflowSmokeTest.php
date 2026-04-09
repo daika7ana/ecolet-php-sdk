@@ -5,20 +5,11 @@ declare(strict_types=1);
 namespace Daika7ana\Ecolet\Tests\Smoke;
 
 use Daika7ana\Ecolet\Client;
-use Daika7ana\Ecolet\DTOs\AddParcel\AdditionalServices;
-use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelRequest;
 use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelResult;
-use Daika7ana\Ecolet\DTOs\AddParcel\CourierInfo;
-use Daika7ana\Ecolet\DTOs\AddParcel\CourierPickup;
-use Daika7ana\Ecolet\DTOs\AddParcel\ParcelDetails;
-use Daika7ana\Ecolet\DTOs\AddParcel\ParcelDimensions;
-use Daika7ana\Ecolet\DTOs\AddParcel\RecipientAddress;
 use Daika7ana\Ecolet\DTOs\Orders\Order;
 use Daika7ana\Ecolet\DTOs\Orders\OrderToSend;
-use Daika7ana\Ecolet\Enums\CourierPickupType;
-use Daika7ana\Ecolet\Enums\ParcelShape;
-use Daika7ana\Ecolet\Enums\ParcelType;
 use Daika7ana\Ecolet\Tests\Smoke\Concerns\InteractsWithAuthenticatedSmokeClient;
+use Daika7ana\Ecolet\Tests\Smoke\Support\AddParcelSmokePayloadFactory;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -54,7 +45,7 @@ final class AddParcelWorkflowSmokeTest extends TestCase
      */
     private function completeWorkflow(Client $client): array
     {
-        $reloadResult = $client->addParcel()->reloadForm($this->buildPayload());
+        $reloadResult = $client->addParcel()->reloadForm(AddParcelSmokePayloadFactory::workflowPayload());
 
         $this->assertTrue($reloadResult->isFormResponse());
         $this->assertNotNull($reloadResult->formResponse);
@@ -66,7 +57,7 @@ final class AddParcelWorkflowSmokeTest extends TestCase
         [$serviceSlug, $pickupDay, $pickupDate, $pickupTime] = $this->resolveWorkflowService($reloadResult);
 
         $sendOrderResult = $client->addParcel()->sendOrder(
-            $this->buildPayload($serviceSlug, $pickupDay, $pickupDate, $pickupTime),
+            AddParcelSmokePayloadFactory::workflowPayload($serviceSlug, $pickupDay, $pickupDate, $pickupTime),
         );
 
         $this->assertTrue($sendOrderResult->isOrderResponse());
@@ -89,7 +80,7 @@ final class AddParcelWorkflowSmokeTest extends TestCase
     }
 
     /**
-    * @return array{0: string, 1: ?string, 2: ?string, 3: ?string}
+     * @return array{0: string, 1: ?string, 2: ?string, 3: ?string}
      */
     private function resolveWorkflowService(AddParcelResult $reloadResult): array
     {
@@ -168,79 +159,5 @@ final class AddParcelWorkflowSmokeTest extends TestCase
         ));
 
         throw new \RuntimeException('Unreachable.');
-    }
-
-    private function buildPayload(
-        ?string $service = null,
-        ?string $pickupDay = null,
-        ?string $pickupDate = null,
-        ?string $pickupTime = null,
-    ): AddParcelRequest {
-        return new AddParcelRequest(
-            sender: new RecipientAddress(
-                name: 'Test Company',
-                country: 'ro',
-                county: 'Constanta',
-                locality: 'Constanta',
-                localityId: 3150,
-                postalCode: '900003',
-                streetName: 'Str. Interioara',
-                streetNumber: '103',
-                block: '1',
-                entrance: 'A2',
-                floor: '1',
-                flat: 'A3a',
-                contactPerson: 'Test Test',
-                email: 'user@example.com',
-                phone: '0214824089',
-            ),
-            receiver: new RecipientAddress(
-                name: 'Test Company',
-                country: 'ro',
-                county: 'Constanta',
-                locality: 'Constanta',
-                localityId: 3150,
-                postalCode: '900003',
-                streetName: 'Str. Dezrobirii',
-                streetNumber: '296',
-                block: '1',
-                entrance: 'A2',
-                floor: '1',
-                flat: 'A3a',
-                contactPerson: 'Test Test',
-                email: 'user@example.com',
-                phone: '0214824089',
-            ),
-            parcel: new ParcelDetails(
-                type: ParcelType::Package,
-                weight: 1,
-                shape: ParcelShape::Standard,
-                observations: 'FRAGILE',
-                amount: 1,
-            ),
-            additionalServices: new AdditionalServices(
-                cod: true,
-                codAmount: 500,
-            ),
-            courier: new CourierInfo(
-                pickup: new CourierPickup(
-                    type: CourierPickupType::Courier,
-                    day: $pickupDay,
-                    date: $pickupDate,
-                    time: $pickupTime,
-                ),
-                service: $service,
-            ),
-            parcels: [
-                new ParcelDetails(
-                    type: ParcelType::Package,
-                    weight: 1,
-                    dimensions: new ParcelDimensions(length: 10, width: 10, height: 10),
-                    content: 'Biscuits 400gr',
-                    declaredValue: 50,
-                    amount: 1,
-                ),
-            ],
-        );
     }
 }

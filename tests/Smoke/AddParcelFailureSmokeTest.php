@@ -4,17 +4,10 @@ declare(strict_types=1);
 
 namespace Daika7ana\Ecolet\Tests\Smoke;
 
-use Daika7ana\Ecolet\DTOs\AddParcel\AdditionalServices;
-use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelRequest;
-use Daika7ana\Ecolet\DTOs\AddParcel\CourierInfo;
-use Daika7ana\Ecolet\DTOs\AddParcel\CourierPickup;
-use Daika7ana\Ecolet\DTOs\AddParcel\ParcelDetails;
-use Daika7ana\Ecolet\DTOs\AddParcel\RecipientAddress;
-use Daika7ana\Ecolet\Enums\CourierPickupType;
-use Daika7ana\Ecolet\Enums\ParcelType;
 use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
 use Daika7ana\Ecolet\Exceptions\ValidationException;
 use Daika7ana\Ecolet\Tests\Smoke\Concerns\InteractsWithAuthenticatedSmokeClient;
+use Daika7ana\Ecolet\Tests\Smoke\Support\AddParcelSmokePayloadFactory;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -29,15 +22,15 @@ final class AddParcelFailureSmokeTest extends TestCase
     {
         $client = $this->makeAuthenticatedClient('add-parcel-reload-failure');
 
-        try {
-            $client->addParcel()->reloadForm($this->buildMalformedPayload());
-            $this->fail('Expected ValidationException to be thrown.');
-        } catch (ValidationException $exception) {
-            $this->assertArrayHasKey('parcel.shape', $exception->errors);
-            $this->assertArrayHasKey('parcels.0.dimensions.length', $exception->errors);
-            $this->assertArrayHasKey('parcels.0.dimensions.width', $exception->errors);
-            $this->assertArrayHasKey('parcels.0.dimensions.height', $exception->errors);
-        }
+        $this->assertValidationErrorKeys(
+            static fn() => $client->addParcel()->reloadForm(AddParcelSmokePayloadFactory::malformedPayload()),
+            [
+                'parcel.shape',
+                'parcels.0.dimensions.length',
+                'parcels.0.dimensions.width',
+                'parcels.0.dimensions.height',
+            ],
+        );
     }
 
     #[Group('smoke')]
@@ -45,16 +38,16 @@ final class AddParcelFailureSmokeTest extends TestCase
     {
         $client = $this->makeAuthenticatedClient('add-parcel-send-failure');
 
-        try {
-            $client->addParcel()->sendOrder($this->buildMalformedPayload());
-            $this->fail('Expected ValidationException to be thrown.');
-        } catch (ValidationException $exception) {
-            $this->assertArrayHasKey('sender.name', $exception->errors);
-            $this->assertArrayHasKey('sender.email', $exception->errors);
-            $this->assertArrayHasKey('receiver.email', $exception->errors);
-            $this->assertArrayHasKey('courier.service', $exception->errors);
-            $this->assertArrayHasKey('parcel.shape', $exception->errors);
-        }
+        $this->assertValidationErrorKeys(
+            static fn() => $client->addParcel()->sendOrder(AddParcelSmokePayloadFactory::malformedPayload()),
+            [
+                'sender.name',
+                'sender.email',
+                'receiver.email',
+                'courier.service',
+                'parcel.shape',
+            ],
+        );
     }
 
     #[Group('smoke')]
@@ -62,15 +55,15 @@ final class AddParcelFailureSmokeTest extends TestCase
     {
         $client = $this->makeAuthenticatedClient('add-parcel-save-failure');
 
-        try {
-            $client->addParcel()->saveOrderToSend($this->buildMalformedPayload());
-            $this->fail('Expected ValidationException to be thrown.');
-        } catch (ValidationException $exception) {
-            $this->assertArrayHasKey('parcel.shape', $exception->errors);
-            $this->assertArrayHasKey('parcels.0.dimensions.length', $exception->errors);
-            $this->assertArrayHasKey('parcels.0.dimensions.width', $exception->errors);
-            $this->assertArrayHasKey('parcels.0.dimensions.height', $exception->errors);
-        }
+        $this->assertValidationErrorKeys(
+            static fn() => $client->addParcel()->saveOrderToSend(AddParcelSmokePayloadFactory::malformedPayload()),
+            [
+                'parcel.shape',
+                'parcels.0.dimensions.length',
+                'parcels.0.dimensions.width',
+                'parcels.0.dimensions.height',
+            ],
+        );
     }
 
     #[Group('smoke')]
@@ -78,12 +71,9 @@ final class AddParcelFailureSmokeTest extends TestCase
     {
         $client = $this->makeAuthenticatedClient('order-to-send-not-found');
 
-        try {
-            $client->ordersToSend()->getOrderToSend(self::NONEXISTENT_REMOTE_ID);
-            $this->fail('Expected UnexpectedStatusException to be thrown.');
-        } catch (UnexpectedStatusException $exception) {
-            $this->assertSame(404, $exception->response->getStatusCode());
-        }
+        $this->assertNotFound(
+            static fn() => $client->ordersToSend()->getOrderToSend(self::NONEXISTENT_REMOTE_ID),
+        );
     }
 
     #[Group('smoke')]
@@ -91,57 +81,37 @@ final class AddParcelFailureSmokeTest extends TestCase
     {
         $client = $this->makeAuthenticatedClient('order-not-found');
 
+        $this->assertNotFound(
+            static fn() => $client->orders()->getOrder(self::NONEXISTENT_REMOTE_ID),
+        );
+    }
+
+    /**
+     * @param callable(): mixed $operation
+     * @param array<int, string> $expectedKeys
+     */
+    private function assertValidationErrorKeys(callable $operation, array $expectedKeys): void
+    {
         try {
-            $client->orders()->getOrder(self::NONEXISTENT_REMOTE_ID);
+            $operation();
+            $this->fail('Expected ValidationException to be thrown.');
+        } catch (ValidationException $exception) {
+            foreach ($expectedKeys as $key) {
+                $this->assertArrayHasKey($key, $exception->errors);
+            }
+        }
+    }
+
+    /**
+     * @param callable(): mixed $operation
+     */
+    private function assertNotFound(callable $operation): void
+    {
+        try {
+            $operation();
             $this->fail('Expected UnexpectedStatusException to be thrown.');
         } catch (UnexpectedStatusException $exception) {
             $this->assertSame(404, $exception->response->getStatusCode());
         }
-    }
-
-    private function buildMalformedPayload(): AddParcelRequest
-    {
-        return new AddParcelRequest(
-            sender: new RecipientAddress(
-                name: 'x',
-                country: 'ro',
-                county: 'Constanta',
-                locality: 'Constanta',
-                localityId: 3150,
-                postalCode: '1',
-                streetName: 'x',
-                streetNumber: '1',
-                contactPerson: 'x',
-                email: 'bad-email',
-                phone: '1',
-            ),
-            receiver: new RecipientAddress(
-                name: 'x',
-                country: 'ro',
-                county: 'Constanta',
-                locality: 'Constanta',
-                localityId: 3150,
-                postalCode: '1',
-                streetName: 'x',
-                streetNumber: '1',
-                contactPerson: 'x',
-                email: 'bad-email',
-                phone: '1',
-            ),
-            parcel: new ParcelDetails(
-                type: ParcelType::Package,
-                weight: 1,
-            ),
-            additionalServices: new AdditionalServices(),
-            courier: new CourierInfo(
-                pickup: new CourierPickup(type: CourierPickupType::Self),
-            ),
-            parcels: [
-                new ParcelDetails(
-                    type: ParcelType::Package,
-                    weight: 1,
-                ),
-            ],
-        );
     }
 }

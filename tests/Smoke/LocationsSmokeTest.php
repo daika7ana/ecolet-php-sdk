@@ -18,11 +18,13 @@ final class LocationsSmokeTest extends TestCase
 {
     use InteractsWithAuthenticatedSmokeClient;
 
+    private const CONTEXT = 'locations';
+    private const COUNTRY = 'RO';
+
     #[Group('smoke')]
     public function testGetCountriesReturnsNonEmptyCollection(): void
     {
-        $client = $this->makeAuthenticatedClient('locations');
-
+        $client = $this->makeLocationsClient();
         $countries = $client->locations()->getCountries();
         $firstCountry = $countries->first();
 
@@ -36,9 +38,8 @@ final class LocationsSmokeTest extends TestCase
     #[Group('smoke')]
     public function testGetCountiesForRomania(): void
     {
-        $client = $this->makeAuthenticatedClient('locations');
-
-        $counties = $client->locations()->getCounties('RO');
+        $client = $this->makeLocationsClient();
+        $counties = $client->locations()->getCounties(self::COUNTRY);
         $firstCounty = $counties->first();
 
         $this->assertInstanceOf(Collection::class, $counties);
@@ -51,9 +52,8 @@ final class LocationsSmokeTest extends TestCase
     #[Group('smoke')]
     public function testSearchLocalitiesReturnsMatchingResults(): void
     {
-        $client = $this->makeAuthenticatedClient('locations');
-
-        $localities = $client->locations()->searchLocalities('RO', 'Cluj');
+        $client = $this->makeLocationsClient();
+        $localities = $client->locations()->searchLocalities(self::COUNTRY, 'Cluj');
         $firstLocality = $localities->first();
 
         $this->assertInstanceOf(Collection::class, $localities);
@@ -66,15 +66,8 @@ final class LocationsSmokeTest extends TestCase
     #[Group('smoke')]
     public function testSearchStreetsReturnsMatchingResults(): void
     {
-        $client = $this->makeAuthenticatedClient('locations');
-
-        $localities = $client->locations()->searchLocalities('RO', 'Cluj-Napoca');
-        $firstLocality = $localities->first();
-
-        $this->assertGreaterThan(0, $localities->count());
-        $this->assertInstanceOf(Locality::class, $firstLocality);
-
-        $localityId = $firstLocality->id;
+        $client = $this->makeLocationsClient();
+        $localityId = $this->firstLocalityId($client, 'Cluj-Napoca');
         $streets = $client->locations()->searchStreets($localityId, 'Mihai');
         $firstStreet = $streets->first();
 
@@ -86,15 +79,8 @@ final class LocationsSmokeTest extends TestCase
     #[Group('smoke')]
     public function testSearchStreetPostalCodesReturnsResults(): void
     {
-        $client = $this->makeAuthenticatedClient('locations');
-
-        $localities = $client->locations()->searchLocalities('RO', 'Cluj-Napoca');
-        $firstLocality = $localities->first();
-
-        $this->assertGreaterThan(0, $localities->count());
-        $this->assertInstanceOf(Locality::class, $firstLocality);
-
-        $localityId = $firstLocality->id;
+        $client = $this->makeLocationsClient();
+        $localityId = $this->firstLocalityId($client, 'Cluj-Napoca');
         $postalCodes = $client->locations()->searchStreetPostalCodes($localityId, 'Ierbii');
 
         $this->assertInstanceOf(Collection::class, $postalCodes);
@@ -109,14 +95,29 @@ final class LocationsSmokeTest extends TestCase
     #[Group('smoke')]
     public function testSearchStreetsByPostalCodeReturnsResults(): void
     {
-        $client = $this->makeAuthenticatedClient('locations');
-
-        $streets = $client->locations()->searchStreetsByPostalCode('RO', '400001');
+        $client = $this->makeLocationsClient();
+        $streets = $client->locations()->searchStreetsByPostalCode(self::COUNTRY, '400001');
         $firstStreet = $streets->first();
 
         $this->assertInstanceOf(Collection::class, $streets);
         $this->assertGreaterThan(0, $streets->count());
         $this->assertInstanceOf(Street::class, $firstStreet);
+    }
+
+    private function makeLocationsClient(): \Daika7ana\Ecolet\Client
+    {
+        return $this->makeAuthenticatedClient(self::CONTEXT);
+    }
+
+    private function firstLocalityId(\Daika7ana\Ecolet\Client $client, string $query): int
+    {
+        $localities = $client->locations()->searchLocalities(self::COUNTRY, $query);
+        $firstLocality = $localities->first();
+
+        $this->assertGreaterThan(0, $localities->count());
+        $this->assertInstanceOf(Locality::class, $firstLocality);
+
+        return $firstLocality->id;
     }
 
 }

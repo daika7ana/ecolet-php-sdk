@@ -14,12 +14,12 @@ final class ServicesSmokeTest extends TestCase
 {
     use InteractsWithAuthenticatedSmokeClient;
 
+    private const CONTEXT = 'services';
+
     #[Group('smoke')]
     public function testGetServicesReturnsNonEmptyCollection(): void
     {
-        $client = $this->makeAuthenticatedClient('services');
-
-        $services = $client->services()->getServices();
+        $services = $this->fetchServices();
 
         $this->assertInstanceOf(Collection::class, $services);
         $this->assertGreaterThan(0, $services->count());
@@ -28,14 +28,22 @@ final class ServicesSmokeTest extends TestCase
     #[Group('smoke')]
     public function testGetServicesItemsAreProperlyTyped(): void
     {
-        $client = $this->makeAuthenticatedClient('services');
-
-        $services = $client->services()->getServices();
+        $services = $this->fetchServices();
 
         foreach ($services as $service) {
             $this->assertInstanceOf(Service::class, $service);
             $this->assertGreaterThan(0, $service->id);
             $this->assertNotSame('', $service->name);
         }
+    }
+
+    /**
+     * @return Collection<int, Service>
+     */
+    private function fetchServices(): Collection
+    {
+        $client = $this->makeAuthenticatedClient(self::CONTEXT);
+
+        return $client->services()->getServices();
     }
 }

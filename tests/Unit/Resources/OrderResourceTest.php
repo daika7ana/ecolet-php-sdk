@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Daika7ana\Ecolet\Tests\Unit\Resources;
 
-use Daika7ana\Ecolet\Client;
-use Daika7ana\Ecolet\Config\ClientConfig;
 use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
 use Daika7ana\Ecolet\Exceptions\ValidationException;
-use Daika7ana\Ecolet\Tests\Support\FakeHttpClient;
-use GuzzleHttp\Psr7\HttpFactory;
+use Daika7ana\Ecolet\Tests\Support\ResponseFixtureFactory;
+use Daika7ana\Ecolet\Tests\Support\TestClientFactory;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 
@@ -17,7 +15,7 @@ class OrderResourceTest extends TestCase
 {
     public function testGetOrderReturnsDto(): void
     {
-        $httpClient = new FakeHttpClient(
+        [$client, $httpClient] = TestClientFactory::create(
             static fn() => new Response(200, [], json_encode([
                 'data' => [
                     'id' => 123,
@@ -25,14 +23,6 @@ class OrderResourceTest extends TestCase
                     'status' => 'new',
                 ],
             ], JSON_THROW_ON_ERROR)),
-        );
-        $factory = new HttpFactory();
-
-        $client = Client::create(
-            httpClient: $httpClient,
-            requestFactory: $factory,
-            streamFactory: $factory,
-            config: new ClientConfig(),
         );
 
         $order = $client->orders()->getOrder(123);
@@ -45,19 +35,11 @@ class OrderResourceTest extends TestCase
 
     public function testDownloadWaybillReturnsWaybillDocument(): void
     {
-        $httpClient = new FakeHttpClient(
+        [$client, $httpClient] = TestClientFactory::create(
             static fn() => new Response(200, [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'attachment; filename=waybill.pdf',
             ], '%PDF-binary%'),
-        );
-        $factory = new HttpFactory();
-
-        $client = Client::create(
-            httpClient: $httpClient,
-            requestFactory: $factory,
-            streamFactory: $factory,
-            config: new ClientConfig(),
         );
 
         $waybill = $client->orders()->downloadWaybill(123);
@@ -69,21 +51,17 @@ class OrderResourceTest extends TestCase
 
     public function testGetOrderThrowsValidationExceptionForInvalidId(): void
     {
-        $httpClient = new FakeHttpClient(
-            static fn() => new Response(422, [], json_encode([
-                'message' => 'The given data was invalid.',
-                'errors' => [
-                    'id' => ['The selected id is invalid.'],
-                ],
-            ], JSON_THROW_ON_ERROR)),
-        );
-        $factory = new HttpFactory();
-
-        $client = Client::create(
-            httpClient: $httpClient,
-            requestFactory: $factory,
-            streamFactory: $factory,
-            config: new ClientConfig(),
+        [$client, ] = TestClientFactory::create(
+            static fn() => new Response(
+                422,
+                [],
+                json_encode(
+                    ResponseFixtureFactory::validationError([
+                        'id' => ['The selected id is invalid.'],
+                    ]),
+                    JSON_THROW_ON_ERROR,
+                ),
+            ),
         );
 
         try {
@@ -99,18 +77,12 @@ class OrderResourceTest extends TestCase
 
     public function testDownloadWaybillThrowsUnexpectedStatusExceptionForServerError(): void
     {
-        $httpClient = new FakeHttpClient(
-            static fn() => new Response(500, [], json_encode([
-                'message' => 'Internal server error.',
-            ], JSON_THROW_ON_ERROR)),
-        );
-        $factory = new HttpFactory();
-
-        $client = Client::create(
-            httpClient: $httpClient,
-            requestFactory: $factory,
-            streamFactory: $factory,
-            config: new ClientConfig(),
+        [$client, ] = TestClientFactory::create(
+            static fn() => new Response(
+                500,
+                [],
+                json_encode(ResponseFixtureFactory::serverError(), JSON_THROW_ON_ERROR),
+            ),
         );
 
         $this->expectException(UnexpectedStatusException::class);
