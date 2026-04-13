@@ -14,8 +14,16 @@ use PHPUnit\Framework\TestCase;
 
 class PasswordAuthenticatorTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        ClientConfig::setTestMode(false);
+    }
+
     public function testPasswordGrantSuccess(): void
     {
+        $config = (new ClientConfig(baseUrl: ClientConfig::BASE_URL_STAGING))
+            ->withOAuthCredentials('client-id', 'client-secret');
+
         $httpClient = new FakeHttpClient(
             static fn() => new Response(200, [], json_encode([
                 'token_type' => 'Bearer',
@@ -33,9 +41,7 @@ class PasswordAuthenticatorTest extends TestCase
             streamFactory: $factory,
             username: 'user@example.com',
             password: 'secret',
-            clientId: 'client-id',
-            clientSecret: 'client-secret',
-            baseUrl: ClientConfig::BASE_URL_STAGING,
+            config: $config,
         );
 
         $token = $authenticator->authenticate();
@@ -56,8 +62,44 @@ class PasswordAuthenticatorTest extends TestCase
         $this->assertSame('client-secret', $payload['client_secret']);
     }
 
+    public function testPasswordGrantUsesEnvironmentBaseUrlByDefault(): void
+    {
+        ClientConfig::setTestMode(true);
+
+        $config = ClientConfig::fromEnvironment()
+            ->withOAuthCredentials('client-id', 'client-secret');
+
+        $httpClient = new FakeHttpClient(
+            static fn() => new Response(200, [], json_encode([
+                'token_type' => 'Bearer',
+                'expires_in' => 3600,
+                'access_token' => 'access-123',
+                'refresh_token' => 'refresh-123',
+            ], JSON_THROW_ON_ERROR)),
+        );
+        $factory = new HttpFactory();
+
+        $authenticator = new PasswordAuthenticator(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            username: 'user@example.com',
+            password: 'secret',
+            config: $config,
+        );
+
+        $authenticator->authenticate();
+
+        $request = $httpClient->lastRequest;
+        $this->assertNotNull($request);
+        $this->assertSame(ClientConfig::BASE_URL_STAGING . '/v1/oauth/token', (string) $request->getUri());
+    }
+
     public function testPasswordGrantFailureThrowsAuthenticationException(): void
     {
+        $config = (new ClientConfig())
+            ->withOAuthCredentials('client-id', 'client-secret');
+
         $httpClient = new FakeHttpClient(
             static fn() => new Response(401, [], '{"error":"invalid_grant"}'),
         );
@@ -69,8 +111,7 @@ class PasswordAuthenticatorTest extends TestCase
             streamFactory: $factory,
             username: 'user@example.com',
             password: 'wrong-secret',
-            clientId: 'client-id',
-            clientSecret: 'client-secret',
+            config: $config,
         );
 
         $this->expectException(AuthenticationException::class);
@@ -79,6 +120,9 @@ class PasswordAuthenticatorTest extends TestCase
 
     public function testRefreshTokenSuccess(): void
     {
+        $config = (new ClientConfig())
+            ->withOAuthCredentials('client-id', 'client-secret');
+
         $httpClient = new FakeHttpClient(
             static fn() => new Response(200, [], json_encode([
                 'token_type' => 'Bearer',
@@ -95,8 +139,7 @@ class PasswordAuthenticatorTest extends TestCase
             streamFactory: $factory,
             username: 'user@example.com',
             password: 'secret',
-            clientId: 'client-id',
-            clientSecret: 'client-secret',
+            config: $config,
         );
 
         $token = $authenticator->refresh('refresh-123');
@@ -113,6 +156,9 @@ class PasswordAuthenticatorTest extends TestCase
 
     public function testRefreshTokenFailureThrowsAuthenticationException(): void
     {
+        $config = (new ClientConfig())
+            ->withOAuthCredentials('client-id', 'client-secret');
+
         $httpClient = new FakeHttpClient(
             static fn() => new Response(401, [], '{"error":"invalid_refresh_token"}'),
         );
@@ -124,8 +170,7 @@ class PasswordAuthenticatorTest extends TestCase
             streamFactory: $factory,
             username: 'user@example.com',
             password: 'secret',
-            clientId: 'client-id',
-            clientSecret: 'client-secret',
+            config: $config,
         );
 
         $this->expectException(AuthenticationException::class);
