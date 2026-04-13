@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Daika7ana\Ecolet\Auth;
 
+use Daika7ana\Ecolet\Config\ClientConfig;
 use Daika7ana\Ecolet\Exceptions\AuthenticationException;
 use Daika7ana\Ecolet\Exceptions\TransportException;
 use Daika7ana\Ecolet\Http\HttpClientInterface;
@@ -14,17 +15,18 @@ use Psr\Http\Message\StreamFactoryInterface;
 
 class PasswordAuthenticator
 {
+    private ClientConfig $config;
+
     public function __construct(
         private HttpClientInterface $httpClient,
         private RequestFactoryInterface $requestFactory,
         private StreamFactoryInterface $streamFactory,
         private string $username,
         private string $password,
-        private string $clientId,
-        private string $clientSecret,
-        private string $baseUrl = 'https://panel.ecolet.ro/api',
-        private string $scope = '',
-    ) {}
+        ?ClientConfig $config = null,
+    ) {
+        $this->config = $config ?? ClientConfig::fromEnvironment();
+    }
 
     /**
      * @throws AuthenticationException
@@ -36,9 +38,9 @@ class PasswordAuthenticator
             'grant_type' => 'password',
             'username' => $this->username,
             'password' => $this->password,
-            'client_id' => $this->clientId,
-            'client_secret' => $this->clientSecret,
-            'scope' => $this->scope,
+            'client_id' => $this->config->clientId,
+            'client_secret' => $this->config->clientSecret,
+            'scope' => $this->config->scope,
         ]);
 
         try {
@@ -73,9 +75,9 @@ class PasswordAuthenticator
         $request = $this->buildTokenRequest([
             'grant_type' => 'refresh_token',
             'refresh_token' => $refreshToken,
-            'client_id' => $this->clientId,
-            'client_secret' => $this->clientSecret,
-            'scope' => $this->scope,
+            'client_id' => $this->config->clientId,
+            'client_secret' => $this->config->clientSecret,
+            'scope' => $this->config->scope,
         ]);
 
         try {
@@ -106,9 +108,11 @@ class PasswordAuthenticator
      */
     private function buildTokenRequest(array $params): RequestInterface
     {
+        $baseUrl = rtrim($this->config->baseUrl, '/');
+
         $request = $this->requestFactory->createRequest(
             'POST',
-            $this->baseUrl . '/v1/oauth/token',
+            $baseUrl . '/v1/oauth/token',
         )
             ->withHeader('Accept', 'application/json')
             ->withHeader('Content-Type', 'application/x-www-form-urlencoded');

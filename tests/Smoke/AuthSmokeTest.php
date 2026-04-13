@@ -29,4 +29,30 @@ final class AuthSmokeTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
     }
+
+    #[Group('smoke')]
+    public function testRefreshTokenAgainstLiveApi(): void
+    {
+        $client = $this->makeAuthenticatedClient('refresh token');
+
+        $initialToken = $client->getConfig()->token;
+
+        $this->assertNotNull($initialToken);
+        $this->assertNotSame('', $initialToken->refreshToken ?? '');
+
+        $client->refreshToken();
+
+        $refreshedToken = $client->getConfig()->token;
+
+        $this->assertNotNull($refreshedToken);
+        $this->assertNotSame('', $refreshedToken->accessToken);
+        $this->assertNotSame('', $refreshedToken->refreshToken ?? '');
+        $this->assertSame('Bearer', $refreshedToken->tokenType);
+
+        $request = $client->createRequest('GET', '/v1/me')
+            ->withHeader('Accept', 'application/json');
+        $response = $client->send($request);
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
 }

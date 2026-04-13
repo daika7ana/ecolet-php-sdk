@@ -242,10 +242,7 @@ class Client
             streamFactory: $this->streamFactory,
             username: $username,
             password: $password,
-            clientId: $this->config->clientId,
-            clientSecret: $this->config->clientSecret,
-            baseUrl: $this->config->baseUrl,
-            scope: $this->config->scope,
+            config: $this->config,
         );
     }
 
