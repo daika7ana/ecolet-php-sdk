@@ -81,6 +81,8 @@ final class ApiResponseMapper
 
         if (isset($decoded['message']) && is_string($decoded['message'])) {
             $message = $decoded['message'];
+        } elseif (isset($decoded['error']) && is_string($decoded['error'])) {
+            $message = $decoded['error'];
         } elseif (isset($decoded['general_error']) && is_string($decoded['general_error'])) {
             $message = $decoded['general_error'];
         }
