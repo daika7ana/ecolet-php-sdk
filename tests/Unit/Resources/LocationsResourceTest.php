@@ -124,6 +124,29 @@ class LocationsResourceTest extends TestCase
         $this->assertSame('/api/v1/locations/RO/localities/Bucu', $httpClient->lastRequest?->getUri()->getPath());
     }
 
+    public function testSearchStreetsUsesRawUrlEncodingForQuery(): void
+    {
+        $httpClient = new FakeHttpClient(
+            static fn() => new Response(200, [], json_encode([
+                'streets' => ['Piaţă Romană'],
+            ], JSON_THROW_ON_ERROR)),
+        );
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: new ClientConfig(),
+        );
+
+        $streets = $client->locations()->searchStreets(13751, 'Piaţă Romană');
+
+        $this->assertSame(1, $streets->count());
+        $this->assertSame('Piaţă Romană', $streets->first());
+        $this->assertSame('/api/v1/locations/13751/streets/Pia%C5%A3%C4%83%20Roman%C4%83', $httpClient->lastRequest?->getUri()->getPath());
+    }
+
     public function testSearchStreetPostalCodesReturnsTypedCollection(): void
     {
         $httpClient = new FakeHttpClient(
@@ -151,7 +174,7 @@ class LocationsResourceTest extends TestCase
         $this->assertSame('010371', $firstPostalCode->code);
         $this->assertSame('1-7', $firstPostalCode->number);
         $this->assertNull($firstPostalCode->block);
-        $this->assertSame('/api/v1/locations/13751/search-street-postal-codes/Pia%C5%A3%C4%83+Roman%C4%83', $httpClient->lastRequest?->getUri()->getPath());
+        $this->assertSame('/api/v1/locations/13751/search-street-postal-codes/Pia%C5%A3%C4%83%20Roman%C4%83', $httpClient->lastRequest?->getUri()->getPath());
     }
 
     public function testSearchStreetsByPostalCodeKeepsValidationFlagAndStreetDetails(): void
