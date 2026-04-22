@@ -21,26 +21,33 @@ $localities = $client->locations()->searchLocalities('RO', 'Bucharest');
 $streets = $client->locations()->searchStreets(123, 'Main');
 $postalCodes = $client->locations()->searchStreetPostalCodes(123, 'Main Street');
 $streetsByPostalCode = $client->locations()->searchStreetsByPostalCode('RO', '010101');
+$isValidPostalCode = $streetsByPostalCode->isValid;
+$matchingStreets = $streetsByPostalCode->streets;
 ```
 
 `searchStreetPostalCodes()` returns a `Collection<StreetPostalCode>` with `code`, `number`, and `block` fields.
+`searchStreetsByPostalCode()` returns a `StreetsByPostalCodeResult` with `isValid` and `streets`.
 
 ## Orders
 
 ```php
 $order = $client->orders()->getOrder(12345);
 $trackingNumber = $order->number;
+$senderEmail = $order->sender?->email;
+$orderStatuses = $order->statuses;
 
 $waybill = $client->orders()->downloadWaybill(12345);
 $filename = $waybill->getFilename();
 $headers = $waybill->getDownloadHeaders();
 $pdf = $waybill->getContents();
 
-$statuses = $client->orders()->getStatusesForManyOrders([12345, 67890]);
-$client->orders()->deleteOrder(12345);
+$statuses = $client->orders()->getStatusesForManyOrders(['80438360579', '80000001']);
+$deleteResult = $client->orders()->deleteOrder(12345);
+$deleteMessages = $deleteResult->messages;
 ```
 
 `downloadWaybill()` returns `Daika7ana\Ecolet\DTOs\Orders\WaybillDocument`, not a raw stream. Use its helper methods when converting it into a framework response.
+`getStatusesForManyOrders()` returns a `Collection<OrderWithStatuses>` keyed by request order.
 
 ## Order To Send
 

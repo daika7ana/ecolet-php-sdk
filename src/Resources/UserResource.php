@@ -19,8 +19,8 @@ class UserResource
     /**
      * Get the authenticated user's information.
      *
-        * @throws UnexpectedStatusException
-        * @throws ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
     public function getMe(): User
     {

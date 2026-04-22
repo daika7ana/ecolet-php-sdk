@@ -165,7 +165,7 @@ $client->setToken($token);
 - `locations()->searchLocalities()` — Search localities
 - `locations()->searchStreets()` — Search streets
 - `locations()->searchStreetPostalCodes()` — Get postal codes
-- `locations()->searchStreetsByPostalCode()` — Search streets by postal code
+- `locations()->searchStreetsByPostalCode()` — Search streets by postal code with validation metadata
 - `orders()->getOrder()` — Retrieve order details
 - `orders()->deleteOrder()` — Cancel an order
 - `orders()->downloadWaybill()` — Get waybill document

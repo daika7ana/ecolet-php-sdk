@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Daika7ana\Ecolet\DTOs\Orders;
+namespace Daika7ana\Ecolet\DTOs\Services;
 
-final readonly class OrderStatus
+final readonly class ServiceCourier
 {
     public function __construct(
+        public int $id,
+        public string $slug,
         public string $name,
-        public ?string $realName,
-        public string $createdAt,
+        public bool $status = false,
     ) {}
 
     /**
@@ -18,9 +19,10 @@ final readonly class OrderStatus
     public static function fromArray(array $data): self
     {
         return new self(
+            id: (int) ($data['id'] ?? 0),
+            slug: (string) ($data['slug'] ?? ''),
             name: (string) ($data['name'] ?? ''),
-            realName: isset($data['real_name']) ? (string) $data['real_name'] : null,
-            createdAt: (string) ($data['created_at'] ?? ''),
+            status: (bool) ($data['status'] ?? false),
         );
     }
 }

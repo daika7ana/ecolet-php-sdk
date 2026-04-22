@@ -24,10 +24,10 @@ class AddParcelResource
     /**
      * Reload the form (v2 endpoint).
      *
-        * @param AddParcelRequest|array<string, mixed> $data Form data
+     * @param AddParcelRequest|array<string, mixed> $data Form data
      *
-        * @throws UnexpectedStatusException
-        * @throws ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
     public function reloadForm(AddParcelRequest|array $data): AddParcelResult
     {
@@ -48,10 +48,10 @@ class AddParcelResource
     /**
      * Send an order (v2 endpoint).
      *
-        * @param AddParcelRequest|array<string, mixed> $data Order data (supports multiple parcels)
+     * @param AddParcelRequest|array<string, mixed> $data Order data (supports multiple parcels)
      *
-        * @throws UnexpectedStatusException
-        * @throws ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
     public function sendOrder(AddParcelRequest|array $data): AddParcelResult
     {
@@ -72,10 +72,10 @@ class AddParcelResource
     /**
      * Save order to send (v2 endpoint).
      *
-        * @param AddParcelRequest|array<string, mixed> $data Order data (supports multiple parcels)
+     * @param AddParcelRequest|array<string, mixed> $data Order data (supports multiple parcels)
      *
-        * @throws UnexpectedStatusException
-        * @throws ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
     public function saveOrderToSend(AddParcelRequest|array $data): AddParcelResult
     {

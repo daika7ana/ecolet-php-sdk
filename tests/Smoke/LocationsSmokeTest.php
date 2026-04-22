@@ -96,11 +96,12 @@ final class LocationsSmokeTest extends TestCase
     public function testSearchStreetsByPostalCodeReturnsResults(): void
     {
         $client = $this->makeLocationsClient();
-        $streets = $client->locations()->searchStreetsByPostalCode(self::COUNTRY, '400001');
-        $firstStreet = $streets->first();
+        $result = $client->locations()->searchStreetsByPostalCode(self::COUNTRY, '400001');
+        $firstStreet = $result->streets->first();
 
-        $this->assertInstanceOf(Collection::class, $streets);
-        $this->assertGreaterThan(0, $streets->count());
+        $this->assertTrue($result->isValid);
+        $this->assertInstanceOf(Collection::class, $result->streets);
+        $this->assertGreaterThan(0, $result->streets->count());
         $this->assertInstanceOf(Street::class, $firstStreet);
     }
 
