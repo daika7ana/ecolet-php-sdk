@@ -6,6 +6,10 @@ namespace Daika7ana\Ecolet\DTOs\Users;
 
 final readonly class User
 {
+    /**
+     * @param list<string> $forbiddenCouriers
+     * @param list<string> $forbiddenServices
+     */
     public function __construct(
         public int $id,
         public string $name,
