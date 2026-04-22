@@ -120,7 +120,7 @@ Validates:
 - `searchLocalities(countryCode, query)` returns matching localities
 - `searchStreets(localityId, query)` returns street name strings
 - `searchStreetPostalCodes(localityId, streetName)` returns typed `StreetPostalCode` DTOs
-- `searchStreetsByPostalCode(countryCode, postalCode)` returns typed `Street` DTOs
+- `searchStreetsByPostalCode(countryCode, postalCode)` returns a typed result with `isValid` and `Street` DTOs
 
 ### Map Points Resource Smoke Tests
 
@@ -160,6 +160,7 @@ Tests the end-to-end staging workflow in a single test run:
 - `sendOrder()` creates an `order_to_send_id`
 - `getOrderToSend()` eventually yields `orderId`
 - `getOrder()` returns a typed order
+- `getStatusesForManyOrders(awbs)` returns typed order status payloads with nested status history
 - `downloadWaybill()` returns a non-empty PDF document with attachment metadata
 
 This workflow was intentionally combined into one test so a single run creates only one staging order and one AWB.

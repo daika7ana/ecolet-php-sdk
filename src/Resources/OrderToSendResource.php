@@ -19,8 +19,8 @@ class OrderToSendResource
     /**
      * Get an order to send by ID.
      *
-        * @throws UnexpectedStatusException
-        * @throws ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
     public function getOrderToSend(int $id): OrderToSend
     {

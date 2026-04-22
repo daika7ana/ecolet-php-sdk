@@ -23,8 +23,8 @@ class MapPointsResource
      * @param string $countryCode ISO country code
      * @param array<mixed> $filters Optional filters for the map points
      *
-        * @throws UnexpectedStatusException
-        * @throws ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
     public function getMapPoints(string $countryCode, array $filters = []): MapPointsResult
     {

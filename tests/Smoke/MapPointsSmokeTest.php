@@ -17,6 +17,54 @@ final class MapPointsSmokeTest extends TestCase
     private const CONTEXT = 'map points';
     private const COUNTRY = 'RO';
 
+    private static string|false $originalMemoryLimit;
+
+    public static function setUpBeforeClass(): void
+    {
+        self::$originalMemoryLimit = ini_get('memory_limit');
+
+        ini_set('memory_limit', '512M');
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        if (
+            self::$originalMemoryLimit !== false
+            && self::canRestoreMemoryLimit(self::$originalMemoryLimit)
+        ) {
+            ini_set('memory_limit', self::$originalMemoryLimit);
+        }
+    }
+
+    private static function canRestoreMemoryLimit(string $memoryLimit): bool
+    {
+        $limitInBytes = self::memoryLimitToBytes($memoryLimit);
+
+        if ($limitInBytes === -1) {
+            return true;
+        }
+
+        return memory_get_usage(true) <= $limitInBytes;
+    }
+
+    private static function memoryLimitToBytes(string $memoryLimit): int
+    {
+        if ($memoryLimit === '-1') {
+            return -1;
+        }
+
+        $trimmedLimit = trim($memoryLimit);
+        $unit = strtolower(substr($trimmedLimit, -1));
+        $value = (int) $trimmedLimit;
+
+        return match ($unit) {
+            'g' => $value * 1024 * 1024 * 1024,
+            'm' => $value * 1024 * 1024,
+            'k' => $value * 1024,
+            default => $value,
+        };
+    }
+
     #[Group('smoke')]
     public function testGetMapPointsReturnsResult(): void
     {

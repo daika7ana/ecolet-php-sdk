@@ -9,6 +9,7 @@ final readonly class County
     public function __construct(
         public int $id,
         public string $name,
+        public ?string $code = null,
     ) {}
 
     /**
@@ -17,8 +18,9 @@ final readonly class County
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'],
-            name: $data['name'],
+            id: (int) ($data['id'] ?? 0),
+            name: (string) ($data['name'] ?? ''),
+            code: array_key_exists('code', $data) && $data['code'] !== null ? (string) $data['code'] : null,
         );
     }
 }

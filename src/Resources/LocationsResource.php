@@ -9,8 +9,8 @@ use Daika7ana\Ecolet\DTOs\Common\Collection;
 use Daika7ana\Ecolet\DTOs\Locations\Country;
 use Daika7ana\Ecolet\DTOs\Locations\County;
 use Daika7ana\Ecolet\DTOs\Locations\Locality;
-use Daika7ana\Ecolet\DTOs\Locations\Street;
 use Daika7ana\Ecolet\DTOs\Locations\StreetPostalCode;
+use Daika7ana\Ecolet\DTOs\Locations\StreetsByPostalCodeResult;
 use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
 use Daika7ana\Ecolet\Exceptions\ValidationException;
 use Daika7ana\Ecolet\Support\ApiResponseMapper;
@@ -26,8 +26,8 @@ class LocationsResource
      *
      * @return Collection<int, Country>
      *
-    * @throws UnexpectedStatusException
-    * @throws ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
     public function getCountries(): Collection
     {
@@ -48,8 +48,8 @@ class LocationsResource
      *
      * @return Collection<int, County>
      *
-    * @throws UnexpectedStatusException
-    * @throws ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
     public function getCounties(string $countryCode): Collection
     {
@@ -74,8 +74,8 @@ class LocationsResource
      *
      * @return Collection<int, Locality>
      *
-    * @throws UnexpectedStatusException
-    * @throws ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
     public function searchLocalities(string $countryCode, string $searchQuery): Collection
     {
@@ -100,8 +100,8 @@ class LocationsResource
      *
      * @return Collection<int, string>
      *
-    * @throws UnexpectedStatusException
-    * @throws ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
     public function searchStreets(int $localityId, string $searchQuery): Collection
     {
@@ -121,8 +121,8 @@ class LocationsResource
      *
      * @return Collection<int, StreetPostalCode>
      *
-    * @throws UnexpectedStatusException
-    * @throws ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
     public function searchStreetPostalCodes(int $localityId, string $streetName): Collection
     {
@@ -148,12 +148,10 @@ class LocationsResource
     /**
      * Search streets by postal code and country.
      *
-     * @return Collection<int, Street>
-     *
-    * @throws UnexpectedStatusException
-    * @throws ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
-    public function searchStreetsByPostalCode(string $countryCode, string $postalCode): Collection
+    public function searchStreetsByPostalCode(string $countryCode, string $postalCode): StreetsByPostalCodeResult
     {
         $request = $this->client->createRequest(
             'GET',
@@ -163,11 +161,6 @@ class LocationsResource
 
         $data = ApiResponseMapper::decodeJson($response);
 
-        $streets = array_map(
-            static fn(array $item) => Street::fromArray($item),
-            $data['streets'],
-        );
-
-        return new Collection($streets);
+        return StreetsByPostalCodeResult::fromArray($data);
     }
 }

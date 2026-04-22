@@ -6,8 +6,9 @@ namespace Daika7ana\Ecolet\Resources;
 
 use Daika7ana\Ecolet\Client;
 use Daika7ana\Ecolet\DTOs\Common\Collection;
+use Daika7ana\Ecolet\DTOs\Orders\DeleteOrderResult;
 use Daika7ana\Ecolet\DTOs\Orders\Order;
-use Daika7ana\Ecolet\DTOs\Orders\OrderStatus;
+use Daika7ana\Ecolet\DTOs\Orders\OrderWithStatuses;
 use Daika7ana\Ecolet\DTOs\Orders\WaybillDocument;
 use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
 use Daika7ana\Ecolet\Exceptions\ValidationException;
@@ -23,8 +24,8 @@ class OrderResource
     /**
      * Get an order by ID.
      *
-        * @throws UnexpectedStatusException
-        * @throws ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
     public function getOrder(int $id): Order
     {
@@ -39,22 +40,24 @@ class OrderResource
     /**
      * Delete an order by ID.
      *
-        * @throws UnexpectedStatusException
-        * @throws ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
-    public function deleteOrder(int $id): void
+    public function deleteOrder(int $id): DeleteOrderResult
     {
         $request = $this->client->createRequest('DELETE', sprintf('/v1/order/%d', $id));
         $response = $this->client->send($request);
 
-        ApiResponseMapper::assertStatus($response, 204);
+        $data = ApiResponseMapper::decodeJson($response);
+
+        return DeleteOrderResult::fromArray($data);
     }
 
     /**
      * Download waybill for an order as a stream.
      *
-        * @throws UnexpectedStatusException
-        * @throws ValidationException
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
      */
     public function downloadWaybill(int $id): WaybillDocument
     {
@@ -73,18 +76,20 @@ class OrderResource
     /**
      * Get statuses for multiple orders.
      *
-     * @param list<int> $orderIds
+     * @param list<string> $awbs
      *
-     * @return Collection<int, OrderStatus>
+     * @return Collection<int, OrderWithStatuses>
      *
      * @throws UnexpectedStatusException
      * @throws ValidationException
      */
-    public function getStatusesForManyOrders(array $orderIds): Collection
+    public function getStatusesForManyOrders(array $awbs): Collection
     {
         $request = $this->client->createRequest('POST', '/v1/order/get-statuses-for-many-orders');
 
-        $body = JsonHelper::encode(['order_ids' => $orderIds]);
+        $body = JsonHelper::encode([
+            'awbs' => array_map(static fn(mixed $awb): string => (string) $awb, $awbs),
+        ]);
         $request = $request->withBody($this->client->streamFactory()->createStream($body))
             ->withHeader('Content-Type', 'application/json');
 
@@ -92,9 +97,12 @@ class OrderResource
 
         $data = ApiResponseMapper::decodeJson($response);
 
+        /** @var list<array<string, mixed>> $statusItems */
+        $statusItems = $data['data'] ?? [];
+
         $statuses = array_map(
-            static fn(array $item) => OrderStatus::fromArray($item),
-            $data,
+            static fn(array $item) => OrderWithStatuses::fromArray($item),
+            $statusItems,
         );
 
         return new Collection(array_values($statuses));
