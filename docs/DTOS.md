@@ -336,6 +336,7 @@ Using DTOs ensures:
 ## Collection DTO Helper Methods
 
 List-style endpoints (services, locations, statuses, map points, etc.) return `Daika7ana\\Ecolet\\DTOs\\Common\\Collection`.
+Collection is extendable, and methods that return another collection use `static`, so custom subclasses are preserved across transformations.
 
 ### Basic Accessors
 
@@ -347,8 +348,17 @@ $first = $services->first();          // first item or null
 $last = $services->last();            // last item or null
 $all = $services->get();              // full keyed array of items
 $one = $services->get(0);             // single item by key/index or null
-$values = $services->values();        // reindexed list of values
+$keys = $services->keys();            // Collection of original keys
+$values = $services->values();        // reindexed Collection of values
+$rawKeys = $services->keys()->all();  // raw array of keys
+$rawValues = $services->values()->all(); // raw array of values
+$hasFirst = $services->has(0);        // bool
+$hasServiceId = $services->hasKey(10); // bool
+$isEmpty = $services->isEmpty();      // bool
+$isNotEmpty = $services->isNotEmpty(); // bool
 ```
+
+`keys()` and `values()` return a `Collection`, not a raw array. Call `all()` or `toArray()` when you explicitly need the underlying array.
 
 ### Iteration
 
@@ -359,6 +369,29 @@ foreach ($services as $service) {
     echo $service->name;
 }
 ```
+
+`Collection` also implements `ArrayAccess`, so indexed access still works:
+
+```php
+$firstService = $services[0] ?? null;
+```
+
+### Selection And Filtering
+
+```php
+$availableServices = $services->filter(static fn($service) => $service->status === true);
+
+$inactiveServices = $services->reject(static fn($service) => $service->status === true);
+
+$subset = $services->only([0, 2, 4]);
+
+$withoutFirst = $services->except([0]);
+```
+
+- `filter(?callable $callback = null)` keeps matching items and preserves their keys. Without a callback, it removes falsy values.
+- `reject(callable $callback)` removes matching items.
+- `only(array $keys)` returns only the requested keys, in the order you pass them.
+- `except(array $keys)` removes the requested keys.
 
 ### Transformations
 
@@ -372,7 +405,7 @@ $servicesById = $services->mapWithKeys(
 
 - `map(callable $callback)` keeps original keys.
 - `mapWithKeys(callable $callback)` lets you define new keys.
-- Both return a new `Collection` (immutable style).
+- Both return a new collection of the same concrete class (`static`).
 
 ### Pluck
 
@@ -384,6 +417,8 @@ $names = $services->pluck('name');
 
 $namesById = $services->pluck('name', 'id');
 // Collection keyed by item id: [10 => 'Express', 20 => 'Standard']
+
+$namesArray = $services->pluck('name')->all();
 ```
 
 - First parameter: value key to extract.

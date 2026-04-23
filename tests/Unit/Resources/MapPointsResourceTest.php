@@ -6,6 +6,7 @@ namespace Daika7ana\Ecolet\Tests\Unit\Resources;
 
 use Daika7ana\Ecolet\Client;
 use Daika7ana\Ecolet\Config\ClientConfig;
+use Daika7ana\Ecolet\DTOs\Common\Collection;
 use Daika7ana\Ecolet\Tests\Support\FakeHttpClient;
 use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\Response;
@@ -77,10 +78,12 @@ class MapPointsResourceTest extends TestCase
 
         $result = $client->mapPoints()->getMapPoints('RO', ['service_id' => 2]);
 
-        $this->assertCount(1, $result->mapPoints->mapPoints);
-        $this->assertSame('Point A', $result->mapPoints->mapPoints[0]->name);
-        $this->assertSame('BC', $result->mapPoints->mapPoints[0]->locality->county->code);
-        $this->assertSame('00:00', $result->mapPoints->mapPoints[0]->openHours->monday->opened);
+        $this->assertInstanceOf(Collection::class, $result->mapPoints);
+        $this->assertCount(1, $result->mapPoints);
+        $this->assertSame('Point A', $result->mapPoints[0]->name);
+        $this->assertSame('BC', $result->mapPoints[0]->locality->county->code);
+        $this->assertSame('00:00', $result->mapPoints[0]->openHours->monday->opened);
+        $this->assertCount(2, $result->boundingBox);
         $this->assertSame('/api/v1/map-points/RO', $httpClient->lastRequest?->getUri()->getPath());
         $this->assertSame('application/json', $httpClient->lastRequest?->getHeaderLine('Content-Type'));
     }

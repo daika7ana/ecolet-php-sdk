@@ -39,7 +39,7 @@ A modern, type-safe PHP SDK for the **Ecolet Courier API**
 - ✅ **Explicit Environment Selection** — Production by default, staging via `ClientConfig` when needed
 - ✅ **Fully Typed DTOs** — Type-safe request/response handling
 - ✅ **Static Analysis with PHPStan** — Strict type checks for the `src/` codebase
-- ✅ **Iterable Collections** — `first`, `last`, `get`, `values`, `map`, `mapWithKeys`, `pluck`
+- ✅ **Iterable Collections** — `count`, `first`, `last`, `get`, `keys`, `values`, `has`, `filter`, `map`, `mapWithKeys`, `pluck`
 - ✅ **Waybill Helpers** — Filename, contents, and download headers on `WaybillDocument`
 - ✅ **Symfony/Laravel Bridge** — Optional `HttpFoundationBridge` for seamless integration
 - ✅ **Comprehensive Tests** — Unit and smoke test suites included

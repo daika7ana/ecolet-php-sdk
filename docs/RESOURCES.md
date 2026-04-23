@@ -160,4 +160,11 @@ All add-parcel responses return `AddParcelResult` with:
 
 ```php
 $points = $client->mapPoints()->getMapPoints('RO', []);
+
+$pickupPoints = $points->mapPoints;
+$boundingBox = $points->boundingBox;
+$firstPoint = $points->mapPoints->first();
+$pointNames = $points->mapPoints->pluck('name')->all();
 ```
+
+`mapPoints` is returned as `Collection<MapPoint>`, so you can use collection helpers like `first()`, `filter()`, `pluck()`, `keys()`, and `values()` directly on the response.
