@@ -131,8 +131,8 @@ php vendor/bin/phpunit --filter=MapPointsSmokeTest -c phpunit.xml
 ```
 
 Validates:
-- `getMapPoints(countryCode)` returns typed `MapPointsResult`
-- Response contains bounding box and list of `MapPoint` objects
+- `getMapPoints(countryCode)` returns typed `MapPointsResponse`
+- Response exposes `boundingBox` directly and `mapPoints` as a `Collection` on `MapPointsResponse`
 - `destination` query parameter filters by receiver/sender eligibility
 
 ### Reload Form Smoke Tests

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Daika7ana\Ecolet\Resources;
 
 use Daika7ana\Ecolet\Client;
-use Daika7ana\Ecolet\DTOs\MapPoints\MapPointsResult;
+use Daika7ana\Ecolet\DTOs\MapPoints\MapPointsResponse;
 use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
 use Daika7ana\Ecolet\Exceptions\ValidationException;
 use Daika7ana\Ecolet\Support\ApiResponseMapper;
@@ -26,7 +26,7 @@ class MapPointsResource
      * @throws UnexpectedStatusException
      * @throws ValidationException
      */
-    public function getMapPoints(string $countryCode, array $filters = []): MapPointsResult
+    public function getMapPoints(string $countryCode, array $filters = []): MapPointsResponse
     {
         $request = $this->client->createRequest('POST', sprintf('/v1/map-points/%s', $countryCode));
 
@@ -38,7 +38,7 @@ class MapPointsResource
 
         return ApiResponseMapper::mapJson(
             $response,
-            static fn(array $data) => MapPointsResult::fromArray($data),
+            static fn(array $data) => MapPointsResponse::fromArray(is_array($data['mapPoints'] ?? null) ? $data['mapPoints'] : []),
         );
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Daika7ana\Ecolet\Tests\Smoke;
 
 use Daika7ana\Ecolet\DTOs\MapPoints\MapPoint;
-use Daika7ana\Ecolet\DTOs\MapPoints\MapPointsResult;
+use Daika7ana\Ecolet\DTOs\MapPoints\MapPointsResponse;
 use Daika7ana\Ecolet\Tests\Smoke\Concerns\InteractsWithAuthenticatedSmokeClient;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -70,8 +70,8 @@ final class MapPointsSmokeTest extends TestCase
     {
         $result = $this->fetchMapPoints();
 
-        $this->assertInstanceOf(MapPointsResult::class, $result);
-        $this->assertNotEmpty($result->mapPoints->mapPoints);
+        $this->assertInstanceOf(MapPointsResponse::class, $result);
+        $this->assertNotEmpty($result->mapPoints);
     }
 
     #[Group('smoke')]
@@ -79,9 +79,9 @@ final class MapPointsSmokeTest extends TestCase
     {
         $result = $this->fetchMapPoints();
 
-        $this->assertNotEmpty($result->mapPoints->mapPoints);
+        $this->assertNotEmpty($result->mapPoints);
 
-        $point = $result->mapPoints->mapPoints[0];
+        $point = $result->mapPoints[0];
         $this->assertInstanceOf(MapPoint::class, $point);
         $this->assertGreaterThan(0, $point->id);
         $this->assertNotSame('', $point->name);
@@ -93,8 +93,8 @@ final class MapPointsSmokeTest extends TestCase
     {
         $result = $this->fetchMapPoints();
 
-        $this->assertNotEmpty($result->mapPoints->boundingBox);
-        $this->assertCount(2, $result->mapPoints->boundingBox);
+        $this->assertNotEmpty($result->boundingBox);
+        $this->assertCount(2, $result->boundingBox);
     }
 
     #[Group('smoke')]
@@ -105,12 +105,12 @@ final class MapPointsSmokeTest extends TestCase
         $senderResult = $client->mapPoints()->getMapPoints(self::COUNTRY, ['destination' => 'sender']);
         $receiverResult = $client->mapPoints()->getMapPoints(self::COUNTRY, ['destination' => 'receiver']);
 
-        $this->assertInstanceOf(MapPointsResult::class, $senderResult);
-        $this->assertInstanceOf(MapPointsResult::class, $receiverResult);
-        $this->assertNotEmpty($receiverResult->mapPoints->mapPoints);
+        $this->assertInstanceOf(MapPointsResponse::class, $senderResult);
+        $this->assertInstanceOf(MapPointsResponse::class, $receiverResult);
+        $this->assertNotEmpty($receiverResult->mapPoints);
     }
 
-    private function fetchMapPoints(): MapPointsResult
+    private function fetchMapPoints(): MapPointsResponse
     {
         $client = $this->makeAuthenticatedClient(self::CONTEXT);
 

@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Daika7ana\Ecolet\DTOs\MapPoints;
 
-final readonly class MapPointsPayload
+use Daika7ana\Ecolet\DTOs\Common\Collection;
+
+final readonly class MapPointsResponse
 {
     /**
      * @param list<list<float>> $boundingBox
-     * @param list<MapPoint> $mapPoints
+     * @param Collection<int, MapPoint> $mapPoints
      */
     public function __construct(
         public array $boundingBox,
-        public array $mapPoints,
+        public Collection $mapPoints,
     ) {}
 
     /**
@@ -45,7 +47,7 @@ final readonly class MapPointsPayload
 
         return new self(
             boundingBox: $boundingBox,
-            mapPoints: $mapPoints,
+            mapPoints: new Collection($mapPoints),
         );
     }
 }
