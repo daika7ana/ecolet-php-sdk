@@ -13,7 +13,7 @@ use ArrayAccess;
 /**
  * @template TKey of array-key
  * @template TValue
- * @implements Countable
+ * @phpstan-consistent-constructor
  * @implements IteratorAggregate<TKey, TValue>
  * @implements ArrayAccess<TKey, TValue>
  */
@@ -80,7 +80,10 @@ class Collection implements Countable, IteratorAggregate, ArrayAccess
      */
     public function values(): static
     {
-        return new static(array_values($this->items));
+        /** @var list<TValue> $values */
+        $values = array_values($this->items);
+
+        return new static($values);
     }
 
     /**
@@ -88,7 +91,10 @@ class Collection implements Countable, IteratorAggregate, ArrayAccess
      */
     public function keys(): static
     {
-        return new static(array_keys($this->items));
+        /** @var list<TKey> $keys */
+        $keys = array_keys($this->items);
+
+        return new static($keys);
     }
 
     /**
@@ -118,23 +124,23 @@ class Collection implements Countable, IteratorAggregate, ArrayAccess
     }
 
     /**
-     * @param callable(TValue, TKey): bool|null $callback
+     * @param (callable(TValue, TKey): bool)|null $callback
      * @return static<TKey, TValue>
      */
     public function filter(?callable $callback = null): static
     {
-        if ($callback === null) {
-            return new static(array_filter($this->items));
-        }
-
         $filteredItems = [];
-
-        foreach ($this->items as $key => $item) {
-            if ($callback($item, $key)) {
-                $filteredItems[$key] = $item;
+        if ($callback === null) {
+            $filteredItems = array_filter($this->items);
+        } else {
+            foreach ($this->items as $key => $item) {
+                if ($callback($item, $key)) {
+                    $filteredItems[$key] = $item;
+                }
             }
         }
 
+        /** @var array<TKey, TValue> $filteredItems */
         return new static($filteredItems);
     }
 
@@ -255,7 +261,7 @@ class Collection implements Countable, IteratorAggregate, ArrayAccess
 
     /**
      * @param TValue ...$items
-     * @return static<TKey, TValue>
+     * @return $this
      */
     public function push(...$items): static
     {
@@ -269,13 +275,14 @@ class Collection implements Countable, IteratorAggregate, ArrayAccess
     /**
      * @param TValue $item
      * @param TKey|null $key
-     * @return static<TKey, TValue>
+     * @return $this
      */
     public function prepend(mixed $item, mixed $key = null): static
     {
         if ($key === null) {
             array_unshift($this->items, $item);
         } else {
+            /** @var TKey $key */
             $this->items = [$key => $item] + $this->items;
         }
 
@@ -283,8 +290,8 @@ class Collection implements Countable, IteratorAggregate, ArrayAccess
     }
 
     /**
-     * @param callable(TValue, TKey): bool|null $callback
-     * @return static<TKey, TValue>
+     * @param callable(TValue, TKey): (bool|null) $callback
+     * @return $this
      */
     public function each(callable $callback): static
     {
@@ -298,13 +305,16 @@ class Collection implements Countable, IteratorAggregate, ArrayAccess
     }
 
     /**
-     * @return array
+     * @return array<TKey, TValue>
      */
     public function toArray(): array
     {
         return $this->items;
     }
 
+    /**
+     * @return array<TKey, TValue>
+     */
     public function all(): array
     {
         return $this->items;
