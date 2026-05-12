@@ -37,7 +37,7 @@ class LocationsResource
 
         $countries = array_map(
             static fn(array $item) => Country::fromArray($item),
-            $data['data'],
+            ApiResponseMapper::listOfArrays($data['data'] ?? null),
         );
 
         return new Collection($countries);
@@ -63,7 +63,7 @@ class LocationsResource
 
         $counties = array_map(
             static fn(array $item) => County::fromArray($item),
-            $data['data'],
+            ApiResponseMapper::listOfArrays($data['data'] ?? null),
         );
 
         return new Collection($counties);
@@ -89,7 +89,7 @@ class LocationsResource
 
         $localities = array_map(
             static fn(array $item) => Locality::fromArray($item),
-            $data['localities'],
+            ApiResponseMapper::listOfArrays($data['localities'] ?? null),
         );
 
         return new Collection($localities);
@@ -113,7 +113,7 @@ class LocationsResource
 
         $data = ApiResponseMapper::decodeJson($response);
 
-        return new Collection($data['streets']);
+        return new Collection(ApiResponseMapper::listOfStrings($data['streets'] ?? null));
     }
 
     /**
@@ -134,8 +134,7 @@ class LocationsResource
 
         $data = ApiResponseMapper::decodeJson($response);
 
-        /** @var list<array{code: string, number?: string|null, block?: string|null}> $postalCodeData */
-        $postalCodeData = $data['postal_codes'];
+        $postalCodeData = ApiResponseMapper::listOfArrays($data['postal_codes'] ?? null);
 
         $postalCodes = array_map(
             static fn(array $item): StreetPostalCode => StreetPostalCode::fromArray($item),

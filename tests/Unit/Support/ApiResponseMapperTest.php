@@ -49,4 +49,14 @@ class ApiResponseMapperTest extends TestCase
         $this->expectException(UnexpectedStatusException::class);
         ApiResponseMapper::decodeJson($response);
     }
+
+    public function testPayloadHelpersNormalizeUnexpectedShapes(): void
+    {
+        $this->assertSame([], ApiResponseMapper::arrayOrEmpty('invalid'));
+        $this->assertSame([
+            ['id' => 1],
+            ['id' => 2],
+        ], ApiResponseMapper::listOfArrays(['invalid', ['id' => 1], 12, ['id' => 2]]));
+        $this->assertSame(['one', '2', '1'], ApiResponseMapper::listOfStrings(['one', 2, ['skip'], true]));
+    }
 }

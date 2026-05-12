@@ -44,13 +44,16 @@ final readonly class User
      */
     public static function fromArray(array $data): self
     {
+        $forbiddenCourierItems = is_array($data['forbidden_couriers'] ?? null) ? $data['forbidden_couriers'] : [];
+        $forbiddenServiceItems = is_array($data['forbidden_services'] ?? null) ? $data['forbidden_services'] : [];
+
         $forbiddenCouriers = array_values(array_filter(
-            array_map(static fn(mixed $item): ?string => is_scalar($item) ? (string) $item : null, $data['forbidden_couriers'] ?? []),
+            array_map(static fn(mixed $item): ?string => is_scalar($item) ? (string) $item : null, $forbiddenCourierItems),
             static fn(?string $item): bool => $item !== null,
         ));
 
         $forbiddenServices = array_values(array_filter(
-            array_map(static fn(mixed $item): ?string => is_scalar($item) ? (string) $item : null, $data['forbidden_services'] ?? []),
+            array_map(static fn(mixed $item): ?string => is_scalar($item) ? (string) $item : null, $forbiddenServiceItems),
             static fn(?string $item): bool => $item !== null,
         ));
 

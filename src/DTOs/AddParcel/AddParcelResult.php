@@ -38,7 +38,7 @@ final readonly class AddParcelResult
         $orderToSendId = null;
 
         // Detect response type: reload-form has 'form', send/save have 'order_to_send_id'
-        if (isset($data['form'])) {
+        if (is_array($data['form'] ?? null)) {
             $formResponse = AddParcelFormResponse::fromArray($data['form']);
         } elseif (isset($data['order_to_send_id'])) {
             $orderToSendId = (int) $data['order_to_send_id'];

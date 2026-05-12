@@ -13,14 +13,14 @@ final readonly class StreetPostalCode
     ) {}
 
     /**
-     * @param array{code: string, number?: ?string, block?: ?string} $data
+     * @param array<string, mixed> $data
      */
     public static function fromArray(array $data): self
     {
         return new self(
-            code: $data['code'],
-            number: $data['number'] ?? null,
-            block: $data['block'] ?? null,
+            code: (string) ($data['code'] ?? ''),
+            number: isset($data['number']) ? (string) $data['number'] : null,
+            block: isset($data['block']) ? (string) $data['block'] : null,
         );
     }
 }

@@ -53,7 +53,7 @@ final readonly class Order
         $order = is_array($data['data'] ?? null) ? $data['data'] : $data;
 
         $fees = [];
-        foreach ($order['fees'] ?? [] as $fee) {
+        foreach (is_array($order['fees'] ?? null) ? $order['fees'] : [] as $fee) {
             if (!is_array($fee)) {
                 continue;
             }
@@ -62,7 +62,7 @@ final readonly class Order
         }
 
         $statuses = [];
-        foreach ($order['statuses'] ?? [] as $status) {
+        foreach (is_array($order['statuses'] ?? null) ? $order['statuses'] : [] as $status) {
             if (!is_array($status)) {
                 continue;
             }

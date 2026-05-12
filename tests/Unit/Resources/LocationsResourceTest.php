@@ -177,6 +177,54 @@ class LocationsResourceTest extends TestCase
         $this->assertSame('/api/v1/locations/13751/search-street-postal-codes/Pia%C5%A3%C4%83%20Roman%C4%83', $httpClient->lastRequest?->getUri()->getPath());
     }
 
+    public function testLocationCollectionsIgnoreMalformedItems(): void
+    {
+        $httpClient = new FakeHttpClient(
+            static fn() => new Response(200, [], json_encode([
+                'data' => [
+                    'invalid',
+                    ['id' => 1, 'code' => 'RO', 'name' => 'Romania'],
+                ],
+            ], JSON_THROW_ON_ERROR)),
+        );
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: new ClientConfig(),
+        );
+
+        $countries = $client->locations()->getCountries();
+
+        $this->assertSame(1, $countries->count());
+        $this->assertSame('RO', $countries->first()?->code);
+    }
+
+    public function testSearchStreetsFiltersToScalarValues(): void
+    {
+        $httpClient = new FakeHttpClient(
+            static fn() => new Response(200, [], json_encode([
+                'streets' => ['Piaţă Romană', 42, ['skip']],
+            ], JSON_THROW_ON_ERROR)),
+        );
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: new ClientConfig(),
+        );
+
+        $streets = $client->locations()->searchStreets(13751, 'Piaţă Romană');
+
+        $this->assertSame(2, $streets->count());
+        $this->assertSame('Piaţă Romană', $streets->first());
+        $this->assertSame('42', $streets->last());
+    }
+
     public function testSearchStreetsByPostalCodeKeepsValidationFlagAndStreetDetails(): void
     {
         $httpClient = new FakeHttpClient(

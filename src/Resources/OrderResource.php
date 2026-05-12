@@ -97,8 +97,7 @@ class OrderResource
 
         $data = ApiResponseMapper::decodeJson($response);
 
-        /** @var list<array<string, mixed>> $statusItems */
-        $statusItems = $data['data'] ?? [];
+        $statusItems = ApiResponseMapper::listOfArrays($data['data'] ?? null);
 
         $statuses = array_map(
             static fn(array $item) => OrderWithStatuses::fromArray($item),

@@ -157,6 +157,41 @@ class OrderResourceTest extends TestCase
         $this->assertSame('{"awbs":["80438360579"]}', (string) $httpClient->lastRequest?->getBody());
     }
 
+    public function testGetStatusesForManyOrdersIgnoresMalformedItems(): void
+    {
+        [$client, ] = TestClientFactory::create(
+            static fn() => new Response(200, [], json_encode([
+                'data' => [
+                    'invalid',
+                    [
+                        'id' => 123,
+                        'awb' => '80438360579',
+                        'courier' => 'dpd',
+                        'status' => 'new',
+                        'statuses' => [
+                            'invalid',
+                            [
+                                'name' => 'new',
+                                'real_name' => 'Shipment data received',
+                                'created_at' => '2022-12-21T19:43:40.000000Z',
+                            ],
+                        ],
+                        'updated_at' => '2022-12-21T19:43:40.000000Z',
+                        'created_at' => '2022-12-21T19:40:00.000000Z',
+                    ],
+                ],
+            ], JSON_THROW_ON_ERROR)),
+        );
+
+        $orders = $client->orders()->getStatusesForManyOrders(['80438360579']);
+        $firstOrder = $orders->first();
+
+        $this->assertSame(1, $orders->count());
+        $this->assertNotNull($firstOrder);
+        $this->assertCount(1, $firstOrder->statuses);
+        $this->assertSame('new', $firstOrder->statuses[0]->name);
+    }
+
     public function testDownloadWaybillReturnsWaybillDocument(): void
     {
         [$client, $httpClient] = TestClientFactory::create(

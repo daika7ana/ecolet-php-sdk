@@ -19,7 +19,7 @@ final readonly class CouponInfo
     public static function fromArray(array $data): self
     {
         return new self(
-            code: $data['code'],
+            code: (string) ($data['code'] ?? ''),
         );
     }
 

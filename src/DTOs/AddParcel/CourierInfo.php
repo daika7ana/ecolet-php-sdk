@@ -21,7 +21,7 @@ final readonly class CourierInfo
     public static function fromArray(array $data): self
     {
         return new self(
-            pickup: CourierPickup::fromArray($data['pickup']),
+            pickup: CourierPickup::fromArray(is_array($data['pickup'] ?? null) ? $data['pickup'] : []),
             service: isset($data['service']) ? (string) $data['service'] : null,
             contractId: isset($data['contract_id']) ? (int) $data['contract_id'] : null,
         );

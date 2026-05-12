@@ -23,7 +23,7 @@ final readonly class StreetsByPostalCodeResult
     {
         $streetItems = [];
 
-        foreach ($data['streets'] ?? [] as $street) {
+        foreach (is_array($data['streets'] ?? null) ? $data['streets'] : [] as $street) {
             if (!is_array($street)) {
                 continue;
             }

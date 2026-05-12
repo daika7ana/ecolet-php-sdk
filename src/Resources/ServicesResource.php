@@ -34,7 +34,7 @@ class ServicesResource
 
         $services = array_map(
             static fn(array $item) => Service::fromArray($item),
-            $data['services'],
+            ApiResponseMapper::listOfArrays($data['services'] ?? null),
         );
 
         return new Collection($services);
