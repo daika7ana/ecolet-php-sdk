@@ -81,4 +81,33 @@ class ServicesResourceTest extends TestCase
         $this->assertTrue($firstService->conditions?->hasCod);
         $this->assertSame('/api/v1/services', $httpClient->lastRequest?->getUri()->getPath());
     }
+
+    public function testGetServicesIgnoresMalformedItems(): void
+    {
+        $httpClient = new FakeHttpClient(
+            static fn() => new Response(200, [], json_encode([
+                'services' => [
+                    'invalid',
+                    [
+                        'id' => 1,
+                        'slug' => 'dpd_standard',
+                        'name' => 'Standard',
+                    ],
+                ],
+            ], JSON_THROW_ON_ERROR)),
+        );
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: new ClientConfig(),
+        );
+
+        $services = $client->services()->getServices();
+
+        $this->assertSame(1, $services->count());
+        $this->assertSame('dpd_standard', $services->first()?->slug);
+    }
 }

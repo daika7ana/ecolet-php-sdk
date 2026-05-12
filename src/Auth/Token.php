@@ -59,9 +59,9 @@ final readonly class Token
         }
 
         return new self(
-            accessToken: $data['access_token'],
-            tokenType: $data['token_type'] ?? 'Bearer',
-            refreshToken: $data['refresh_token'] ?? null,
+            accessToken: (string) ($data['access_token'] ?? ''),
+            tokenType: (string) ($data['token_type'] ?? 'Bearer'),
+            refreshToken: isset($data['refresh_token']) ? (string) $data['refresh_token'] : null,
             expiresAt: $expiresAt,
         );
     }
@@ -74,13 +74,13 @@ final readonly class Token
         $expiresAt = null;
 
         if (isset($data['expires_in'])) {
-            $expiresAt = new DateTimeImmutable(sprintf('+%d seconds', $data['expires_in']));
+            $expiresAt = new DateTimeImmutable(sprintf('+%d seconds', (int) $data['expires_in']));
         }
 
         return new self(
-            accessToken: $data['access_token'],
-            tokenType: $data['token_type'] ?? 'Bearer',
-            refreshToken: $data['refresh_token'] ?? null,
+            accessToken: (string) ($data['access_token'] ?? ''),
+            tokenType: (string) ($data['token_type'] ?? 'Bearer'),
+            refreshToken: isset($data['refresh_token']) ? (string) $data['refresh_token'] : null,
             expiresAt: $expiresAt,
         );
     }

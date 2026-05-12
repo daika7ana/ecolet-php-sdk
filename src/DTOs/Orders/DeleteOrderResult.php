@@ -22,7 +22,7 @@ final readonly class DeleteOrderResult
     {
         $messages = [];
 
-        foreach ($data['data'] ?? [] as $item) {
+        foreach (is_array($data['data'] ?? null) ? $data['data'] : [] as $item) {
             if (is_string($item)) {
                 $messages[] = $item;
 

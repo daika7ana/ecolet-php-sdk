@@ -23,9 +23,9 @@ final readonly class ParcelDimensions
     public static function fromArray(array $data): self
     {
         return new self(
-            length: (int) $data['length'],
-            width: (int) $data['width'],
-            height: (int) $data['height'],
+            length: (int) ($data['length'] ?? 0),
+            width: (int) ($data['width'] ?? 0),
+            height: (int) ($data['height'] ?? 0),
         );
     }
 

@@ -29,6 +29,6 @@ class UserResource
 
         $data = ApiResponseMapper::decodeJson($response);
 
-        return User::fromArray($data['user']);
+        return User::fromArray(ApiResponseMapper::arrayOrEmpty($data['user'] ?? null));
     }
 }

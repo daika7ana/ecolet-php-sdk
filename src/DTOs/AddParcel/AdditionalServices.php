@@ -27,18 +27,35 @@ final readonly class AdditionalServices
      */
     public static function fromArray(array $data): self
     {
+        $cod = self::arrayOrEmpty($data['cod'] ?? null);
+        $openPackage = self::arrayOrEmpty($data['open_package'] ?? null);
+        $rod = self::arrayOrEmpty($data['rod'] ?? null);
+        $rop = self::arrayOrEmpty($data['rop'] ?? null);
+        $saturdayDelivery = self::arrayOrEmpty($data['saturday_delivery'] ?? null);
+        $smsNotify = self::arrayOrEmpty($data['sms_notify'] ?? null);
+        $swap = self::arrayOrEmpty($data['swap'] ?? null);
+        $epod = self::arrayOrEmpty($data['epod'] ?? null);
+
         return new self(
-            cod: (bool) ($data['cod']['status'] ?? false),
-            codAmount: isset($data['cod']['amount']) ? (float) $data['cod']['amount'] : null,
-            openPackage: (bool) ($data['open_package']['status'] ?? false),
-            rod: (bool) ($data['rod']['status'] ?? false),
-            rodCode: isset($data['rod']['rod_code']) ? (string) $data['rod']['rod_code'] : null,
-            rop: (bool) ($data['rop']['status'] ?? false),
-            saturdayDelivery: (bool) ($data['saturday_delivery']['status'] ?? false),
-            smsNotify: (bool) ($data['sms_notify']['status'] ?? false),
-            swap: (bool) ($data['swap']['status'] ?? false),
-            epod: (bool) ($data['epod']['status'] ?? false),
+            cod: (bool) ($cod['status'] ?? false),
+            codAmount: isset($cod['amount']) ? (float) $cod['amount'] : null,
+            openPackage: (bool) ($openPackage['status'] ?? false),
+            rod: (bool) ($rod['status'] ?? false),
+            rodCode: isset($rod['rod_code']) ? (string) $rod['rod_code'] : null,
+            rop: (bool) ($rop['status'] ?? false),
+            saturdayDelivery: (bool) ($saturdayDelivery['status'] ?? false),
+            smsNotify: (bool) ($smsNotify['status'] ?? false),
+            swap: (bool) ($swap['status'] ?? false),
+            epod: (bool) ($epod['status'] ?? false),
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function arrayOrEmpty(mixed $value): array
+    {
+        return is_array($value) ? $value : [];
     }
 
     /**

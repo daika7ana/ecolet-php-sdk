@@ -74,4 +74,27 @@ class UserResourceTest extends TestCase
         $this->assertSame(['5'], $user->forbiddenServices);
         $this->assertSame('/api/v1/me', $httpClient->lastRequest?->getUri()->getPath());
     }
+
+    public function testGetMeIgnoresMalformedUserPayload(): void
+    {
+        $httpClient = new FakeHttpClient(
+            static fn() => new Response(200, [], json_encode([
+                'user' => 'invalid',
+            ], JSON_THROW_ON_ERROR)),
+        );
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: new ClientConfig(),
+        );
+
+        $user = $client->users()->getMe();
+
+        $this->assertSame(0, $user->id);
+        $this->assertSame('', $user->name);
+        $this->assertSame([], $user->forbiddenCouriers);
+    }
 }

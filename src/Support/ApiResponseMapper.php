@@ -41,6 +41,54 @@ final class ApiResponseMapper
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    public static function arrayOrEmpty(mixed $value): array
+    {
+        return is_array($value) ? $value : [];
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public static function listOfArrays(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+
+        $items = [];
+
+        foreach ($value as $item) {
+            if (is_array($item)) {
+                $items[] = $item;
+            }
+        }
+
+        return $items;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function listOfStrings(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+
+        $items = [];
+
+        foreach ($value as $item) {
+            if (is_scalar($item)) {
+                $items[] = (string) $item;
+            }
+        }
+
+        return $items;
+    }
+
+    /**
      * @throws UnexpectedStatusException
      * @throws ValidationException
      */

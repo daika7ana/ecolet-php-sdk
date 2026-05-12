@@ -37,20 +37,30 @@ final readonly class AddParcelRequest
 
         // Build parcels list
         $parcelsList = [];
-        foreach (($payload['parcels'] ?? []) as $parcelData) {
-            $parcelsList[] = ParcelDetails::fromArray($parcelData);
+        foreach (self::arrayOrEmpty($payload['parcels'] ?? null) as $parcelData) {
+            if (is_array($parcelData)) {
+                $parcelsList[] = ParcelDetails::fromArray($parcelData);
+            }
         }
 
         return new self(
-            sender: RecipientAddress::fromArray($payload['sender']),
-            receiver: RecipientAddress::fromArray($payload['receiver']),
-            parcel: ParcelDetails::fromArray($payload['parcel']),
-            additionalServices: AdditionalServices::fromArray($payload['additional_services'] ?? []),
-            courier: CourierInfo::fromArray($payload['courier']),
+            sender: RecipientAddress::fromArray(self::arrayOrEmpty($payload['sender'] ?? null)),
+            receiver: RecipientAddress::fromArray(self::arrayOrEmpty($payload['receiver'] ?? null)),
+            parcel: ParcelDetails::fromArray(self::arrayOrEmpty($payload['parcel'] ?? null)),
+            additionalServices: AdditionalServices::fromArray(self::arrayOrEmpty($payload['additional_services'] ?? null)),
+            courier: CourierInfo::fromArray(self::arrayOrEmpty($payload['courier'] ?? null)),
             parcels: $parcelsList,
-            shipmentDetails: isset($payload['shipment_details']) ? ShipmentDetails::fromArray($payload['shipment_details']) : null,
-            coupon: isset($payload['coupon']) ? CouponInfo::fromArray($payload['coupon']) : null,
+            shipmentDetails: is_array($payload['shipment_details'] ?? null) ? ShipmentDetails::fromArray($payload['shipment_details']) : null,
+            coupon: is_array($payload['coupon'] ?? null) ? CouponInfo::fromArray($payload['coupon']) : null,
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function arrayOrEmpty(mixed $value): array
+    {
+        return is_array($value) ? $value : [];
     }
 
     /**

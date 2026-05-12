@@ -24,7 +24,7 @@ final readonly class MapPointsResponse
     {
         $boundingBox = [];
 
-        foreach ($data['boundingBox'] ?? [] as $boxPoint) {
+        foreach (is_array($data['boundingBox'] ?? null) ? $data['boundingBox'] : [] as $boxPoint) {
             if (!is_array($boxPoint)) {
                 continue;
             }
@@ -37,7 +37,7 @@ final readonly class MapPointsResponse
 
         $mapPoints = [];
 
-        foreach ($data['mapPoints'] ?? [] as $mapPoint) {
+        foreach (is_array($data['mapPoints'] ?? null) ? $data['mapPoints'] : [] as $mapPoint) {
             if (!is_array($mapPoint)) {
                 continue;
             }

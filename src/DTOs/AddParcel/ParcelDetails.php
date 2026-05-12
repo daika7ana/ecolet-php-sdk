@@ -32,10 +32,10 @@ final readonly class ParcelDetails
     public static function fromArray(array $data): self
     {
         return new self(
-            type: ParcelType::tryFrom($data['type'] ?? '') ?? ParcelType::Package,
+            type: ParcelType::tryFrom((string) ($data['type'] ?? '')) ?? ParcelType::Package,
             weight: isset($data['weight']) ? (int) $data['weight'] : null,
-            dimensions: isset($data['dimensions']) ? ParcelDimensions::fromArray($data['dimensions']) : null,
-            shape: isset($data['shape']) ? ParcelShape::tryFrom($data['shape']) : null,
+            dimensions: is_array($data['dimensions'] ?? null) ? ParcelDimensions::fromArray($data['dimensions']) : null,
+            shape: isset($data['shape']) ? ParcelShape::tryFrom((string) $data['shape']) : null,
             declaredValue: isset($data['declared_value']) ? (float) $data['declared_value'] : null,
             amount: (int) ($data['amount'] ?? 1),
             content: isset($data['content']) ? (string) $data['content'] : null,

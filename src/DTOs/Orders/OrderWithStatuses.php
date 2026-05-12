@@ -26,7 +26,7 @@ final readonly class OrderWithStatuses
     {
         $statuses = [];
 
-        foreach ($data['statuses'] ?? [] as $status) {
+        foreach (is_array($data['statuses'] ?? null) ? $data['statuses'] : [] as $status) {
             if (!is_array($status)) {
                 continue;
             }

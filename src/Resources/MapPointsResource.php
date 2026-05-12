@@ -38,7 +38,7 @@ class MapPointsResource
 
         return ApiResponseMapper::mapJson(
             $response,
-            static fn(array $data) => MapPointsResponse::fromArray(is_array($data['mapPoints'] ?? null) ? $data['mapPoints'] : []),
+            static fn(array $data) => MapPointsResponse::fromArray(ApiResponseMapper::arrayOrEmpty($data['mapPoints'] ?? null)),
         );
     }
 }

@@ -24,7 +24,7 @@ final readonly class CourierPickup
     public static function fromArray(array $data): self
     {
         return new self(
-            type: CourierPickupType::tryFrom($data['type'] ?? '') ?? CourierPickupType::Courier,
+            type: CourierPickupType::tryFrom((string) ($data['type'] ?? '')) ?? CourierPickupType::Courier,
             day: isset($data['day']) ? (string) $data['day'] : null,
             date: isset($data['date']) ? (string) $data['date'] : null,
             time: isset($data['time']) ? (string) $data['time'] : null,

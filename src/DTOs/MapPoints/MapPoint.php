@@ -34,7 +34,7 @@ final readonly class MapPoint
     {
         $couriers = [];
 
-        foreach ($data['couriers'] ?? [] as $courier) {
+        foreach (is_array($data['couriers'] ?? null) ? $data['couriers'] : [] as $courier) {
             if (!is_array($courier)) {
                 continue;
             }
