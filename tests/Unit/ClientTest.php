@@ -278,4 +278,58 @@ class ClientTest extends TestCase
         $this->assertSame('refresh_token', $payload['grant_type']);
         $this->assertSame('refresh-token', $payload['refresh_token']);
     }
+
+    public function testGlobalTimeoutIsForwardedToHttpClient(): void
+    {
+        $httpClient = new FakeHttpClient(static fn() => new Response(200, [], '{}'));
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: new ClientConfig(timeout: 15.0),
+        );
+
+        $request = $client->createRequest('GET', '/v1/me');
+        $client->send($request);
+
+        $this->assertSame(15.0, $httpClient->lastTimeout);
+    }
+
+    public function testPerRequestTimeoutOverridesGlobalTimeout(): void
+    {
+        $httpClient = new FakeHttpClient(static fn() => new Response(200, [], '{}'));
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: new ClientConfig(timeout: 15.0),
+        );
+
+        $request = $client->createRequest('GET', '/v1/me');
+        $client->send($request, 5.0);
+
+        $this->assertSame(5.0, $httpClient->lastTimeout);
+    }
+
+    public function testNoTimeoutByDefault(): void
+    {
+        $httpClient = new FakeHttpClient(static fn() => new Response(200, [], '{}'));
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: new ClientConfig(),
+        );
+
+        $request = $client->createRequest('GET', '/v1/me');
+        $client->send($request);
+
+        $this->assertNull($httpClient->lastTimeout);
+    }
 }

@@ -21,6 +21,7 @@ final class ClientConfig
         public string $clientSecret = '',
         public string $scope = '',
         public string $acceptLanguage = 'en',
+        public ?float $timeout = null,
     ) {}
 
     public function withToken(Token $token): self
@@ -53,6 +54,14 @@ final class ClientConfig
         $config->clientId = $clientId;
         $config->clientSecret = $clientSecret;
         $config->scope = $scope;
+
+        return $config;
+    }
+
+    public function withTimeout(?float $timeout): self
+    {
+        $config = clone $this;
+        $config->timeout = $timeout;
 
         return $config;
     }

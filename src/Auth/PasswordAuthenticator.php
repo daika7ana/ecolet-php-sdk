@@ -44,7 +44,7 @@ class PasswordAuthenticator
         ]);
 
         try {
-            $response = $this->httpClient->sendRequest($request);
+            $response = $this->httpClient->sendRequest($request, $this->config->timeout);
         } catch (TransportException $e) {
             throw $e;
         }
@@ -81,7 +81,7 @@ class PasswordAuthenticator
         ]);
 
         try {
-            $response = $this->httpClient->sendRequest($request);
+            $response = $this->httpClient->sendRequest($request, $this->config->timeout);
         } catch (TransportException $e) {
             throw $e;
         }
