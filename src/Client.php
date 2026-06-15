@@ -143,7 +143,7 @@ class Client
         return $request;
     }
 
-    public function send(RequestInterface $request): ResponseInterface
+    public function send(RequestInterface $request, ?float $timeout = null): ResponseInterface
     {
         if ($request->hasHeader('Authorization')) {
             $token = $this->currentToken();
@@ -158,7 +158,9 @@ class Client
             }
         }
 
-        return $this->httpClient->sendRequest($request);
+        $effectiveTimeout = $timeout ?? $this->config->timeout;
+
+        return $this->httpClient->sendRequest($request, $effectiveTimeout);
     }
 
     public function streamFactory(): StreamFactoryInterface

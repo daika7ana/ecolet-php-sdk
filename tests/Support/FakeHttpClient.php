@@ -13,6 +13,8 @@ final class FakeHttpClient implements HttpClientInterface
 {
     public ?RequestInterface $lastRequest = null;
 
+    public ?float $lastTimeout = null;
+
     /** @var callable(RequestInterface): ResponseInterface */
     private $handler;
 
@@ -24,9 +26,10 @@ final class FakeHttpClient implements HttpClientInterface
         $this->handler = $handler;
     }
 
-    public function sendRequest(RequestInterface $request): ResponseInterface
+    public function sendRequest(RequestInterface $request, ?float $timeout = null): ResponseInterface
     {
         $this->lastRequest = $request;
+        $this->lastTimeout = $timeout;
 
         $handler = $this->handler;
         $response = $handler($request);

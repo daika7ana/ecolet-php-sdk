@@ -176,4 +176,66 @@ class PasswordAuthenticatorTest extends TestCase
         $this->expectException(AuthenticationException::class);
         $authenticator->refresh('bad-refresh-token');
     }
+
+    public function testAuthRequestsForwardConfigTimeout(): void
+    {
+        $config = (new ClientConfig(baseUrl: ClientConfig::BASE_URL_STAGING))
+            ->withOAuthCredentials('client-id', 'client-secret')
+            ->withTimeout(20.0);
+
+        $httpClient = new FakeHttpClient(
+            static fn() => new Response(200, [], json_encode([
+                'token_type' => 'Bearer',
+                'expires_in' => 3600,
+                'access_token' => 'access-123',
+                'refresh_token' => 'refresh-123',
+            ], JSON_THROW_ON_ERROR)),
+        );
+
+        $factory = new HttpFactory();
+
+        $authenticator = new PasswordAuthenticator(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            username: 'user@example.com',
+            password: 'secret',
+            config: $config,
+        );
+
+        $authenticator->authenticate();
+
+        $this->assertSame(20.0, $httpClient->lastTimeout);
+    }
+
+    public function testRefreshRequestsForwardConfigTimeout(): void
+    {
+        $config = (new ClientConfig(baseUrl: ClientConfig::BASE_URL_STAGING))
+            ->withOAuthCredentials('client-id', 'client-secret')
+            ->withTimeout(25.0);
+
+        $httpClient = new FakeHttpClient(
+            static fn() => new Response(200, [], json_encode([
+                'token_type' => 'Bearer',
+                'expires_in' => 3600,
+                'access_token' => 'new-access-token',
+                'refresh_token' => 'new-refresh-token',
+            ], JSON_THROW_ON_ERROR)),
+        );
+
+        $factory = new HttpFactory();
+
+        $authenticator = new PasswordAuthenticator(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            username: 'user@example.com',
+            password: 'secret',
+            config: $config,
+        );
+
+        $authenticator->refresh('refresh-token');
+
+        $this->assertSame(25.0, $httpClient->lastTimeout);
+    }
 }

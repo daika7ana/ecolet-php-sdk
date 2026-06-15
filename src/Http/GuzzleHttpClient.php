@@ -19,9 +19,13 @@ class GuzzleHttpClient implements HttpClientInterface
     /**
      * @throws TransportException
      */
-    public function sendRequest(RequestInterface $request): ResponseInterface
+    public function sendRequest(RequestInterface $request, ?float $timeout = null): ResponseInterface
     {
         try {
+            if ($timeout !== null) {
+                return $this->guzzleClient->send($request, ['timeout' => $timeout]);
+            }
+
             return $this->guzzleClient->sendRequest($request);
         } catch (GuzzleException $e) {
             throw new TransportException(

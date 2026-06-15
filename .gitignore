@@ -11,6 +11,7 @@
 # IDE
 /.idea/
 /.vscode/
+/.codegraph/
 *.sublime-project
 *.sublime-workspace
 
