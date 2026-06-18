@@ -24,6 +24,7 @@ final readonly class AddParcelRequest
         public array $parcels,
         public ?ShipmentDetails $shipmentDetails = null,
         public ?CouponInfo $coupon = null,
+        public ?string $source = null,
     ) {}
 
     /**
@@ -52,6 +53,7 @@ final readonly class AddParcelRequest
             parcels: $parcelsList,
             shipmentDetails: is_array($payload['shipment_details'] ?? null) ? ShipmentDetails::fromArray($payload['shipment_details']) : null,
             coupon: is_array($payload['coupon'] ?? null) ? CouponInfo::fromArray($payload['coupon']) : null,
+            source: is_string($payload['source'] ?? null) ? $payload['source'] : null,
         );
     }
 
@@ -75,6 +77,7 @@ final readonly class AddParcelRequest
         AdditionalServices $additionalServices,
         CourierInfo $courier,
         array $parcels,
+        ?string $source = null,
     ): self {
         return new self(
             sender: $sender,
@@ -83,6 +86,7 @@ final readonly class AddParcelRequest
             additionalServices: $additionalServices,
             courier: $courier,
             parcels: $parcels,
+            source: $source,
         );
     }
 
@@ -113,6 +117,10 @@ final readonly class AddParcelRequest
 
         if ($this->coupon !== null) {
             $data['coupon'] = $this->coupon->toArray();
+        }
+
+        if ($this->source !== null) {
+            $data['source'] = $this->source;
         }
 
         return $data;

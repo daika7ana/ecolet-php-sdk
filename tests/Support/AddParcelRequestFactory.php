@@ -22,6 +22,7 @@ final class AddParcelRequestFactory
         ?AdditionalServices $additionalServices = null,
         ?CourierInfo $courier = null,
         ?array $parcels = null,
+        ?string $source = null,
     ): AddParcelRequest {
         $mainParcel = $parcel ?? self::parcel();
         $parcelItems = $parcels ?? [$mainParcel];
@@ -33,6 +34,7 @@ final class AddParcelRequestFactory
             additionalServices: $additionalServices ?? new AdditionalServices(),
             courier: $courier ?? self::selfPickup(),
             parcels: $parcelItems,
+            source: $source,
         );
     }
 
