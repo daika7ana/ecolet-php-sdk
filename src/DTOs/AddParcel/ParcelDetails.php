@@ -6,6 +6,7 @@ namespace Daika7ana\Ecolet\DTOs\AddParcel;
 
 use Daika7ana\Ecolet\Enums\ParcelShape;
 use Daika7ana\Ecolet\Enums\ParcelType;
+use Daika7ana\Ecolet\Exceptions\ValidationException;
 
 /**
  * Parcel details for add-parcel operations.
@@ -31,8 +32,15 @@ final readonly class ParcelDetails
      */
     public static function fromArray(array $data): self
     {
+        $type = (string) ($data['type'] ?? '');
+        $parcelType = $type === '' ? ParcelType::Package : ParcelType::tryFrom($type);
+
+        if ($parcelType === null) {
+            throw new ValidationException([], sprintf("Unknown parcel type '%s'.", $type));
+        }
+
         return new self(
-            type: ParcelType::tryFrom((string) ($data['type'] ?? '')) ?? ParcelType::Package,
+            type: $parcelType,
             weight: isset($data['weight']) ? (int) $data['weight'] : null,
             dimensions: is_array($data['dimensions'] ?? null) ? ParcelDimensions::fromArray($data['dimensions']) : null,
             shape: isset($data['shape']) ? ParcelShape::tryFrom((string) $data['shape']) : null,

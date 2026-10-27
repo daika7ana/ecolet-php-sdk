@@ -6,6 +6,7 @@ namespace Daika7ana\Ecolet\Support;
 
 use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
 use Daika7ana\Ecolet\Exceptions\ValidationException;
+use JsonException;
 use Psr\Http\Message\ResponseInterface;
 
 final class ApiResponseMapper
@@ -20,7 +21,14 @@ final class ApiResponseMapper
     {
         self::assertStatus($response, $expectedStatus);
 
-        return JsonHelper::decode((string) $response->getBody());
+        try {
+            return JsonHelper::decode((string) $response->getBody());
+        } catch (JsonException $e) {
+            throw new UnexpectedStatusException(
+                $response,
+                'Response body is not valid JSON: ' . $e->getMessage(),
+            );
+        }
     }
 
     /**

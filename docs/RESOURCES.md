@@ -66,6 +66,7 @@ These methods intentionally use v2 endpoints only. All add-parcel operations acc
 ### Reload Form (Preview Pricing & Services)
 
 ```php
+use Daika7ana\Ecolet\DTOs\AddParcel\AdditionalServices;
 use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelRequest;
 use Daika7ana\Ecolet\DTOs\AddParcel\CourierInfo;
 use Daika7ana\Ecolet\DTOs\AddParcel\CourierPickup;
@@ -73,13 +74,17 @@ use Daika7ana\Ecolet\DTOs\AddParcel\ParcelDetails;
 use Daika7ana\Ecolet\DTOs\AddParcel\RecipientAddress;
 use Daika7ana\Ecolet\Enums\CourierPickupType;
 
+$parcel = new ParcelDetails(...);
+
 $request = new AddParcelRequest(
     sender: new RecipientAddress(...),
     receiver: new RecipientAddress(...),
-    parcel: new ParcelDetails(...),
+    parcel: $parcel,
+    additionalServices: new AdditionalServices(),
     courier: new CourierInfo(
         pickup: new CourierPickup(type: CourierPickupType::Courier),
     ),
+    parcels: [$parcel],
 );
 
 $result = $client->addParcel()->reloadForm($request);
@@ -129,11 +134,11 @@ All add-parcel operations use `AddParcelRequest` containing:
 - `sender`: `RecipientAddress` — Sender details
 - `receiver`: `RecipientAddress` — Receiver details
 - `parcel`: `ParcelDetails` — Parcel type, weight, dimensions, declared value
-- `parcels`: `array<ParcelDetails>` (optional) — Multiple parcels for multipack shipments
-- `additionalServices`: `AdditionalServices` (optional) — COD, open package, etc.
+- `parcels`: `array<ParcelDetails>` — All parcels for the shipment (use `[$parcel]` for a single parcel)
+- `additionalServices`: `AdditionalServices` — COD, open package, etc. (use `new AdditionalServices()` for none)
 - `courier`: `CourierInfo` — Pickup method and service selection
 - `shipmentDetails`: `ShipmentDetails` (optional) — UIT code, forklift details
-- `couponInfo`: `CouponInfo` (optional) — Promotion code
+- `coupon`: `CouponInfo` (optional) — Promotion code
 
 ### Response DTO Methods
 

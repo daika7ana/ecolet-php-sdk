@@ -15,12 +15,21 @@ Base URL selection is controlled through `ClientConfig`.
 - **Default (test mode disabled):** Production base URL
 - **Test mode enabled:** Staging base URL
 
-To switch to staging globally:
+To switch the default to staging for tests:
 
 ```php
 use Daika7ana\Ecolet\Config\ClientConfig;
 
-ClientConfig::setTestMode(true);  // Staging
+ClientConfig::setTestMode(true);  // Staging for every client created afterwards
+```
+
+This static flag applies to every client created later in the same process, so application code should use an explicit base URL instead:
+
+```php
+use Daika7ana\Ecolet\Client;
+use Daika7ana\Ecolet\Config\ClientConfig;
+
+$client = Client::create(config: new ClientConfig(baseUrl: ClientConfig::BASE_URL_STAGING));
 ```
 
 To return to production:
@@ -89,13 +98,13 @@ $config = $config->withoutToken();
 
 ## Token Storage Behavior
 
-- By default, the client uses an in-memory token store (`InMemoryTokenStore`).
-- You can provide a custom token store by passing `tokenStore` to `Client::create(...)`.
+- By default, the client uses an in-memory token store (`InMemoryTokenStore`). It lives as long as the `Client` object, so under PHP-FPM it is lost after each request and the password grant runs again.
+- You can provide a custom token store by passing `tokenStore` to `Client::create(...)`; use one that outlives the request to reuse a token across requests and processes.
 - On authentication or refresh, the token is written to both runtime config and token store.
 
 ## Optional: Coupling with HttpFoundationBridge
 
-Use this only when your app already works with Symfony HttpFoundation objects and you want to bridge to the PSR-based client.
+Use this only when your app already works with Symfony HttpFoundation objects and you want to bridge to the PSR-based client. The bridge needs Symfony's HttpFoundation, which this package does not install: `composer require symfony/http-foundation`.
 
 ```php
 use Daika7ana\Ecolet\Client;

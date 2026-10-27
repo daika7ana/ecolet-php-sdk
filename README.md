@@ -92,13 +92,15 @@ That's it! You've got a fully authenticated client ready to fetch courier data.
 
 ### Base URL & Environment
 
-By default, the client runs against **production**. To enable staging globally:
+By default, the client runs against **production**. For tests, you can switch the default to staging with a global flag:
 
 ```php
 use Daika7ana\Ecolet\Config\ClientConfig;
 
-ClientConfig::setTestMode(true);  // Enable staging
+ClientConfig::setTestMode(true);  // staging for every client created afterwards; tests only
 ```
+
+`setTestMode()` changes a static flag, so every client created later in the same process uses staging. Application code should use the explicit base URL below instead.
 
 ### Explicit Base URL
 
@@ -200,7 +202,7 @@ This package works equally well everywhere:
 
 ### Optional: HttpFoundation Bridge
 
-Using Laravel or Symfony? Our optional `HttpFoundationBridge` provides seamless integration without breaking the PSR-based core API.
+Using Laravel or Symfony? Our optional `HttpFoundationBridge` provides seamless integration without breaking the PSR-based core API. It needs Symfony's HttpFoundation, which this package does not install: `composer require symfony/http-foundation`.
 
 ### Custom HTTP Client
 
@@ -216,7 +218,7 @@ $client = Client::create(httpClient: $customClient);
 
 ### Custom Token Storage
 
-Implement the `TokenStoreInterface` to persist tokens:
+By default the token lives in memory only. Under PHP-FPM a new `Client` is built for each request, so the token is lost and the password grant runs again. Pass a store that outlives the request (session, cache, database) to avoid one login per request:
 
 ```php
 use Daika7ana\Ecolet\Client;

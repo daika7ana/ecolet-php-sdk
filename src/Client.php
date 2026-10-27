@@ -20,6 +20,7 @@ use Daika7ana\Ecolet\Resources\OrderResource;
 use Daika7ana\Ecolet\Resources\OrderToSendResource;
 use Daika7ana\Ecolet\Resources\ServicesResource;
 use Daika7ana\Ecolet\Resources\UserResource;
+use DateTimeImmutable;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -121,13 +122,28 @@ class Client
 
         $this->authenticator = $this->makeAuthenticator();
 
-        $token = $this->authenticator->refresh($currentToken->refreshToken);
+        try {
+            $token = $this->authenticator->refresh($currentToken->refreshToken);
+        } catch (AuthenticationException|TransportException $e) {
+            // Another process may have refreshed the shared token store already.
+            $storedToken = $this->tokenStore->getToken();
+
+            // Compare values: a persistent store returns a new Token instance for the same token.
+            if ($storedToken !== null && $storedToken->accessToken !== $currentToken->accessToken && !$storedToken->isExpired()) {
+                $this->config = $this->config->withToken($storedToken);
+
+                return;
+            }
+
+            throw $e;
+        }
+
         $this->storeToken($token);
     }
 
     public function createRequest(string $method, string $path): RequestInterface
     {
-        $uri = $this->config->baseUrl . $path;
+        $uri = rtrim($this->config->baseUrl, '/') . $path;
         $request = $this->requestFactory->createRequest($method, $uri);
 
         $token = $this->currentToken();
@@ -149,7 +165,15 @@ class Client
             $token = $this->currentToken();
 
             if ($token !== null && $token->isExpired()) {
-                $this->refreshToken();
+                try {
+                    $this->refreshToken();
+                } catch (AuthenticationException|TransportException $e) {
+                    // The 30s margin is a safety net, not a hard expiry: send a token that is still valid.
+                    if ($token->expiresAt === null || $token->expiresAt <= new DateTimeImmutable()) {
+                        throw $e;
+                    }
+                }
+
                 $token = $this->currentToken();
             }
 

@@ -266,6 +266,7 @@ class Collection implements Countable, IteratorAggregate, ArrayAccess
     public function push(...$items): static
     {
         foreach ($items as $item) {
+            // @phpstan-ignore assign.propertyType (appending adds an int key)
             $this->items[] = $item;
         }
 
@@ -280,6 +281,7 @@ class Collection implements Countable, IteratorAggregate, ArrayAccess
     public function prepend(mixed $item, mixed $key = null): static
     {
         if ($key === null) {
+            // @phpstan-ignore assign.propertyType (prepending adds an int key)
             array_unshift($this->items, $item);
         } else {
             /** @var TKey $key */
@@ -334,16 +336,16 @@ class Collection implements Countable, IteratorAggregate, ArrayAccess
      */
     public function offsetExists($offset): bool
     {
-        return isset($this->items[$offset]);
+        return array_key_exists($offset, $this->items);
     }
 
     /**
      * @param TKey $offset
-     * @return TValue
+     * @return TValue|null
      */
     public function offsetGet($offset): mixed
     {
-        return $this->items[$offset];
+        return $this->items[$offset] ?? null;
     }
 
     /**
@@ -354,6 +356,7 @@ class Collection implements Countable, IteratorAggregate, ArrayAccess
     public function offsetSet($offset, $value): void
     {
         if (is_null($offset)) {
+            // @phpstan-ignore assign.propertyType (appending adds an int key)
             $this->items[] = $value;
         } else {
             $this->items[$offset] = $value;

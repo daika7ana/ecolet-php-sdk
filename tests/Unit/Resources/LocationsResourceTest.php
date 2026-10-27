@@ -77,7 +77,7 @@ class LocationsResourceTest extends TestCase
         $this->assertSame(10, $firstCounty->id);
         $this->assertSame('Bucuresti', $firstCounty->name);
         $this->assertSame('B', $firstCounty->code);
-        $this->assertSame('/api/v1/locations/RO/counties', $httpClient->lastRequest?->getUri()->getPath());
+        $this->assertSame('/api/v1/locations/ro/counties', $httpClient->lastRequest?->getUri()->getPath());
     }
 
     public function testSearchLocalitiesMapsSchemaFields(): void
@@ -121,7 +121,7 @@ class LocationsResourceTest extends TestCase
         $this->assertTrue($firstLocality->hasStreets);
         $this->assertInstanceOf(County::class, $firstLocality->county);
         $this->assertSame('B', $firstLocality->county->code);
-        $this->assertSame('/api/v1/locations/RO/localities/Bucu', $httpClient->lastRequest?->getUri()->getPath());
+        $this->assertSame('/api/v1/locations/ro/localities/Bucu', $httpClient->lastRequest?->getUri()->getPath());
     }
 
     public function testSearchStreetsUsesRawUrlEncodingForQuery(): void
@@ -274,6 +274,6 @@ class LocationsResourceTest extends TestCase
         $this->assertSame('Bucuresti', $street->locality->name);
         $this->assertInstanceOf(County::class, $street->locality->county);
         $this->assertSame('B', $street->locality->county->code);
-        $this->assertSame('/api/v1/locations/RO/search-streets-by-postal-code/010371', $httpClient->lastRequest?->getUri()->getPath());
+        $this->assertSame('/api/v1/locations/ro/search-streets-by-postal-code/010371', $httpClient->lastRequest?->getUri()->getPath());
     }
 }

@@ -50,6 +50,22 @@ class ApiResponseMapperTest extends TestCase
         ApiResponseMapper::decodeJson($response);
     }
 
+    public function testDecodeJsonWrapsInvalidJsonInUnexpectedStatusException(): void
+    {
+        $response = new Response(200, [], '<html>not json</html>');
+
+        $this->expectException(UnexpectedStatusException::class);
+        ApiResponseMapper::decodeJson($response);
+    }
+
+    public function testDecodeJsonWrapsNonArrayJsonInUnexpectedStatusException(): void
+    {
+        $response = new Response(200, [], 'null');
+
+        $this->expectException(UnexpectedStatusException::class);
+        ApiResponseMapper::decodeJson($response);
+    }
+
     public function testPayloadHelpersNormalizeUnexpectedShapes(): void
     {
         $this->assertSame([], ApiResponseMapper::arrayOrEmpty('invalid'));

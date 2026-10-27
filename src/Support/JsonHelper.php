@@ -14,7 +14,13 @@ final class JsonHelper
      */
     public static function decode(string $json): array
     {
-        return json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
+        $decoded = json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
+
+        if (!is_array($decoded)) {
+            throw new JsonException('Expected a JSON object or array.');
+        }
+
+        return $decoded;
     }
 
     /**

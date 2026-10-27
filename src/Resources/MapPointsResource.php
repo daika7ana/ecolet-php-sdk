@@ -28,7 +28,7 @@ class MapPointsResource
      */
     public function getMapPoints(string $countryCode, array $filters = []): MapPointsResponse
     {
-        $request = $this->client->createRequest('POST', sprintf('/v1/map-points/%s', $countryCode));
+        $request = $this->client->createRequest('POST', sprintf('/v1/map-points/%s', rawurlencode(strtolower($countryCode))));
 
         $body = JsonHelper::encode(array_merge(['destination' => 'receiver'], $filters));
         $request = $request->withBody($this->client->streamFactory()->createStream($body))

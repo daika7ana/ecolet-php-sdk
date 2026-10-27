@@ -9,6 +9,7 @@ use Daika7ana\Ecolet\Exceptions\AuthenticationException;
 use Daika7ana\Ecolet\Exceptions\TransportException;
 use Daika7ana\Ecolet\Http\HttpClientInterface;
 use Daika7ana\Ecolet\Support\JsonHelper;
+use JsonException;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -34,36 +35,14 @@ class PasswordAuthenticator
      */
     public function authenticate(): Token
     {
-        $request = $this->buildTokenRequest([
+        return $this->requestToken([
             'grant_type' => 'password',
             'username' => $this->username,
             'password' => $this->password,
             'client_id' => $this->config->clientId,
             'client_secret' => $this->config->clientSecret,
             'scope' => $this->config->scope,
-        ]);
-
-        try {
-            $response = $this->httpClient->sendRequest($request, $this->config->timeout);
-        } catch (TransportException $e) {
-            throw $e;
-        }
-
-        if ($response->getStatusCode() !== 200) {
-            $payload = (string) $response->getBody();
-
-            throw new AuthenticationException(
-                sprintf('Authentication failed with status %d: %s', $response->getStatusCode(), $payload),
-            );
-        }
-
-        $data = JsonHelper::decode((string) $response->getBody());
-
-        if (!isset($data['access_token'])) {
-            throw new AuthenticationException('No access token in response');
-        }
-
-        return Token::fromResponse($data);
+        ], 'Authentication');
     }
 
     /**
@@ -72,32 +51,42 @@ class PasswordAuthenticator
      */
     public function refresh(string $refreshToken): Token
     {
-        $request = $this->buildTokenRequest([
+        return $this->requestToken([
             'grant_type' => 'refresh_token',
             'refresh_token' => $refreshToken,
             'client_id' => $this->config->clientId,
             'client_secret' => $this->config->clientSecret,
             'scope' => $this->config->scope,
-        ]);
+        ], 'Token refresh');
+    }
 
-        try {
-            $response = $this->httpClient->sendRequest($request, $this->config->timeout);
-        } catch (TransportException $e) {
-            throw $e;
-        }
+    /**
+     * @param array<string, string> $params
+     *
+     * @throws AuthenticationException
+     * @throws TransportException
+     */
+    private function requestToken(array $params, string $failureLabel): Token
+    {
+        $response = $this->httpClient->sendRequest($this->buildTokenRequest($params), $this->config->timeout);
 
         if ($response->getStatusCode() !== 200) {
-            $payload = (string) $response->getBody();
-
-            throw new AuthenticationException(
-                sprintf('Token refresh failed with status %d: %s', $response->getStatusCode(), $payload),
-            );
+            throw new AuthenticationException(sprintf(
+                '%s failed with status %d: %s',
+                $failureLabel,
+                $response->getStatusCode(),
+                (string) $response->getBody(),
+            ));
         }
 
-        $data = JsonHelper::decode((string) $response->getBody());
+        try {
+            $data = JsonHelper::decode((string) $response->getBody());
+        } catch (JsonException $e) {
+            throw new AuthenticationException(sprintf('%s returned invalid JSON: %s', $failureLabel, $e->getMessage()));
+        }
 
         if (!isset($data['access_token'])) {
-            throw new AuthenticationException('No access token in refresh response');
+            throw new AuthenticationException(sprintf('No access token in %s response', strtolower($failureLabel)));
         }
 
         return Token::fromResponse($data);
