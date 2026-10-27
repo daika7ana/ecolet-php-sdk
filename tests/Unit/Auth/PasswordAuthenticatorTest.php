@@ -238,4 +238,24 @@ class PasswordAuthenticatorTest extends TestCase
 
         $this->assertSame(25.0, $httpClient->lastTimeout);
     }
+
+    public function testNonJsonResponseThrowsAuthenticationException(): void
+    {
+        $config = (new ClientConfig())->withOAuthCredentials('client-id', 'client-secret');
+
+        $httpClient = new FakeHttpClient(static fn() => new Response(200, [], '<html>not json</html>'));
+        $factory = new HttpFactory();
+
+        $authenticator = new PasswordAuthenticator(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            username: 'user@example.com',
+            password: 'secret',
+            config: $config,
+        );
+
+        $this->expectException(AuthenticationException::class);
+        $authenticator->authenticate();
+    }
 }

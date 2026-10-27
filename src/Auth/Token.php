@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Daika7ana\Ecolet\Auth;
 
+use Daika7ana\Ecolet\Exceptions\AuthenticationException;
 use DateTimeImmutable;
 
 final readonly class Token
@@ -21,7 +22,8 @@ final readonly class Token
             return false;
         }
 
-        return $this->expiresAt <= new DateTimeImmutable();
+        // Treat a token that expires within 30s as expired, so it is not sent mid-flight.
+        return $this->expiresAt <= new DateTimeImmutable('+30 seconds');
     }
 
     /**
@@ -55,11 +57,22 @@ final readonly class Token
         $expiresAt = null;
 
         if (isset($data['expires_at']) && is_string($data['expires_at']) && $data['expires_at'] !== '') {
-            $expiresAt = new DateTimeImmutable($data['expires_at']);
+            try {
+                $expiresAt = new DateTimeImmutable($data['expires_at']);
+            } catch (\Exception) {
+                // Corrupted cache data: treat as already expired so the token gets refreshed.
+                $expiresAt = new DateTimeImmutable();
+            }
+        }
+
+        $accessToken = (string) ($data['access_token'] ?? '');
+
+        if ($accessToken === '') {
+            throw new AuthenticationException('Cannot restore token: access_token is missing or empty.');
         }
 
         return new self(
-            accessToken: (string) ($data['access_token'] ?? ''),
+            accessToken: $accessToken,
             tokenType: (string) ($data['token_type'] ?? 'Bearer'),
             refreshToken: isset($data['refresh_token']) ? (string) $data['refresh_token'] : null,
             expiresAt: $expiresAt,

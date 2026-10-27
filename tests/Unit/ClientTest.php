@@ -7,8 +7,11 @@ namespace Daika7ana\Ecolet\Tests\Unit;
 use DateTimeImmutable;
 use Daika7ana\Ecolet\Auth\InMemoryTokenStore;
 use Daika7ana\Ecolet\Auth\Token;
+use Daika7ana\Ecolet\Auth\TokenStoreInterface;
 use Daika7ana\Ecolet\Client;
 use Daika7ana\Ecolet\Config\ClientConfig;
+use Daika7ana\Ecolet\Exceptions\AuthenticationException;
+use Daika7ana\Ecolet\Exceptions\TransportException;
 use Daika7ana\Ecolet\Tests\Support\FakeHttpClient;
 use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\Response;
@@ -331,5 +334,145 @@ class ClientTest extends TestCase
         $client->send($request);
 
         $this->assertNull($httpClient->lastTimeout);
+    }
+
+    public function testRefreshUsesTokenWrittenByAnotherProcessWhenRefreshFails(): void
+    {
+        $tokenStore = new InMemoryTokenStore();
+        $expiredToken = new Token(
+            accessToken: 'expired-access-token',
+            refreshToken: 'old-refresh-token',
+            expiresAt: new DateTimeImmutable('-5 minutes'),
+        );
+        $tokenStore->setToken($expiredToken);
+
+        $httpClient = new FakeHttpClient(static function () use ($tokenStore) {
+            // Simulate another worker refreshing the shared store while this request is in flight.
+            $tokenStore->setToken(new Token(
+                accessToken: 'fresh-access-token',
+                refreshToken: 'fresh-refresh-token',
+                expiresAt: new DateTimeImmutable('+1 hour'),
+            ));
+
+            return new Response(401, [], '{"error":"invalid_refresh_token"}');
+        });
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: (new ClientConfig(clientId: 'client-id', clientSecret: 'client-secret'))->withToken($expiredToken),
+            tokenStore: $tokenStore,
+        );
+
+        $client->refreshToken();
+
+        $this->assertSame('fresh-access-token', $client->getToken()?->accessToken);
+        $this->assertSame('fresh-access-token', $client->getConfig()->token?->accessToken);
+    }
+
+    public function testRefreshTransportFailureStillUsesTokenWrittenByAnotherProcess(): void
+    {
+        $tokenStore = new InMemoryTokenStore();
+        $expiredToken = new Token(
+            accessToken: 'expired-access-token',
+            refreshToken: 'old-refresh-token',
+            expiresAt: new DateTimeImmutable('-5 minutes'),
+        );
+        $tokenStore->setToken($expiredToken);
+
+        $httpClient = new FakeHttpClient(static function () use ($tokenStore) {
+            // Another worker finished the refresh while this one timed out.
+            $tokenStore->setToken(new Token(
+                accessToken: 'fresh-access-token',
+                refreshToken: 'fresh-refresh-token',
+                expiresAt: new DateTimeImmutable('+1 hour'),
+            ));
+
+            throw new TransportException('cURL error 28: Operation timed out');
+        });
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: (new ClientConfig(clientId: 'client-id', clientSecret: 'client-secret'))->withToken($expiredToken),
+            tokenStore: $tokenStore,
+        );
+
+        $client->refreshToken();
+
+        $this->assertSame('fresh-access-token', $client->getToken()?->accessToken);
+    }
+
+    public function testExpiringTokenIsSentWhenRefreshIsNotPossible(): void
+    {
+        $token = new Token(
+            accessToken: 'almost-expired-token',
+            expiresAt: new DateTimeImmutable('+20 seconds'),
+        );
+        $tokenStore = new InMemoryTokenStore();
+        $tokenStore->setToken($token);
+
+        $httpClient = new FakeHttpClient(static fn() => new Response(200, [], '{}'));
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: new ClientConfig(),
+            tokenStore: $tokenStore,
+        );
+
+        $response = $client->send($client->createRequest('GET', '/v1/me'));
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('Bearer almost-expired-token', $httpClient->lastRequest?->getHeaderLine('Authorization'));
+    }
+
+    public function testRefreshFailureIsNotSwallowedWhenStoreReturnsEqualTokenInstance(): void
+    {
+        $token = new Token(
+            accessToken: 'still-valid-access-token',
+            refreshToken: 'revoked-refresh-token',
+            expiresAt: new DateTimeImmutable('+1 hour'),
+        );
+
+        // Stores outside the process return a fresh Token instance for the same token.
+        $tokenStore = new class ($token) implements TokenStoreInterface {
+            public function __construct(private ?Token $token) {}
+
+            public function getToken(): ?Token
+            {
+                return $this->token === null ? null : clone $this->token;
+            }
+
+            public function setToken(Token $token): void
+            {
+                $this->token = $token;
+            }
+
+            public function clearToken(): void
+            {
+                $this->token = null;
+            }
+        };
+
+        $httpClient = new FakeHttpClient(static fn() => new Response(400, [], '{"error":"invalid_grant"}'));
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: (new ClientConfig(clientId: 'client-id', clientSecret: 'client-secret'))->withToken($token),
+            tokenStore: $tokenStore,
+        );
+
+        $this->expectException(AuthenticationException::class);
+        $client->refreshToken();
     }
 }

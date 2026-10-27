@@ -329,4 +329,13 @@ class CollectionTest extends TestCase
         $this->assertSame([], $collection->get());
         $this->assertSame([], $collection->values()->all());
     }
+
+    public function testOffsetExistsSeesNullValuesAndMissingOffsetReturnsNull(): void
+    {
+        $collection = new Collection(['present' => null, 'value' => 1]);
+
+        $this->assertTrue($collection->has('present'));
+        $this->assertTrue(isset($collection['present']));
+        $this->assertNull($collection['missing']);
+    }
 }

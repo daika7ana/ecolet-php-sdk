@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Daika7ana\Ecolet\DTOs\AddParcel;
 
 use Daika7ana\Ecolet\Enums\CourierPickupType;
+use Daika7ana\Ecolet\Exceptions\ValidationException;
 
 /**
  * Courier pickup configuration.
@@ -23,8 +24,15 @@ final readonly class CourierPickup
      */
     public static function fromArray(array $data): self
     {
+        $type = (string) ($data['type'] ?? '');
+        $pickupType = $type === '' ? CourierPickupType::Courier : CourierPickupType::tryFrom($type);
+
+        if ($pickupType === null) {
+            throw new ValidationException([], sprintf("Unknown pickup type '%s'.", $type));
+        }
+
         return new self(
-            type: CourierPickupType::tryFrom((string) ($data['type'] ?? '')) ?? CourierPickupType::Courier,
+            type: $pickupType,
             day: isset($data['day']) ? (string) $data['day'] : null,
             date: isset($data['date']) ? (string) $data['date'] : null,
             time: isset($data['time']) ? (string) $data['time'] : null,

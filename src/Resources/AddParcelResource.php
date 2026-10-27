@@ -31,18 +31,7 @@ class AddParcelResource
      */
     public function reloadForm(AddParcelRequest|array $data): AddParcelResult
     {
-        $request = $this->client->createRequest('POST', '/v2/add-parcel/reload-form');
-
-        $body = JsonHelper::encode($this->normalizeRequestData($data));
-        $request = $request->withBody($this->client->streamFactory()->createStream($body))
-            ->withHeader('Content-Type', 'application/json');
-
-        $response = $this->client->send($request);
-
-        return ApiResponseMapper::mapJson(
-            $response,
-            static fn(array $data) => AddParcelResult::fromArray($data),
-        );
+        return $this->post('/v2/add-parcel/reload-form', $data);
     }
 
     /**
@@ -55,18 +44,7 @@ class AddParcelResource
      */
     public function sendOrder(AddParcelRequest|array $data): AddParcelResult
     {
-        $request = $this->client->createRequest('POST', '/v2/add-parcel/send-order');
-
-        $body = JsonHelper::encode($this->normalizeRequestData($data));
-        $request = $request->withBody($this->client->streamFactory()->createStream($body))
-            ->withHeader('Content-Type', 'application/json');
-
-        $response = $this->client->send($request);
-
-        return ApiResponseMapper::mapJson(
-            $response,
-            static fn(array $data) => AddParcelResult::fromArray($data),
-        );
+        return $this->post('/v2/add-parcel/send-order', $data);
     }
 
     /**
@@ -79,7 +57,18 @@ class AddParcelResource
      */
     public function saveOrderToSend(AddParcelRequest|array $data): AddParcelResult
     {
-        $request = $this->client->createRequest('POST', '/v2/add-parcel/save-order-to-send');
+        return $this->post('/v2/add-parcel/save-order-to-send', $data);
+    }
+
+    /**
+     * @param AddParcelRequest|array<string, mixed> $data
+     *
+     * @throws UnexpectedStatusException
+     * @throws ValidationException
+     */
+    private function post(string $path, AddParcelRequest|array $data): AddParcelResult
+    {
+        $request = $this->client->createRequest('POST', $path);
 
         $body = JsonHelper::encode($this->normalizeRequestData($data));
         $request = $request->withBody($this->client->streamFactory()->createStream($body))

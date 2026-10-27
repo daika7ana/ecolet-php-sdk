@@ -73,6 +73,7 @@ $client = Client::create(config: $config);
 To get pricing and test a shipment:
 
 ```php
+use Daika7ana\Ecolet\DTOs\AddParcel\AdditionalServices;
 use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelRequest;
 use Daika7ana\Ecolet\DTOs\AddParcel\CourierInfo;
 use Daika7ana\Ecolet\DTOs\AddParcel\CourierPickup;
@@ -80,6 +81,13 @@ use Daika7ana\Ecolet\DTOs\AddParcel\ParcelDetails;
 use Daika7ana\Ecolet\DTOs\AddParcel\RecipientAddress;
 use Daika7ana\Ecolet\Enums\CourierPickupType;
 use Daika7ana\Ecolet\Enums\ParcelType;
+
+$parcel = new ParcelDetails(
+    type: ParcelType::Package,
+    weight: 1000,    // grams
+    content: 'Books',
+    amount: 1,
+);
 
 $request = new AddParcelRequest(
     sender: new RecipientAddress(
@@ -108,15 +116,12 @@ $request = new AddParcelRequest(
         email: 'customer@example.com',
         phone: '0214824089',
     ),
-    parcel: new ParcelDetails(
-        type: ParcelType::Package,
-        weight: 1000,    // grams
-        content: 'Books',
-        amount: 1,
-    ),
+    parcel: $parcel,
+    additionalServices: new AdditionalServices(),
     courier: new CourierInfo(
         pickup: new CourierPickup(type: CourierPickupType::Courier),
     ),
+    parcels: [$parcel],
 );
 
 $result = $client->addParcel()->reloadForm($request);

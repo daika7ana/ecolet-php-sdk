@@ -29,7 +29,7 @@ final readonly class AddParcelFormResponse
         return new self(
             pricing: ServicePricingInfo::fromArray($data),
             billingWeight: (int) ($data['billing_weight'] ?? 0),
-            vat: (int) ($data['vat'] ?? 19),
+            vat: (int) ($data['vat'] ?? 21),
             info: (array) ($data['info'] ?? []),
             errors: (array) ($data['errors'] ?? []),
         );

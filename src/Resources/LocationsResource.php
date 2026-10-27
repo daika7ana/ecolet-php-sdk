@@ -55,7 +55,7 @@ class LocationsResource
     {
         $request = $this->client->createRequest(
             'GET',
-            sprintf('/v1/locations/%s/counties', $countryCode),
+            sprintf('/v1/locations/%s/counties', rawurlencode(strtolower($countryCode))),
         );
         $response = $this->client->send($request);
 
@@ -81,7 +81,7 @@ class LocationsResource
     {
         $request = $this->client->createRequest(
             'GET',
-            sprintf('/v1/locations/%s/localities/%s', $countryCode, rawurlencode($searchQuery)),
+            sprintf('/v1/locations/%s/localities/%s', rawurlencode(strtolower($countryCode)), rawurlencode($searchQuery)),
         );
         $response = $this->client->send($request);
 
@@ -154,7 +154,7 @@ class LocationsResource
     {
         $request = $this->client->createRequest(
             'GET',
-            sprintf('/v1/locations/%s/search-streets-by-postal-code/%s', $countryCode, rawurlencode($postalCode)),
+            sprintf('/v1/locations/%s/search-streets-by-postal-code/%s', rawurlencode(strtolower($countryCode)), rawurlencode($postalCode)),
         );
         $response = $this->client->send($request);
 

@@ -50,14 +50,15 @@ Main request wrapper for reloadForm, sendOrder, and saveOrderToSend endpoints.
 
 ```php
 $request = new AddParcelRequest(
-    sender: RecipientAddress,          // required
-    receiver: RecipientAddress,        // required
-    parcel: ParcelDetails,             // required
-    parcels?: array<ParcelDetails>,    // optional: multiple parcels
-    additionalServices?: AdditionalServices,
-    courier: CourierInfo,              // required
-    shipmentDetails?: ShipmentDetails,
-    couponInfo?: CouponInfo,
+    sender: RecipientAddress,               // required
+    receiver: RecipientAddress,             // required
+    parcel: ParcelDetails,                  // required: main parcel
+    additionalServices: AdditionalServices, // required: use new AdditionalServices() for none
+    courier: CourierInfo,                   // required
+    parcels: array<ParcelDetails>,          // required: all parcels, e.g. [$parcel]
+    shipmentDetails?: ShipmentDetails,      // optional
+    coupon?: CouponInfo,                    // optional
+    source?: string,                        // optional
 );
 ```
 
@@ -69,7 +70,7 @@ Represents sender or receiver information.
 $address = new RecipientAddress(
     name: string,                      // required
     country: string,                   // required: 'ro', 'hu', etc.
-    county: string,                    // required
+    county?: string,                   // optional
     locality: string,                  // required
     localityId: int,                   // required: obtained from locations API
     postalCode: string,                // required

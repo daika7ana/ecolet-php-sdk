@@ -84,7 +84,7 @@ class MapPointsResourceTest extends TestCase
         $this->assertSame('BC', $result->mapPoints[0]->locality->county->code);
         $this->assertSame('00:00', $result->mapPoints[0]->openHours->monday->opened);
         $this->assertCount(2, $result->boundingBox);
-        $this->assertSame('/api/v1/map-points/RO', $httpClient->lastRequest?->getUri()->getPath());
+        $this->assertSame('/api/v1/map-points/ro', $httpClient->lastRequest?->getUri()->getPath());
         $this->assertSame('application/json', $httpClient->lastRequest?->getHeaderLine('Content-Type'));
     }
 }

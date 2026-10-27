@@ -8,10 +8,12 @@ use Daika7ana\Ecolet\DTOs\AddParcel\AdditionalServices;
 use Daika7ana\Ecolet\DTOs\AddParcel\AddParcelRequest;
 use Daika7ana\Ecolet\DTOs\AddParcel\CouponInfo;
 use Daika7ana\Ecolet\DTOs\AddParcel\CourierInfo;
+use Daika7ana\Ecolet\DTOs\AddParcel\CourierPickup;
 use Daika7ana\Ecolet\DTOs\AddParcel\ParcelDetails;
 use Daika7ana\Ecolet\DTOs\AddParcel\RecipientAddress;
 use Daika7ana\Ecolet\DTOs\AddParcel\ShipmentDetails;
 use Daika7ana\Ecolet\Enums\ParcelType;
+use Daika7ana\Ecolet\Exceptions\ValidationException;
 use PHPUnit\Framework\TestCase;
 
 class AddParcelDtoNullabilityTest extends TestCase
@@ -135,5 +137,19 @@ class AddParcelDtoNullabilityTest extends TestCase
         $this->assertFalse($services->cod);
         $this->assertFalse($services->rod);
         $this->assertFalse($services->smsNotify);
+    }
+
+    public function testUnknownParcelTypeIsRejected(): void
+    {
+        $this->expectException(ValidationException::class);
+
+        ParcelDetails::fromArray(['type' => 'letter']);
+    }
+
+    public function testUnknownPickupTypeIsRejected(): void
+    {
+        $this->expectException(ValidationException::class);
+
+        CourierPickup::fromArray(['type' => 'drone']);
     }
 }

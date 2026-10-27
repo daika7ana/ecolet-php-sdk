@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Daika7ana\Ecolet\Tests\Unit\Auth;
 
 use Daika7ana\Ecolet\Auth\Token;
+use Daika7ana\Ecolet\Exceptions\AuthenticationException;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
@@ -86,5 +87,30 @@ class TokenTest extends TestCase
         $this->assertSame('1', $fromResponse->tokenType);
         $this->assertSame('333', $fromResponse->refreshToken);
         $this->assertNotNull($fromResponse->expiresAt);
+    }
+
+    public function testTokenIsExpiredWhenItExpiresWithinThirtySeconds(): void
+    {
+        $token = new Token(accessToken: 'test-token', expiresAt: new DateTimeImmutable('+10 seconds'));
+
+        $this->assertTrue($token->isExpired());
+    }
+
+    public function testTokenFromArrayTreatsUnparsableExpiryAsExpired(): void
+    {
+        $token = Token::fromArray([
+            'access_token' => 'access-123',
+            'expires_at' => 'not-a-date',
+        ]);
+
+        $this->assertNotNull($token->expiresAt);
+        $this->assertTrue($token->isExpired());
+    }
+
+    public function testTokenFromArrayRejectsMissingAccessToken(): void
+    {
+        $this->expectException(AuthenticationException::class);
+
+        Token::fromArray(['expires_at' => '2030-01-01T00:00:00+00:00']);
     }
 }
