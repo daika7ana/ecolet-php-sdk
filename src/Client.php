@@ -13,6 +13,7 @@ use Daika7ana\Ecolet\Exceptions\TransportException;
 use Daika7ana\Ecolet\Config\ClientConfig;
 use Daika7ana\Ecolet\Http\GuzzleHttpClient;
 use Daika7ana\Ecolet\Http\HttpClientInterface;
+use Daika7ana\Ecolet\Resources\AddressBookResource;
 use Daika7ana\Ecolet\Resources\AddParcelResource;
 use Daika7ana\Ecolet\Resources\LocationsResource;
 use Daika7ana\Ecolet\Resources\MapPointsResource;
@@ -31,6 +32,8 @@ class Client
     private ClientConfig $config;
 
     private PasswordAuthenticator $authenticator;
+
+    private ?AddressBookResource $addressBookResource = null;
 
     private ?UserResource $userResource = null;
 
@@ -190,6 +193,13 @@ class Client
     public function streamFactory(): StreamFactoryInterface
     {
         return $this->streamFactory;
+    }
+
+    public function addressBook(): AddressBookResource
+    {
+        $this->addressBookResource ??= new AddressBookResource($this);
+
+        return $this->addressBookResource;
     }
 
     public function users(): UserResource
