@@ -1,5 +1,16 @@
 # Resources
 
+## Address Book
+
+```php
+$result = $client->addressBook()->getAddresses(page: 1, searchQuery: 'Main');
+
+$addresses = $result->addresses;      // Collection<Daika7ana\Ecolet\DTOs\Common\Address>
+$total = $result->meta['total'] ?? 0; // Raw pagination metadata from the API
+```
+
+`getAddresses()` returns an `AddressBookResult` with a `Collection<Address>` plus the raw `links` and `meta` pagination payload. Both arguments are optional; `searchQuery` must be at least 3 characters.
+
 ## User
 
 ```php

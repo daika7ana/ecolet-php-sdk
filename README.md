@@ -161,6 +161,7 @@ $client->setToken($token);
 ### v1 Resources (General API)
 
 - `users()->getMe()` — Get authenticated user info
+- `addressBook()->getAddresses()` — List saved addresses (paginated, optional search)
 - `services()->getServices()` — List available services
 - `locations()->getCountries()` — Get countries
 - `locations()->getCounties()` — Get counties for country

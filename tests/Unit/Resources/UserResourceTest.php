@@ -6,6 +6,7 @@ namespace Daika7ana\Ecolet\Tests\Unit\Resources;
 
 use Daika7ana\Ecolet\Client;
 use Daika7ana\Ecolet\Config\ClientConfig;
+use Daika7ana\Ecolet\Exceptions\AuthenticationException;
 use Daika7ana\Ecolet\Tests\Support\FakeHttpClient;
 use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\Response;
@@ -73,6 +74,28 @@ class UserResourceTest extends TestCase
         $this->assertSame(['4'], $user->forbiddenCouriers);
         $this->assertSame(['5'], $user->forbiddenServices);
         $this->assertSame('/api/v1/me', $httpClient->lastRequest?->getUri()->getPath());
+    }
+
+    public function testGetMeThrowsOnUnauthenticatedPayload(): void
+    {
+        $httpClient = new FakeHttpClient(
+            static fn() => new Response(200, [], json_encode([
+                'unauthenticated' => true,
+            ], JSON_THROW_ON_ERROR)),
+        );
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: new ClientConfig(),
+        );
+
+        $this->expectException(AuthenticationException::class);
+        $this->expectExceptionMessage('unauthenticated');
+
+        $client->users()->getMe();
     }
 
     public function testGetMeIgnoresMalformedUserPayload(): void

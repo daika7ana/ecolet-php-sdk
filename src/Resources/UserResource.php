@@ -6,6 +6,7 @@ namespace Daika7ana\Ecolet\Resources;
 
 use Daika7ana\Ecolet\Client;
 use Daika7ana\Ecolet\DTOs\Users\User;
+use Daika7ana\Ecolet\Exceptions\AuthenticationException;
 use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
 use Daika7ana\Ecolet\Exceptions\ValidationException;
 use Daika7ana\Ecolet\Support\ApiResponseMapper;
@@ -19,6 +20,7 @@ class UserResource
     /**
      * Get the authenticated user's information.
      *
+     * @throws AuthenticationException when the API answers 200 with an unauthenticated payload
      * @throws UnexpectedStatusException
      * @throws ValidationException
      */
@@ -28,6 +30,12 @@ class UserResource
         $response = $this->client->send($request);
 
         $data = ApiResponseMapper::decodeJson($response);
+
+        if (!empty($data['unauthenticated'])) {
+            throw new AuthenticationException(
+                'GET /v1/me returned an unauthenticated response: the access token is missing, expired, or invalid.',
+            );
+        }
 
         return User::fromArray(ApiResponseMapper::arrayOrEmpty($data['user'] ?? null));
     }

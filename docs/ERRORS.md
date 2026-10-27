@@ -32,6 +32,10 @@ try {
 }
 ```
 
+## AuthenticationException
+
+- Thrown for invalid credentials, a failed token refresh, or an unauthenticated payload (`200 {"unauthenticated": true}`) from `GET /v1/me`, where the API does not return `401`.
+
 ## ValidationException
 
 - Thrown for HTTP `422` responses.
