@@ -110,6 +110,22 @@ final class MapPointsSmokeTest extends TestCase
         $this->assertNotEmpty($receiverResult->mapPoints);
     }
 
+    #[Group('smoke')]
+    public function testStreamMapPointsYieldsTypedPoints(): void
+    {
+        $client = $this->makeAuthenticatedClient(self::CONTEXT);
+        $point = null;
+
+        foreach ($client->mapPoints()->streamMapPoints(self::COUNTRY) as $streamed) {
+            $point = $streamed;
+            break;
+        }
+
+        $this->assertInstanceOf(MapPoint::class, $point);
+        $this->assertGreaterThan(0, $point->id);
+        $this->assertNotSame('', $point->name);
+    }
+
     private function fetchMapPoints(): MapPointsResponse
     {
         $client = $this->makeAuthenticatedClient(self::CONTEXT);

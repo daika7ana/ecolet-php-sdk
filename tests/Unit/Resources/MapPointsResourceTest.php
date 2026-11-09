@@ -87,4 +87,52 @@ class MapPointsResourceTest extends TestCase
         $this->assertSame('/api/v1/map-points/ro', $httpClient->lastRequest?->getUri()->getPath());
         $this->assertSame('application/json', $httpClient->lastRequest?->getHeaderLine('Content-Type'));
     }
+
+    public function testGetMapPointsRawReturnsTheUndecodedBody(): void
+    {
+        $payload = '{"mapPoints":{"boundingBox":[],"mapPoints":[]}}';
+        $httpClient = new FakeHttpClient(static fn() => new Response(200, [], $payload));
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: new ClientConfig(),
+        );
+
+        $response = $client->mapPoints()->getMapPointsRaw('RO', ['type' => 'locker']);
+
+        $this->assertSame($payload, (string) $response->getBody());
+        $this->assertSame('/api/v1/map-points/ro', $httpClient->lastRequest?->getUri()->getPath());
+        $this->assertSame(
+            '{"destination":"receiver","type":"locker"}',
+            (string) $httpClient->lastRequest?->getBody(),
+        );
+    }
+
+    public function testStreamMapPointsYieldsOneDtoPerPoint(): void
+    {
+        $payload = '{"mapPoints":{"boundingBox":[[1.0,2.0]],"mapPoints":['
+            . '{"id":1,"name":"Point A"},'
+            . '{"id":2,"name":"Point B"}'
+            . ']}}';
+        $httpClient = new FakeHttpClient(static fn() => new Response(200, [], $payload));
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: new ClientConfig(),
+        );
+
+        $names = [];
+
+        foreach ($client->mapPoints()->streamMapPoints('RO') as $mapPoint) {
+            $names[] = $mapPoint->name;
+        }
+
+        $this->assertSame(['Point A', 'Point B'], $names);
+    }
 }

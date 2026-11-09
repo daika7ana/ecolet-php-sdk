@@ -7,6 +7,9 @@ Common exceptions exposed by the package:
 - `Daika7ana\\Ecolet\\Exceptions\\TransportException`
 - `Daika7ana\\Ecolet\\Exceptions\\ValidationException`
 
+`streamMapPoints()` additionally throws `JsonException` when the response stream
+is truncated or its map-points value is malformed.
+
 Example handling:
 
 ```php

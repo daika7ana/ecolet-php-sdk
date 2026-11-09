@@ -175,6 +175,8 @@ $client->setToken($token);
 - `orders()->getStatusesForManyOrders()` — Batch status check
 - `ordersToSend()->getOrderToSend()` — Get order ready to send
 - `mapPoints()->getMapPoints()` — Get pickup points
+- `mapPoints()->streamMapPoints()` — Stream pickup points one at a time
+- `mapPoints()->getMapPointsRaw()` — Get the undecoded map-points response
 
 ### v2 Resources (Add Parcel Operations)
 

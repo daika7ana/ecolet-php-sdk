@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `Client::addressBook()` with `getAddresses()`, wrapping `GET /v1/address-book` with optional `page` and `searchQuery` parameters. Returns `AddressBookResult` with a `Collection<Address>` plus the raw `links` and `meta` pagination payload.
+- `MapPointsResource::streamMapPoints()`, yielding one `MapPoint` at a time from the response stream so very large payloads are never fully decoded into memory. `getMapPointsRaw()` returns the undecoded PSR-7 response, and `getMapPoints()` builds on it.
 - `DTOs\Common\Address` as the shared address shape returned by both the address book and order sender/receiver.
 
 ### Changed

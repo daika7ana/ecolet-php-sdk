@@ -132,6 +132,7 @@ php vendor/bin/phpunit --filter=MapPointsSmokeTest -c phpunit.xml
 
 Validates:
 - `getMapPoints(countryCode)` returns typed `MapPointsResponse`
+- `streamMapPoints(countryCode)` yields typed `MapPoint` instances
 - Response exposes `boundingBox` directly and `mapPoints` as a `Collection` on `MapPointsResponse`
 - `destination` query parameter filters by receiver/sender eligibility
 

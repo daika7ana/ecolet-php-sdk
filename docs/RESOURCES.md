@@ -184,3 +184,21 @@ $pointNames = $points->mapPoints->pluck('name')->all();
 ```
 
 `mapPoints` is returned as `Collection<MapPoint>`, so you can use collection helpers like `first()`, `filter()`, `pluck()`, `keys()`, and `values()` directly on the response.
+
+A country-wide response can be very large. `streamMapPoints()` sends the same
+request but yields one `MapPoint` at a time, keeping only the current record in
+memory:
+
+```php
+foreach ($client->mapPoints()->streamMapPoints('RO', ['service_id' => 2]) as $point) {
+    // one MapPoint at a time
+}
+```
+
+The request is sent on the first iteration, so authentication and HTTP errors
+surface inside the loop. A truncated response or a malformed map-points value
+throws `JsonException`; an empty or absent map-point list yields nothing.
+
+`boundingBox` is not available in this mode; use `getMapPoints()` when you need
+it. `getMapPointsRaw()` returns the undecoded PSR-7 response for custom stream
+handling.
