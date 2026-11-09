@@ -42,13 +42,35 @@ class GuzzleHttpClientTest extends TestCase
         $guzzle = $this->createMock(GuzzleClient::class);
         $guzzle->expects($this->once())
             ->method('send')
-            ->with($request, ['timeout' => 30.0])
+            ->with($request, [
+                'timeout' => 30.0,
+                'http_errors' => false,
+                'allow_redirects' => false,
+            ])
             ->willReturn(new Response(200));
 
         $client = new GuzzleHttpClient($guzzle);
         $response = $client->sendRequest($request, 30.0);
 
         $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testTimeoutPathReturnsErrorResponsesInsteadOfThrowing(): void
+    {
+        $request = new Request('POST', ClientConfig::BASE_URL_STAGING . '/v2/add-parcel');
+
+        $mock = new MockHandler([
+            new Response(422, [], '{"message":"Invalid input"}'),
+        ]);
+
+        $guzzle = new GuzzleClient([
+            'handler' => HandlerStack::create($mock),
+        ]);
+
+        $client = new GuzzleHttpClient($guzzle);
+        $response = $client->sendRequest($request, 30.0);
+
+        $this->assertSame(422, $response->getStatusCode());
     }
 
     public function testSendRequestIsUsedWhenNoTimeoutProvided(): void

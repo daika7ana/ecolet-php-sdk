@@ -28,8 +28,9 @@ composer test -- --filter=LocationsResourceTest
 
 - `tests/Unit/` mirrors `src/`. Build tests with
   `Daika7ana\Ecolet\Tests\Support\FakeHttpClient` (handler returns a real
-  `GuzzleHttp\Psr7\Response`) and `GuzzleHttp\Psr7\HttpFactory` — don't mock
-  Guzzle or hand-roll PSR stubs.
+  `GuzzleHttp\Psr7\Response`) and `GuzzleHttp\Psr7\HttpFactory` — use
+  `FakeHttpClient` for resource tests; only `GuzzleHttpClientTest` mocks Guzzle
+  because the adapter itself is the subject. Don't hand-roll PSR stubs.
 - `tests/Smoke/` skips itself when `ECOLET_TEST_USERNAME`,
   `ECOLET_TEST_PASSWORD`, `ECOLET_TEST_CLIENT_ID`,
   `ECOLET_TEST_CLIENT_SECRET` are unset. `phpunit.xml` is gitignored and holds
@@ -40,8 +41,8 @@ composer test -- --filter=LocationsResourceTest
 
 - `src/Client.php` is the only entrypoint; `Client::create()` wires Guzzle +
   `HttpFactory` unless factories are injected. Resources are lazy:
-  `users()`, `services()`, `locations()`, `orders()`, `ordersToSend()`,
-  `addParcel()`, `mapPoints()`.
+  `users()`, `addressBook()`, `services()`, `locations()`, `orders()`,
+  `ordersToSend()`, `addParcel()`, `mapPoints()`.
 - The base URL already ends in `/api`
   (`ClientConfig::BASE_URL_PRODUCTION|STAGING`), so resource paths are
   `/v1/...` or `/v2/...`. v1 = general + OAuth, v2 = add-parcel only.

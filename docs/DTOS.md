@@ -83,6 +83,8 @@ $address = new RecipientAddress(
     contactPerson: string,             // required
     email: string,                     // required
     phone: string,                     // required
+    hasMapPoint: bool = false,         // optional: address has a map point
+    mapPointId: ?int = null,           // optional: map point ID
 );
 ```
 
@@ -96,13 +98,13 @@ use Daika7ana\Ecolet\Enums\ParcelType;
 
 $parcel = new ParcelDetails(
     type: ParcelType::Package,        // required: enum
-    weight: int,                      // in grams
-    dimensions?: ParcelDimensions,    // length, width, height in cm
-    shape?: ParcelShape::Standard,    // optional: enum
-    declaredValue?: int,              // in cents for currency
-    content?: string,                 // description
-    observations?: string,            // special handling notes
-    amount: int,                      // quantity of this parcel type
+    weight: ?int = null,              // in grams
+    dimensions: ?ParcelDimensions = null, // length, width, height in cm
+    shape: ?ParcelShape = null,       // optional: enum
+    declaredValue: ?float = null,     // declared value for currency
+    amount: int = 1,                  // quantity of this parcel type
+    content: ?string = null,          // description
+    observations: ?string = null,     // special handling notes
 );
 ```
 
@@ -124,24 +126,20 @@ Optional services for the shipment.
 
 ```php
 $services = new AdditionalServices(
-    cod: bool,                         // Cash on delivery
-    codAmount?: int,                   // in cents for currency
-    openPackage?: bool,
-    openPackageAmount?: int,
-    rod?: bool,                        // Return on delivery
-    rodAmount?: int,
-    rop?: bool,                        // Receiver on delivery
-    ropAmount?: int,
-    saturdayDelivery?: bool,
-    saturdayDeliveryAmount?: int,
-    sms?: bool,
-    smsAmount?: int,
-    swap?: bool,
-    swapAmount?: int,
-    epod?: bool,                       // Electronic proof of delivery
-    epodAmount?: int,
+    cod: bool = false,                 // Cash on delivery
+    codAmount: ?float = null,          // pass-through amount for cod
+    openPackage: bool = false,
+    rod: bool = false,                 // Return on delivery
+    rodCode: ?string = null,           // Return code for rod
+    rop: bool = false,                 // Receiver on delivery
+    saturdayDelivery: bool = false,
+    smsNotify: bool = false,
+    swap: bool = false,
+    epod: bool = false,                // Electronic proof of delivery
 );
 ```
+
+Only `cod.amount` and `rod.rod_code` carry values in `toArray()`.
 
 ### CourierInfo
 
@@ -183,9 +181,9 @@ Additional shipment attributes.
 
 ```php
 $shipment = new ShipmentDetails(
-    uitCode?: string,                  // UIT code for customs
-    useForklift?: bool,
-    enableForklift?: bool,
+    uitCode: ?string = null,           // UIT code for customs
+    senderForklift: bool = false,
+    receiverForklift: bool = false,
 );
 ```
 
@@ -262,12 +260,12 @@ $addlServices = $pricing->additionalServices;  // array<string => array>
 // Pickup date availability
 $pickupDates = $pricing->pickupDates;   // array<serviceSlug => array>
 
-// Pricing by service (in cents)
-$pricesNet = $pricing->pricesNet;       // array<serviceSlug => float>
-$pricesGross = $pricing->pricesGross;   // array<serviceSlug => float>
+// Pricing by service
+$pricesNet = $pricing->pricesNet;       // array<serviceSlug => string|int>
+$pricesGross = $pricing->pricesGross;   // array<serviceSlug => string|int>
 
-// Extra fees (in cents)
-$fees = $pricing->fees;                 // array<serviceSlug => float>
+// Extra fees
+$fees = $pricing->fees;                 // array<serviceSlug => string|int>
 
 // Standard service indicators
 $isStandard = $pricing->isStandard;     // array<serviceSlug => bool>
@@ -281,7 +279,7 @@ $isStandard = $pricing->isStandard;     // array<serviceSlug => bool>
 $order = $client->orders()->getOrder(12345);
 
 $id = $order->id;
-$number = $order->number;   // populated from Ecolet's number or awb field
+$number = $order->number;   // populated from Ecolet's awb or number field
 $status = $order->status;
 ```
 
@@ -308,6 +306,72 @@ $headers = $waybill->getDownloadHeaders();
 ```
 
 `WaybillDocument` keeps the PSR stream plus normalized helpers for common framework integrations.
+
+## Shared And List DTOs
+
+### Address
+
+`Daika7ana\Ecolet\DTOs\Common\Address` is the shared address shape returned by the address book and by order sender/receiver (`OrderAddress` extends it).
+
+```php
+$address->id;            // int
+$address->name;          // string
+$address->localityId;    // ?int
+$address->country;       // string
+$address->county;        // ?string
+$address->locality;      // string
+$address->postalCode;    // string
+$address->hasStreets;    // bool
+$address->streetName;    // string
+$address->streetNumber;  // string
+$address->block;         // ?string
+$address->entrance;      // ?string
+$address->floor;         // ?string
+$address->flat;          // ?string
+$address->contactPerson; // string
+$address->email;         // string
+$address->phone;         // string
+$address->mapPointId;    // ?int
+$address->mapPointName;  // ?string
+$address->updatedAt;     // ?string
+$address->createdAt;     // ?string
+```
+
+### AddressBookResult
+
+`Daika7ana\Ecolet\DTOs\AddressBook\AddressBookResult` is returned by `Client::addressBook()->getAddresses()` (`GET /v1/address-book`).
+
+```php
+$result = $client->addressBook()->getAddresses();
+
+$addresses = $result->addresses;  // Collection<int, Address>
+$links = $result->links;          // array<string, mixed>: pagination links
+$meta = $result->meta;            // array<string, mixed>: pagination metadata
+```
+
+### Service
+
+`Daika7ana\Ecolet\DTOs\Services\Service` is returned by `Client::services()->getServices()` (`GET /v1/services`).
+
+```php
+$service = $client->services()->getServices()->first();
+
+$service->id;          // int
+$service->slug;        // string
+$service->name;        // string
+$service->fullName;    // ?string
+$service->codeName;    // ?string
+$service->status;      // bool
+$service->active;      // bool
+$service->notes;       // ?string
+$service->isNew;       // bool
+$service->isPromo;     // bool
+$service->logoUrl;     // ?string
+$service->courier;     // ?ServiceCourier
+$service->conditions;  // ?ServiceConditions
+```
+
+`fromArray()` derives one boolean from `status` falling back to `active` and assigns it to both properties, so `status` and `active` always match even if the payload supplies different values for them.
 
 ## Creating From Arrays (Backward Compatibility)
 

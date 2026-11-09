@@ -139,6 +139,21 @@ class AddParcelDtoNullabilityTest extends TestCase
         $this->assertFalse($services->smsNotify);
     }
 
+    public function testSingleParcelPayloadFillsParcelsList(): void
+    {
+        $request = AddParcelRequest::fromArray([
+            'sender' => ['name' => 'Sender'],
+            'receiver' => ['name' => 'Receiver'],
+            'parcel' => ['type' => ParcelType::Package->value, 'amount' => 3],
+            'additional_services' => [],
+            'courier' => [],
+        ]);
+
+        $this->assertCount(1, $request->parcels);
+        $this->assertSame(3, $request->parcels[0]->amount);
+        $this->assertCount(1, $request->toArray()['parcels']);
+    }
+
     public function testUnknownParcelTypeIsRejected(): void
     {
         $this->expectException(ValidationException::class);

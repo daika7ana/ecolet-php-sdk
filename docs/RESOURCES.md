@@ -58,7 +58,7 @@ $deleteMessages = $deleteResult->messages;
 ```
 
 `downloadWaybill()` returns `Daika7ana\Ecolet\DTOs\Orders\WaybillDocument`, not a raw stream. Use its helper methods when converting it into a framework response.
-`getStatusesForManyOrders()` returns a `Collection<OrderWithStatuses>` keyed by request order.
+`getStatusesForManyOrders()` returns a `Collection<OrderWithStatuses>` in the same order as the requested AWBs, with keys reindexed from 0.
 
 ## Order To Send
 
@@ -104,7 +104,7 @@ $result = $client->addParcel()->reloadForm($request);
 if ($result->isFormResponse()) {
     // Access pricing safely with typed DTOs
     $pricing = $result->formResponse->pricing;
-    $pricesGross = $pricing->pricesGross;      // array<string, float>
+    $pricesGross = $pricing->pricesGross;      // array<string, string|int>
     $statuses = $pricing->statuses;            // array<string, bool>
     $pickupDates = $pricing->pickupDates;      // array<string, array>
 
@@ -196,8 +196,8 @@ foreach ($client->mapPoints()->streamMapPoints('RO', ['service_id' => 2]) as $po
 ```
 
 The request is sent on the first iteration, so authentication and HTTP errors
-surface inside the loop. A truncated response or a malformed map-points value
-throws `JsonException`; an empty or absent map-point list yields nothing.
+surface inside the loop. Truncated or invalid JSON throws `JsonException`; an
+absent, empty, or non-array `mapPoints` value yields nothing.
 
 `boundingBox` is not available in this mode; use `getMapPoints()` when you need
 it. `getMapPointsRaw()` returns the undecoded PSR-7 response for custom stream

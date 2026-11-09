@@ -123,6 +123,34 @@ class ClientTest extends TestCase
         $this->assertSame('refresh-123', $token->refreshToken);
     }
 
+    public function testRefreshTokenWithoutRefreshTokenThrows(): void
+    {
+        $client = Client::create(
+            config: (new ClientConfig(clientId: 'client-id', clientSecret: 'client-secret'))
+                ->withToken(new Token(accessToken: 'access-token')),
+        );
+
+        $this->expectException(AuthenticationException::class);
+        $this->expectExceptionMessage('Cannot refresh token: refresh_token is missing.');
+
+        $client->refreshToken();
+    }
+
+    public function testRefreshTokenWithoutOAuthCredentialsThrows(): void
+    {
+        $client = Client::create(
+            config: (new ClientConfig())->withToken(new Token(
+                accessToken: 'access-token',
+                refreshToken: 'refresh-token',
+            )),
+        );
+
+        $this->expectException(AuthenticationException::class);
+        $this->expectExceptionMessage('Cannot refresh token: OAuth client credentials are missing.');
+
+        $client->refreshToken();
+    }
+
     public function testRefreshTokenWorksForRestoredClientWhenOAuthCredentialsExistInConfig(): void
     {
         $httpClient = new FakeHttpClient(

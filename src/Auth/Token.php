@@ -90,8 +90,14 @@ final readonly class Token
             $expiresAt = new DateTimeImmutable(sprintf('+%d seconds', (int) $data['expires_in']));
         }
 
+        $accessToken = (string) ($data['access_token'] ?? '');
+
+        if ($accessToken === '') {
+            throw new AuthenticationException('Cannot build token: access_token is missing or empty.');
+        }
+
         return new self(
-            accessToken: (string) ($data['access_token'] ?? ''),
+            accessToken: $accessToken,
             tokenType: (string) ($data['token_type'] ?? 'Bearer'),
             refreshToken: isset($data['refresh_token']) ? (string) $data['refresh_token'] : null,
             expiresAt: $expiresAt,

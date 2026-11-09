@@ -8,7 +8,12 @@ Common exceptions exposed by the package:
 - `Daika7ana\\Ecolet\\Exceptions\\ValidationException`
 
 `streamMapPoints()` additionally throws `JsonException` when the response stream
-is truncated or its map-points value is malformed.
+is truncated or invalid JSON. An absent, empty, or non-array `mapPoints` value
+yields nothing instead of throwing.
+
+`JsonHelper::encode()` can also throw `JsonException` when a request DTO field
+contains a string that is not valid UTF-8, for example bodies built by
+`AddParcelResource`, `OrderResource`, or `MapPointsResource`.
 
 Example handling:
 
@@ -42,6 +47,7 @@ try {
 ## ValidationException
 
 - Thrown for HTTP `422` responses.
+- Thrown locally by `ParcelDetails::fromArray()` and `CourierPickup::fromArray()` for an unknown `type` value.
 - Exposes field errors on `$exception->errors`.
 - Normalizes both standard `message` payloads and Ecolet `general_error` payloads into the exception message.
 

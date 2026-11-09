@@ -87,6 +87,6 @@ The client updates both its internal token store and runtime config with the ref
 
 ## Token Expiry
 
-A token counts as expired 30 seconds before its `expires_at`, so a request is not sent with a token that expires while it is in flight. Requests inside that window trigger `refreshToken()`, which needs a `refresh_token` and the OAuth client credentials; without them the request throws `AuthenticationException` instead of being sent with a nearly expired token.
+A token counts as expired 30 seconds before its `expires_at`, so a request is not sent with a token that expires while it is in flight. Requests inside that window attempt `refreshToken()`, which needs a `refresh_token` and the OAuth client credentials. If the refresh is impossible but the token has not actually passed `expires_at`, the request is still sent with the current token; only a token whose `expires_at` has actually passed rethrows the refresh failure as `AuthenticationException` instead of being sent.
 
 If a refresh fails, the client re-reads the token store once: when another process has already written a different, still-valid token, that token is used and the original error is swallowed. Otherwise the error is rethrown.

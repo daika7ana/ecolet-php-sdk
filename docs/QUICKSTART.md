@@ -129,7 +129,7 @@ $result = $client->addParcel()->reloadForm($request);
 // Access pricing with type safety
 if ($result->isFormResponse()) {
     foreach ($result->formResponse->pricing->pricesGross as $service => $price) {
-        echo "$service: " . ($price / 100) . " RON\n";
+        echo "$service: $price RON\n";
     }
 }
 ```

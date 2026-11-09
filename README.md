@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/daika7ana/ecolet-php-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/daika7ana/ecolet-php-sdk/actions/workflows/ci.yml)
 [![PHP 8.3+](https://img.shields.io/badge/PHP-8.3%2B-777BB4?style=flat-square&logo=php)](https://www.php.net/)
-[![PHPUnit](https://img.shields.io/badge/PHPUnit-12.x-0A7BBB?style=flat-square)](docs/TESTING.md)
+[![PHPUnit](https://img.shields.io/badge/PHPUnit-12%E2%80%9313-0A7BBB?style=flat-square)](docs/TESTING.md)
 [![Smoke Tests](https://img.shields.io/badge/Smoke%20Tests-Live%20API-orange?style=flat-square)](docs/TESTING.md)
 [![PSR Standards](https://img.shields.io/badge/PSR-7%2F17%2F18-blue?style=flat-square)](https://www.php-fig.org/)
 [![License](https://img.shields.io/badge/license-GPL--3.0--or--later-green?style=flat-square)](LICENSE)
@@ -53,7 +53,7 @@ A modern, type-safe PHP SDK for the **Ecolet Courier API**
 
 ## Requirements
 
-- **PHP 8.3+** with `json` and `curl` extensions
+- **PHP 8.3+**
 - PSR-7 / PSR-17 / PSR-18 compatible environment
 
 ## Installation
@@ -118,6 +118,10 @@ $client = Client::create(config: $config);
 $config = new ClientConfig(baseUrl: ClientConfig::BASE_URL_PRODUCTION);
 $client = Client::create(config: $config);
 ```
+
+### Request Timeouts
+
+Set a default timeout via `new ClientConfig(timeout: 30.0)` or `withTimeout()`, or override it per request with `$client->send($request, 2.5)`.
 
 ## Authentication
 
@@ -209,7 +213,7 @@ Using Laravel or Symfony? Our optional `HttpFoundationBridge` provides seamless 
 
 ### Custom HTTP Client
 
-Need a custom HTTP client? Pass any PSR-18 implementation:
+Need a custom HTTP client? Pass a client implementing `HttpClientInterface` (the bundled `GuzzleHttpClient` or your own):
 
 ```php
 use Daika7ana\Ecolet\Client;
@@ -218,6 +222,8 @@ use Daika7ana\Ecolet\Http\HttpClientInterface;
 /** @var HttpClientInterface $customClient */
 $client = Client::create(httpClient: $customClient);
 ```
+
+`HttpClientInterface::sendRequest()` takes an optional timeout argument, so custom clients can honour per-request timeouts.
 
 ### Custom Token Storage
 
@@ -248,7 +254,7 @@ PHPStan is configured via `phpstan.neon` and analyzes the `src/` directory at a 
 ```bash
 composer test
 # or
-php vendor/bin/phpunit -c phpunit.xml
+php vendor/bin/phpunit
 ```
 
 Pass PHPUnit arguments through Composer with `--`:
@@ -262,16 +268,16 @@ composer test -- tests/Unit/Resources/LocationsResourceTest.php
 
 ```bash
 # Run only auth smoke test
-php vendor/bin/phpunit --filter=AuthSmokeTest -c phpunit.xml
+php vendor/bin/phpunit --filter=AuthSmokeTest
 
 # Run the combined add-parcel workflow + waybill smoke test
-php vendor/bin/phpunit --filter=AddParcelWorkflowSmokeTest -c phpunit.xml
+php vendor/bin/phpunit --filter=AddParcelWorkflowSmokeTest
 
 # Run negative staging smoke tests
-php vendor/bin/phpunit --filter=AddParcelFailureSmokeTest -c phpunit.xml
+php vendor/bin/phpunit --filter=AddParcelFailureSmokeTest
 
 # Run all smoke tests
-php vendor/bin/phpunit --group=smoke -c phpunit.xml
+php vendor/bin/phpunit --group=smoke
 ```
 
 ### Run The Same Checks As CI
@@ -287,7 +293,7 @@ Available Composer scripts:
 - `composer test:unit` runs the unit test suite
 - `composer ci` runs the same local checks as CI
 
-Smoke tests hit the live staging API and require valid credentials in `phpunit.xml`.
+Smoke tests hit the live staging API and require valid credentials in `phpunit.xml`. Run `cp phpunit.xml.dist phpunit.xml` first, then fill in the values.
 
 ### Test Environment Variables
 

@@ -50,6 +50,10 @@ Staging base URL:
 https://staging.ecolet.ro/api
 ```
 
+## `ClientConfig::fromEnvironment()`
+
+Despite the name, this factory reads no environment variables. It only returns a config pointed at the staging base URL when test mode is enabled with `ClientConfig::setTestMode(true)`, and at production otherwise. Credentials and a custom base URL still have to be passed explicitly.
+
 ## Custom ClientConfig
 
 ```php
@@ -62,6 +66,21 @@ $config = new ClientConfig(
 );
 
 $client = Client::create(config: $config);
+```
+
+## Timeouts
+
+Timeouts are in seconds and apply to the HTTP transfer only, not to parsing the response. `null` means no explicit timeout.
+
+```php
+// Default for every request made through this client.
+$config = new ClientConfig(timeout: 30.0);
+
+// Immutable variant.
+$config = $config->withTimeout(5.0);
+
+// Per-request override; wins over the config value.
+$client->send($request, 2.5);
 ```
 
 ## Default HTTP Client (Guzzle)

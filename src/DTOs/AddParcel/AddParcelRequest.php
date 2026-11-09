@@ -44,10 +44,18 @@ final readonly class AddParcelRequest
             }
         }
 
+        $parcelData = self::arrayOrEmpty($payload['parcel'] ?? null);
+        $parcel = ParcelDetails::fromArray($parcelData);
+
+        // Single-parcel payloads omit `parcels`; the API still expects a one-item list.
+        if ($parcelsList === [] && $parcelData !== []) {
+            $parcelsList = [$parcel];
+        }
+
         return new self(
             sender: RecipientAddress::fromArray(self::arrayOrEmpty($payload['sender'] ?? null)),
             receiver: RecipientAddress::fromArray(self::arrayOrEmpty($payload['receiver'] ?? null)),
-            parcel: ParcelDetails::fromArray(self::arrayOrEmpty($payload['parcel'] ?? null)),
+            parcel: $parcel,
             additionalServices: AdditionalServices::fromArray(self::arrayOrEmpty($payload['additional_services'] ?? null)),
             courier: CourierInfo::fromArray(self::arrayOrEmpty($payload['courier'] ?? null)),
             parcels: $parcelsList,
@@ -67,6 +75,8 @@ final readonly class AddParcelRequest
 
     /**
      * Create a simple single-parcel request with typed objects.
+     *
+     * @deprecated Use the constructor.
      *
      * @param list<ParcelDetails> $parcels
      */

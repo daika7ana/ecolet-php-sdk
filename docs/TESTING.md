@@ -14,7 +14,13 @@ PHPStan is configured in `phpstan.neon` and currently analyzes `src/`.
 
 ## PHPUnit Config
 
-Use local `phpunit.xml` to store test credentials and avoid committing secrets.
+Only `phpunit.xml.dist` ships with the repository; `phpunit.xml` is gitignored, so create your local copy first:
+
+```bash
+cp phpunit.xml.dist phpunit.xml
+```
+
+Then fill in the credentials below for smoke tests. PHPUnit loads `phpunit.xml` automatically and falls back to `phpunit.xml.dist`, so no `-c` flag is needed.
 
 Example env keys:
 
@@ -30,7 +36,7 @@ composer test
 composer test -- --filter=LocationsSmokeTest
 composer test -- tests/Unit/Resources/LocationsResourceTest.php
 
-php vendor/bin/phpunit -c phpunit.xml
+php vendor/bin/phpunit
 ```
 
 Use `--` after `composer test` to forward PHPUnit arguments.
@@ -55,19 +61,19 @@ Available Composer scripts:
 ```bash
 composer test:unit
 # or
-php vendor/bin/phpunit tests/Unit/ -c phpunit.xml
+php vendor/bin/phpunit tests/Unit/
 ```
 
 ## Run Smoke Tests Only
 
 ```bash
-php vendor/bin/phpunit --group=smoke -c phpunit.xml
+php vendor/bin/phpunit --group=smoke
 ```
 
 ## Run Specific Smoke Test
 
 ```bash
-php vendor/bin/phpunit --filter=ReloadFormSmokeTest -c phpunit.xml
+php vendor/bin/phpunit --filter=ReloadFormSmokeTest
 ```
 
 ## Smoke Tests
@@ -79,7 +85,7 @@ Smoke tests validate against the live staging API and require valid credentials 
 Tests OAuth password grant flow:
 
 ```bash
-php vendor/bin/phpunit --filter=AuthSmokeTest -c phpunit.xml
+php vendor/bin/phpunit --filter=AuthSmokeTest
 ```
 
 ### User Resource Smoke Tests
@@ -87,7 +93,7 @@ php vendor/bin/phpunit --filter=AuthSmokeTest -c phpunit.xml
 Tests authenticated user endpoint and DTO mapping:
 
 ```bash
-php vendor/bin/phpunit --filter=UserSmokeTest -c phpunit.xml
+php vendor/bin/phpunit --filter=UserSmokeTest
 ```
 
 Validates:
@@ -99,19 +105,19 @@ Validates:
 Tests services list endpoint:
 
 ```bash
-php vendor/bin/phpunit --filter=ServicesSmokeTest -c phpunit.xml
+php vendor/bin/phpunit --filter=ServicesSmokeTest
 ```
 
 Validates:
 - `getServices()` returns non-empty `Collection<Service>`
-- All service items have required properties (id, name, active flag)
+- All service items are `Service` DTOs with `id > 0` and a non-empty `name`
 
 ### Locations Resource Smoke Tests
 
 Tests location hierarchy and search endpoints:
 
 ```bash
-php vendor/bin/phpunit --filter=LocationsSmokeTest -c phpunit.xml
+php vendor/bin/phpunit --filter=LocationsSmokeTest
 ```
 
 Validates:
@@ -127,14 +133,14 @@ Validates:
 Tests map-points endpoint for pickup locations:
 
 ```bash
-php vendor/bin/phpunit --filter=MapPointsSmokeTest -c phpunit.xml
+php vendor/bin/phpunit --filter=MapPointsSmokeTest
 ```
 
 Validates:
 - `getMapPoints(countryCode)` returns typed `MapPointsResponse`
 - `streamMapPoints(countryCode)` yields typed `MapPoint` instances
 - Response exposes `boundingBox` directly and `mapPoints` as a `Collection` on `MapPointsResponse`
-- `destination` query parameter filters by receiver/sender eligibility
+- `destination` is sent in the JSON request body (default `receiver`) and filters by receiver/sender eligibility
 
 ### Reload Form Smoke Tests
 
@@ -149,7 +155,7 @@ Tests Add Parcel reload-form endpoint with response validation. Includes:
 Run all reload-form tests:
 
 ```bash
-php vendor/bin/phpunit --filter=ReloadFormSmokeTest -c phpunit.xml
+php vendor/bin/phpunit --filter=ReloadFormSmokeTest
 ```
 
 ### Add Parcel Workflow Smoke Test
@@ -167,7 +173,7 @@ Tests the end-to-end staging workflow in a single test run:
 This workflow was intentionally combined into one test so a single run creates only one staging order and one AWB.
 
 ```bash
-php vendor/bin/phpunit --filter=AddParcelWorkflowSmokeTest -c phpunit.xml
+php vendor/bin/phpunit --filter=AddParcelWorkflowSmokeTest
 ```
 
 ### Add Parcel Failure Smoke Tests
@@ -181,7 +187,7 @@ Tests live failure handling against staging:
 - unknown order IDs return `UnexpectedStatusException` with `404`
 
 ```bash
-php vendor/bin/phpunit --filter=AddParcelFailureSmokeTest -c phpunit.xml
+php vendor/bin/phpunit --filter=AddParcelFailureSmokeTest
 ```
 
 ### Example: Checking Smoke Test Response Validation

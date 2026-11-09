@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `GuzzleHttpClient` disables Guzzle's `http_errors` and redirect handling on the timeout path, matching `sendRequest()`, so `4xx`/`5xx` responses reach `ApiResponseMapper` instead of being wrapped in `TransportException`.
+- `Token::fromResponse()` throws `AuthenticationException` when `access_token` is missing or empty, matching `Token::fromArray()`.
+- `AddParcelRequest::fromArray()` hoists a lone `parcel` into the `parcels` list when no `parcels` array is present, so the documented single-parcel payload is no longer sent with an empty list.
 - `UserResource::getMe()` throws `AuthenticationException` when the API answers `200 {"unauthenticated": true}`, instead of silently returning an empty `User`. The API does not use `401` on this endpoint.
 
 ## [1.1.0] - 2026-10-27

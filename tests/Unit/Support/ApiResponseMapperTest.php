@@ -42,6 +42,19 @@ class ApiResponseMapperTest extends TestCase
         }
     }
 
+    public function testDecodeJsonFallsBackToDefaultValidationMessageForNonJsonBody(): void
+    {
+        $response = new Response(422, [], '<html>bad gateway</html>');
+
+        try {
+            ApiResponseMapper::decodeJson($response);
+            $this->fail('Expected ValidationException to be thrown.');
+        } catch (ValidationException $exception) {
+            $this->assertSame('Validation failed', $exception->getMessage());
+            $this->assertSame([], $exception->errors);
+        }
+    }
+
     public function testDecodeJsonThrowsUnexpectedStatusForNonExpectedStatus(): void
     {
         $response = new Response(500, [], '{"message":"Server error"}');

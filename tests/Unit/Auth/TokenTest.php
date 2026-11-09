@@ -113,4 +113,11 @@ class TokenTest extends TestCase
 
         Token::fromArray(['expires_at' => '2030-01-01T00:00:00+00:00']);
     }
+
+    public function testTokenFromResponseRejectsMissingAccessToken(): void
+    {
+        $this->expectException(AuthenticationException::class);
+
+        Token::fromResponse(['expires_in' => 3600]);
+    }
 }

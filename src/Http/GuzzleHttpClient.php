@@ -23,7 +23,11 @@ class GuzzleHttpClient implements HttpClientInterface
     {
         try {
             if ($timeout !== null) {
-                return $this->guzzleClient->send($request, ['timeout' => $timeout]);
+                return $this->guzzleClient->send($request, [
+                    'timeout' => $timeout,
+                    'http_errors' => false,
+                    'allow_redirects' => false,
+                ]);
             }
 
             return $this->guzzleClient->sendRequest($request);

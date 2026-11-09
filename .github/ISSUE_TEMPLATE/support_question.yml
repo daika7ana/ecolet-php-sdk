@@ -76,10 +76,3 @@ body:
     attributes:
       label: Additional context
       description: Add anything else that would help answer the question.
-
-*** Add File: /home/moiryi/dev/ecolet-php-sdk/.github/ISSUE_TEMPLATE/config.yml
-blank_issues_enabled: false
-contact_links:
-  - name: Documentation
-    url: https://github.com/daika7ana/ecolet-php-sdk#readme
-    about: Check the README and package documentation before opening a support request.

@@ -1,5 +1,15 @@
 # Installation
 
+## Requirements
+
+- PHP 8.3 or newer
+- Composer 2
+- `ext-json`
+
+Composer installs Guzzle and the PSR packages automatically.
+
+## Install
+
 Install with Composer in your project:
 
 ```bash
