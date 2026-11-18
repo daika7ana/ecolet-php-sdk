@@ -27,10 +27,15 @@ composer test -- --filter=LocationsResourceTest
 ## Testing
 
 - `tests/Unit/` mirrors `src/`. Build tests with
-  `Daika7ana\Ecolet\Tests\Support\FakeHttpClient` (handler returns a real
-  `GuzzleHttp\Psr7\Response`) and `GuzzleHttp\Psr7\HttpFactory` — use
-  `FakeHttpClient` for resource tests; only `GuzzleHttpClientTest` mocks Guzzle
-  because the adapter itself is the subject. Don't hand-roll PSR stubs.
+  `Daika7ana\Ecolet\Tests\Support\TestClientFactory::create($handler)` (returns
+  `[Client, FakeHttpClient]`) plus `FakeHttpClient` (handler returns a real
+  `GuzzleHttp\Psr7\Response`) and `GuzzleHttp\Psr7\HttpFactory` — use them for
+  resource tests; only `GuzzleHttpClientTest` mocks Guzzle because the adapter
+  itself is the subject. `ResponseFixtureFactory` has canned API payloads. Don't
+  hand-roll PSR stubs.
+- `phpunit.xml.dist` is strict: `beStrictAboutOutputDuringTests`,
+  `failOnRisky`, `failOnWarning`. A test that prints anything, or asserts
+  nothing, fails.
 - `tests/Smoke/` skips itself when `ECOLET_TEST_USERNAME`,
   `ECOLET_TEST_PASSWORD`, `ECOLET_TEST_CLIENT_ID`,
   `ECOLET_TEST_CLIENT_SECRET` are unset. `phpunit.xml` is gitignored and holds
@@ -46,6 +51,11 @@ composer test -- --filter=LocationsResourceTest
 - The base URL already ends in `/api`
   (`ClientConfig::BASE_URL_PRODUCTION|STAGING`), so resource paths are
   `/v1/...` or `/v2/...`. v1 = general + OAuth, v2 = add-parcel only.
+- Resources go through `Support/ApiResponseMapper` (`decodeJson`, `mapJson`,
+  `assertStatus`) and throw `src/Exceptions/*`; don't parse status codes ad hoc
+  in a new resource. `GuzzleHttpClient` disables Guzzle `http_errors` and
+  redirects so 4xx/5xx reach that mapper instead of becoming
+  `TransportException` — keep it that way.
 - Auth lives in `src/Auth/`. `Client::send()` refreshes through the injected
   `TokenStoreInterface`; the cross-process refresh fallback (catches auth *and*
   transport failures) and the 30s expiry skew are deliberate and covered in
