@@ -41,7 +41,7 @@ final readonly class AdditionalServices
             codAmount: isset($cod['amount']) ? (float) $cod['amount'] : null,
             openPackage: (bool) ($openPackage['status'] ?? false),
             rod: (bool) ($rod['status'] ?? false),
-            rodCode: isset($rod['rod_code']) ? (string) $rod['rod_code'] : null,
+            rodCode: isset($rod['code']) ? (string) $rod['code'] : (isset($rod['rod_code']) ? (string) $rod['rod_code'] : null),
             rop: (bool) ($rop['status'] ?? false),
             saturdayDelivery: (bool) ($saturdayDelivery['status'] ?? false),
             smsNotify: (bool) ($smsNotify['status'] ?? false),
@@ -95,7 +95,7 @@ final readonly class AdditionalServices
         }
 
         if ($this->rodCode !== null) {
-            $services['rod']['rod_code'] = $this->rodCode;
+            $services['rod']['code'] = $this->rodCode;
         }
 
         return $services;

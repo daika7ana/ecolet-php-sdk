@@ -139,7 +139,7 @@ $services = new AdditionalServices(
 );
 ```
 
-Only `cod.amount` and `rod.rod_code` carry values in `toArray()`.
+Only `cod.amount` and `rod.code` carry values in `toArray()`.
 
 ### CourierInfo
 

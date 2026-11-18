@@ -78,7 +78,17 @@ class AddParcelDtoNullabilityTest extends TestCase
 
         $this->assertTrue($services->rod);
         $this->assertNull($services->rodCode);
-        $this->assertArrayNotHasKey('rod_code', $services->toArray()['rod']);
+        $this->assertArrayNotHasKey('code', $services->toArray()['rod']);
+    }
+
+    public function testAdditionalServicesSendsRodCodeUnderCodeKey(): void
+    {
+        $services = AdditionalServices::fromArray([
+            'rod' => ['status' => true, 'code' => 'CEC 1200'],
+        ]);
+
+        $this->assertSame('CEC 1200', $services->rodCode);
+        $this->assertSame(['status' => true, 'code' => 'CEC 1200'], $services->toArray()['rod']);
     }
 
     public function testFactoriesCastScalarFieldsToConstructorTypes(): void
