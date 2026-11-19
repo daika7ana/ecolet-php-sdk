@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Daika7ana\Ecolet\Tests\Unit\DTOs\Common;
+namespace Daika7ana\Ecolet\Tests\Unit\Support;
 
-use Daika7ana\Ecolet\DTOs\Common\Collection;
+use Daika7ana\SimpleCollections\Collection;
 use PHPUnit\Framework\TestCase;
 
-class CollectionTest extends TestCase
+// Contract test: pins the daika7ana/simple-collections API this SDK returns.
+class CollectionContractTest extends TestCase
 {
     public function testReturnsExpectedHelpersForIndexedCollection(): void
     {

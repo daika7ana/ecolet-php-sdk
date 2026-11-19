@@ -6,7 +6,7 @@ namespace Daika7ana\Ecolet\Tests\Unit\Resources;
 
 use Daika7ana\Ecolet\Client;
 use Daika7ana\Ecolet\Config\ClientConfig;
-use Daika7ana\Ecolet\DTOs\Common\Collection;
+use Daika7ana\SimpleCollections\Collection;
 use Daika7ana\Ecolet\Tests\Support\FakeHttpClient;
 use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\Response;

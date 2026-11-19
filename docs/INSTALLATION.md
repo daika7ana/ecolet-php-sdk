@@ -6,7 +6,7 @@
 - Composer 2
 - `ext-json`
 
-Composer installs Guzzle and the PSR packages automatically.
+Composer installs Guzzle, the PSR packages, and `daika7ana/simple-collections` (which provides the `Collection` returned by list endpoints) automatically.
 
 ## Install
 

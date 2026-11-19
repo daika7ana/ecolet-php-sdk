@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Daika7ana\Ecolet\DTOs\Locations;
 
-use Daika7ana\Ecolet\DTOs\Common\Collection;
+use Daika7ana\SimpleCollections\Collection;
 
 final readonly class StreetsByPostalCodeResult
 {

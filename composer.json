@@ -39,7 +39,8 @@
         "guzzlehttp/psr7": "^2.0 || ^3.0",
         "psr/http-message": "^1.0 || ^2.0",
         "psr/http-factory": "^1.0",
-        "psr/http-client": "^1.0"
+        "psr/http-client": "^1.0",
+        "daika7ana/simple-collections": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^12.0 || ^13.0",

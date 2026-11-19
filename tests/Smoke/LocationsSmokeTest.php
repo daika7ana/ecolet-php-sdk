@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Daika7ana\Ecolet\Tests\Smoke;
 
-use Daika7ana\Ecolet\DTOs\Common\Collection;
+use Daika7ana\SimpleCollections\Collection;
 use Daika7ana\Ecolet\DTOs\Locations\Country;
 use Daika7ana\Ecolet\DTOs\Locations\County;
 use Daika7ana\Ecolet\DTOs\Locations\Locality;

@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-11-19
+
+### Changed
+
+- **Breaking:** list-style DTOs and resources now return `Daika7ana\SimpleCollections\Collection` from [`daika7ana/simple-collections`](https://packagist.org/packages/daika7ana/simple-collections) instead of the SDK's own class. Replace any `Daika7ana\Ecolet\DTOs\Common\Collection` type hints and imports with the package class. Existing helpers keep their behavior, and `static`-returning methods still preserve subclasses.
+- Collections are now `JsonSerializable`, so `json_encode()` returns the item array instead of `{}`.
+
+### Removed
+
+- `Daika7ana\Ecolet\DTOs\Common\Collection`, superseded by the package.
+
 ## [1.2.0] - 2026-11-09
 
 ### Added

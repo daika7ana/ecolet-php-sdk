@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Daika7ana\Ecolet\DTOs\AddressBook;
 
 use Daika7ana\Ecolet\DTOs\Common\Address;
-use Daika7ana\Ecolet\DTOs\Common\Collection;
+use Daika7ana\SimpleCollections\Collection;
 
 final readonly class AddressBookResult
 {

@@ -398,9 +398,9 @@ Using DTOs ensures:
 - **Schema enforcement**: API requires proper field types and nesting
 - **Backward compatibility**: Resources still accept arrays but encourage typed DTOs
 
-## Collection DTO Helper Methods
+## Collection Helper Methods
 
-List-style endpoints (services, locations, statuses, map points, etc.) return `Daika7ana\\Ecolet\\DTOs\\Common\\Collection`.
+List-style endpoints (services, locations, statuses, map points, etc.) return `Daika7ana\SimpleCollections\Collection` from [`daika7ana/simple-collections`](https://packagist.org/packages/daika7ana/simple-collections).
 Collection is extendable, and methods that return another collection use `static`, so custom subclasses are preserved across transformations.
 
 ### Basic Accessors
