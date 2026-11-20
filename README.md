@@ -1,6 +1,6 @@
-# Ecolet PHP SDK
-
 <div align="center">
+
+<h1>Ecolet PHP SDK</h1>
 
 [![CI](https://github.com/daika7ana/ecolet-php-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/daika7ana/ecolet-php-sdk/actions/workflows/ci.yml)
 [![PHP 8.3+](https://img.shields.io/badge/PHP-8.3%2B-777BB4?style=flat-square&logo=php)](https://www.php.net/)
