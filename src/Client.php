@@ -13,6 +13,7 @@ use Daika7ana\Ecolet\Exceptions\TransportException;
 use Daika7ana\Ecolet\Config\ClientConfig;
 use Daika7ana\Ecolet\Http\GuzzleHttpClient;
 use Daika7ana\Ecolet\Http\HttpClientInterface;
+use Daika7ana\Ecolet\Http\Psr18HttpClientAdapter;
 use Daika7ana\Ecolet\Resources\AddressBookResource;
 use Daika7ana\Ecolet\Resources\AddParcelResource;
 use Daika7ana\Ecolet\Resources\LocationsResource;
@@ -22,6 +23,7 @@ use Daika7ana\Ecolet\Resources\OrderToSendResource;
 use Daika7ana\Ecolet\Resources\ServicesResource;
 use Daika7ana\Ecolet\Resources\UserResource;
 use DateTimeImmutable;
+use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -29,6 +31,8 @@ use Psr\Http\Message\StreamFactoryInterface;
 
 class Client
 {
+    private HttpClientInterface $httpClient;
+
     private ClientConfig $config;
 
     private PasswordAuthenticator $authenticator;
@@ -52,14 +56,23 @@ class Client
     private TokenStoreInterface $tokenStore;
 
     public function __construct(
-        private HttpClientInterface $httpClient,
+        ClientInterface $httpClient,
         private RequestFactoryInterface $requestFactory,
         private StreamFactoryInterface $streamFactory,
         ?ClientConfig $config = null,
         ?PasswordAuthenticator $authenticator = null,
         ?TokenStoreInterface $tokenStore = null,
     ) {
-        $this->config = $config ?? new ClientConfig();
+        $config ??= new ClientConfig();
+
+        if ($config->timeout !== null && !$httpClient instanceof HttpClientInterface) {
+            throw new \InvalidArgumentException('ClientConfig::timeout cannot be applied to a foreign PSR-18 client; configure the timeout on that client or leave it null.');
+        }
+
+        $this->httpClient = $httpClient instanceof HttpClientInterface
+            ? $httpClient
+            : new Psr18HttpClientAdapter($httpClient);
+        $this->config = $config;
         $this->tokenStore = $tokenStore ?? new InMemoryTokenStore();
 
         $storedToken = $this->tokenStore->getToken();
@@ -185,9 +198,7 @@ class Client
             }
         }
 
-        $effectiveTimeout = $timeout ?? $this->config->timeout;
-
-        return $this->httpClient->sendRequest($request, $effectiveTimeout);
+        return $this->httpClient->sendRequest($request, $timeout ?? $this->config->timeout);
     }
 
     public function streamFactory(): StreamFactoryInterface
@@ -252,7 +263,7 @@ class Client
     }
 
     public static function create(
-        ?HttpClientInterface $httpClient = null,
+        ?ClientInterface $httpClient = null,
         ?RequestFactoryInterface $requestFactory = null,
         ?StreamFactoryInterface $streamFactory = null,
         ?ClientConfig $config = null,

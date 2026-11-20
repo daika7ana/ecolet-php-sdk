@@ -3,8 +3,6 @@
 ## Design Principles
 
 - The package is PSR-first (PSR-7, PSR-17, PSR-18) and framework-agnostic by default.
-- Laravel/Symfony interoperability is additive via optional helpers (for example, `HttpFoundationBridge`).
-- Core runtime flow is not coupled to HttpFoundation.
 
 ## Base URL Selection
 
@@ -70,10 +68,12 @@ $client = Client::create(config: $config);
 
 ## Timeouts
 
-Timeouts are in seconds and apply to the HTTP transfer only, not to parsing the response. `null` means no explicit timeout.
+Timeouts are in seconds and apply to the HTTP transfer only, not to parsing the response. `null` means no explicit timeout: the bundled Guzzle transport then uses its own defaults (30s request, 10s connect).
+
+`ClientConfig::timeout` is `null` by default. Precedence: the per-call argument → `ClientConfig::timeout` → the transport's own default (`GuzzleHttpClient` uses 30 s to respond and 10 s to connect unless you pass `timeout:`/`connectTimeout:`; an injected `GuzzleClient` keeps its own configuration). A bare PSR-18 client keeps its own timeout and cannot receive the per-call argument — passing one throws `InvalidArgumentException`; combining a bare client with a non-null `ClientConfig::timeout` also throws.
 
 ```php
-// Default for every request made through this client.
+// Override the transport default for every request made through this client.
 $config = new ClientConfig(timeout: 30.0);
 
 // Immutable variant.
@@ -85,18 +85,24 @@ $client->send($request, 2.5);
 
 ## Default HTTP Client (Guzzle)
 
-When you call `Client::create()` without passing a custom client, the package uses the built-in Guzzle-backed adapter.
+When you call `Client::create()` without passing a custom client, the package uses the built-in Guzzle-backed adapter and PSR-17 factories.
 
 ## Custom PSR-18 Client Injection
 
-You can inject any PSR-18 compatible client adapter that implements the package HTTP contract:
+You can inject any PSR-18 client; the SDK wraps it, or pass an `HttpClientInterface` to keep per-request timeouts:
 
 ```php
 use Daika7ana\Ecolet\Client;
-use Daika7ana\Ecolet\Http\HttpClientInterface;
+use GuzzleHttp\Psr7\HttpFactory;
 
-/** @var HttpClientInterface $customClient */
-$client = Client::create(httpClient: $customClient);
+$factory = new HttpFactory();
+
+/** @var \Psr\Http\Client\ClientInterface $psr18 */
+$client = Client::create(
+    httpClient: $psr18,
+    requestFactory: $factory,
+    streamFactory: $factory,
+);
 ```
 
 ## Manual Token Injection
@@ -120,37 +126,3 @@ $config = $config->withoutToken();
 - By default, the client uses an in-memory token store (`InMemoryTokenStore`). It lives as long as the `Client` object, so under PHP-FPM it is lost after each request and the password grant runs again.
 - You can provide a custom token store by passing `tokenStore` to `Client::create(...)`; use one that outlives the request to reuse a token across requests and processes.
 - On authentication or refresh, the token is written to both runtime config and token store.
-
-## Optional: Coupling with HttpFoundationBridge
-
-Use this only when your app already works with Symfony HttpFoundation objects and you want to bridge to the PSR-based client. The bridge needs Symfony's HttpFoundation, which this package does not install: `composer require symfony/http-foundation`.
-
-```php
-use Daika7ana\Ecolet\Client;
-use Daika7ana\Ecolet\Support\HttpFoundationBridge;
-use GuzzleHttp\Psr7\HttpFactory;
-use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
-
-$client = Client::create();
-$factory = new HttpFactory();
-
-// Symfony Request -> PSR Request
-$symfonyInbound = SymfonyRequest::create(
-    uri: 'https://example.test/proxy?country=RO',
-    method: 'POST',
-    content: '{"service_id": 2}'
-);
-
-$psrRequest = HttpFoundationBridge::fromSymfonyRequest(
-    $symfonyInbound,
-    $factory,
-    $factory,
-);
-
-// You can also build requests directly with the client when calling Ecolet endpoints.
-$ecoletRequest = $client->createRequest('GET', '/v1/me');
-$ecoletResponse = $client->send($ecoletRequest);
-
-// PSR Response -> Symfony Response
-$symfonyResponse = HttpFoundationBridge::toSymfonyResponse($ecoletResponse);
-```

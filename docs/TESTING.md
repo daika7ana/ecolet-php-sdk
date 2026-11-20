@@ -47,7 +47,7 @@ Use `--` after `composer test` to forward PHPUnit arguments.
 composer ci
 ```
 
-The GitHub Actions workflow runs Pint, PHPStan, and the unit test suite on pushes to `master` and on pull requests targeting `master`.
+The GitHub Actions workflow runs `composer validate --strict`, Pint, PHPStan, and the unit test suite on pushes to `master` and on pull requests targeting `master`.
 
 Available Composer scripts:
 

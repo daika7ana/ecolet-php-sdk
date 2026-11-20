@@ -17,6 +17,39 @@ use PHPUnit\Framework\TestCase;
 
 class GuzzleHttpClientTest extends TestCase
 {
+    public function testDefaultGuzzleClientConfiguresBundledTimeouts(): void
+    {
+        $client = new GuzzleHttpClient();
+
+        $property = new \ReflectionProperty(GuzzleHttpClient::class, 'guzzleClient');
+        $guzzle = $property->getValue($client);
+        $this->assertInstanceOf(GuzzleClient::class, $guzzle);
+
+        $this->assertSame(30.0, $guzzle->getConfig('timeout'));
+        $this->assertSame(10.0, $guzzle->getConfig('connect_timeout'));
+    }
+
+    public function testConstructorTimeoutsAreAppliedToProvidedGuzzleClient(): void
+    {
+        $request = new Request('GET', ClientConfig::BASE_URL_STAGING . '/v1/me');
+
+        $guzzle = $this->createMock(GuzzleClient::class);
+        $guzzle->expects($this->once())
+            ->method('send')
+            ->with($request, [
+                'http_errors' => false,
+                'allow_redirects' => false,
+                'timeout' => 7.0,
+                'connect_timeout' => 3.0,
+            ])
+            ->willReturn(new Response(200));
+
+        $client = new GuzzleHttpClient($guzzle, 7.0, 3.0);
+        $response = $client->sendRequest($request);
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
     public function testTransportErrorsAreMappedToTransportException(): void
     {
         $request = new Request('GET', ClientConfig::BASE_URL_STAGING . '/v1/me');
@@ -73,19 +106,22 @@ class GuzzleHttpClientTest extends TestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
-    public function testSendRequestIsUsedWhenNoTimeoutProvided(): void
+    public function testOptionsArePassedWithoutTimeout(): void
     {
-        $request = new Request('GET', ClientConfig::BASE_URL_STAGING . '/v1/me');
+        $request = new Request('POST', ClientConfig::BASE_URL_STAGING . '/v2/add-parcel');
 
         $guzzle = $this->createMock(GuzzleClient::class);
         $guzzle->expects($this->once())
-            ->method('sendRequest')
-            ->with($request)
-            ->willReturn(new Response(200));
+            ->method('send')
+            ->with($request, [
+                'http_errors' => false,
+                'allow_redirects' => false,
+            ])
+            ->willReturn(new Response(422));
 
         $client = new GuzzleHttpClient($guzzle);
         $response = $client->sendRequest($request);
 
-        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(422, $response->getStatusCode());
     }
 }

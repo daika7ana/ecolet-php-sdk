@@ -1,77 +1,107 @@
-# OpenCode Repository Guide
+# AGENTS.md
 
-PHP 8.3+ library — a typed SDK for the Ecolet Courier API. No server, no web
-entrypoint, no framework dependency in `require`.
+## Project
+
+Typed PHP 8.3+ SDK for the Ecolet Courier API (`daika7ana/ecolet-php-sdk`,
+namespace `Daika7ana\Ecolet`). Library only: no server, no web entrypoint, no
+framework in `require`. PSR-18 core, one resource class per API area, readonly
+DTOs, enums.
+
+Base URLs are `https://panel.ecolet.ro/api` (production) and
+`https://staging.ecolet.ro/api` (`ClientConfig::BASE_URL_STAGING`). The base URL
+already ends in `/api`, so paths are `/v1/...` or `/v2/...`; v2 is add-parcel
+only.
 
 ## Commands
 
 ```bash
-composer ci        # pint -> stan -> test:unit (exactly what CI runs)
-composer pint      # style check only — never fixes
-composer stan      # PHPStan level 8 over src/
-composer test      # every test, smoke included
-composer test:unit # tests/Unit only
-vendor/bin/pint    # the only way to actually fix style
-
-composer test -- tests/Unit/Resources/LocationsResourceTest.php
-composer test -- --filter=LocationsResourceTest
+composer install
+composer ci         # validate --strict, pint --test, phpstan, phpunit tests/Unit
+composer pint       # style check only, never fixes
+composer stan       # PHPStan level 8 over src/
+composer test       # full PHPUnit suite, smoke self-skips without credentials
+composer test:unit  # tests/Unit only
+vendor/bin/pint     # the only way to auto-fix style
 ```
 
-- `composer.lock` is gitignored: nothing is pinned, CI resolves fresh on every
-  run. Keep `composer.json` constraints honest — `guzzlehttp/psr7` must stay
-  `>=2` because `Client::create()` instantiates `GuzzleHttp\Psr7\HttpFactory`
-  (2.x+ only).
-- CI jobs: `pint` and `stan` on PHP 8.3 only; `test:unit` on 8.3/8.4/8.5.
-  Smoke tests never run in CI (live staging API).
+- `composer.lock` is gitignored, so CI resolves fresh; keep `guzzlehttp/psr7` at
+  `>=2` because `Client::create()` instantiates `GuzzleHttp\Psr7\HttpFactory`.
+- Quality gates: PHPStan level 8 over `src/` (vendor/tests excluded), Laravel
+  Pint (`per` preset), PHPUnit strict (`.dist`), `composer validate --strict`.
+  CI runs validate, Pint and PHPStan on PHP 8.3 and unit tests on 8.3/8.4/8.5,
+  branch `master`; smoke never runs in CI.
 
-## Testing
+## Layout
 
-- `tests/Unit/` mirrors `src/`. Build tests with
-  `Daika7ana\Ecolet\Tests\Support\TestClientFactory::create($handler)` (returns
-  `[Client, FakeHttpClient]`) plus `FakeHttpClient` (handler returns a real
-  `GuzzleHttp\Psr7\Response`) and `GuzzleHttp\Psr7\HttpFactory` — use them for
-  resource tests; only `GuzzleHttpClientTest` mocks Guzzle because the adapter
-  itself is the subject. `ResponseFixtureFactory` has canned API payloads. Don't
-  hand-roll PSR stubs.
-- `phpunit.xml.dist` is strict: `beStrictAboutOutputDuringTests`,
-  `failOnRisky`, `failOnWarning`. A test that prints anything, or asserts
-  nothing, fails.
-- `tests/Smoke/` skips itself when `ECOLET_TEST_USERNAME`,
-  `ECOLET_TEST_PASSWORD`, `ECOLET_TEST_CLIENT_ID`,
-  `ECOLET_TEST_CLIENT_SECRET` are unset. `phpunit.xml` is gitignored and holds
-  real credentials; `phpunit.xml.dist` is the empty template PHPUnit falls back
-  to. Run them with `php vendor/bin/phpunit -c phpunit.xml --group=smoke`.
-
-## Architecture
-
-- `src/Client.php` is the only entrypoint; `Client::create()` wires Guzzle +
-  `HttpFactory` unless factories are injected. Resources are lazy:
-  `users()`, `addressBook()`, `services()`, `locations()`, `orders()`,
-  `ordersToSend()`, `addParcel()`, `mapPoints()`.
-- The base URL already ends in `/api`
-  (`ClientConfig::BASE_URL_PRODUCTION|STAGING`), so resource paths are
-  `/v1/...` or `/v2/...`. v1 = general + OAuth, v2 = add-parcel only.
-- Resources go through `Support/ApiResponseMapper` (`decodeJson`, `mapJson`,
-  `assertStatus`) and throw `src/Exceptions/*`; don't parse status codes ad hoc
-  in a new resource. `GuzzleHttpClient` disables Guzzle `http_errors` and
-  redirects so 4xx/5xx reach that mapper instead of becoming
-  `TransportException` — keep it that way.
-- Auth lives in `src/Auth/`. `Client::send()` refreshes through the injected
-  `TokenStoreInterface`; the cross-process refresh fallback (catches auth *and*
-  transport failures) and the 30s expiry skew are deliberate and covered in
-  `ClientTest` — read those tests before touching `send()`/`refreshToken()`.
-  `Token::fromArray()` throws on an empty `access_token`.
-- `src/Support/HttpFoundationBridge.php` is the only Symfony-coupled file, and
-  `symfony/http-foundation` is `require-dev` only: never reference Symfony from
-  core paths or docs examples, point users to installing it themselves.
-- `ClientConfig::setTestMode()` mutates static state; prefer
-  `new ClientConfig(baseUrl: ClientConfig::BASE_URL_STAGING)` (what the smoke
-  trait does).
+`src/` holds `Client.php`, `Config/`, `Auth/`, `Http/`, `Support/`, `Exceptions/`,
+`Enums/`, `DTOs/<Area>/` and `Resources/`. `tests/Support/` holds the fakes,
+`tests/Unit/` mirrors `src/`, `tests/Smoke/` the live tests; `docs/` holds the
+user guides.
 
 ## Conventions
 
-- `docs/` is user-facing API documentation. Behavior changes go in the matching
-  file (AUTHENTICATION, CONFIGURATION, DTOS, RESOURCES, …), not just in code.
-- `CHANGELOG.md` is Keep a Changelog, newest version first, one
-  `## [x.y.z] - YYYY-MM-DD` section per release; tags are `vX.Y.Z`. Do not add
-  the link-reference block at the bottom.
+- Never import Symfony, Laravel, or another framework into `src/`, `tests/`, or
+  docs, and never make one a runtime dependency; framework integration is out of
+  scope. No new runtime dependencies without an explicit decision. Requests are
+  built through the injected PSR-17 factories and absolute URIs assembled
+  internally; callers never pass a URL.
+- DTOs are `final readonly` with `fromArray()`; request DTOs add `toArray()`.
+- `docs/` is user-facing documentation: behavior changes go in the matching file,
+  not just in code. `CHANGELOG.md` is Keep a Changelog, newest first, tags `vX.Y.Z`.
+- Commits and PR titles use Conventional Commits (`<type>(<scope>): <subject>`,
+  lowercase imperative, no trailing period).
+
+## HTTP Transport And Timeouts
+
+- `Client` builds requests with the injected PSR-17 `RequestFactoryInterface` /
+  `StreamFactoryInterface`, consumes PSR-7 `ResponseInterface`, and depends only
+  on PSR-18 `Psr\Http\Client\ClientInterface` — never a concrete client.
+- `src/Http/HttpClientInterface.php` widens PSR-18 with
+  `sendRequest(RequestInterface $request, ?float $timeout = null)`.
+  `src/Http/GuzzleHttpClient.php` is the bundled transport (Guzzle `http_errors`
+  and redirects disabled, so 4xx/5xx reach the mappers);
+  `src/Http/Psr18HttpClientAdapter.php` wraps any other PSR-18 client, rejects a
+  non-null per-call timeout with `InvalidArgumentException`, and rethrows a
+  foreign `ClientExceptionInterface` as `TransportException` (original as
+  `previous`). `TransportException` implements `ClientExceptionInterface`.
+- `Client::__construct()` throws `InvalidArgumentException` when
+  `ClientConfig::timeout` is non-null and the client is not this package's
+  `HttpClientInterface`. `ClientConfig::timeout` is `?float`, default `null`;
+  `connectTimeout` exists only on
+  `GuzzleHttpClient::__construct(?GuzzleClient $guzzleClient = null, ?float $timeout = null, ?float $connectTimeout = null)`,
+  which applies `DEFAULT_TIMEOUT = 30.0` / `DEFAULT_CONNECT_TIMEOUT = 10.0` only
+  when it creates its own Guzzle client. Precedence: per-call
+  `Client::send($request, $t)` → `ClientConfig::timeout` → transport constructor
+  arguments → 30.0/10.0.
+- `guzzlehttp/guzzle` and `guzzlehttp/psr7` are runtime dependencies (default
+  transport and `GuzzleHttp\Psr7\HttpFactory`), so `Client::create()` needs no
+  arguments; no `class_exists` guard, no `suggest` entry.
+
+## API Quirks
+
+- OAuth 2.0 password grant at `/v1/oauth/token` (`grant_type=password`), then
+  `refresh_token`; `Client::refreshToken()` catches auth and transport failures
+  and re-reads the token store in case another process refreshed first.
+- `TokenStoreInterface` (default `InMemoryTokenStore`) is the token source;
+  `Token::isExpired()` treats tokens expiring within 30 s as expired, and
+  `Token::fromArray()` throws on an empty `access_token`.
+- `ClientConfig` carries `baseUrl`, `token`, `clientId`/`clientSecret`, `scope`,
+  `acceptLanguage` and `timeout`. `setTestMode()` mutates static state — prefer
+  `new ClientConfig(baseUrl: ClientConfig::BASE_URL_STAGING)`.
+- Responses go through `Support\ApiResponseMapper`; don't parse status codes ad
+  hoc in a resource. `OrderResource::downloadWaybill()` returns a
+  `DTOs\Orders\WaybillDocument` wrapping the response stream, and `JsonStream`
+  decodes the large map-points payload incrementally.
+
+## Tests
+
+- Unit tests never touch the network. `TestClientFactory::create($handler)`
+  returns `[Client, FakeHttpClient]`; `ResponseFixtureFactory` has canned payloads
+  and `AddParcelRequestFactory` builds parcel requests.
+- Assert method, path, query, body and headers on `$httpClient->lastRequest`;
+  every new endpoint needs such a test covering both request and response
+  mapping. `phpunit.xml.dist` is strict: output, risky and warning tests fail.
+- `tests/Smoke` self-skips unless `ECOLET_TEST_USERNAME`, `ECOLET_TEST_PASSWORD`,
+  `ECOLET_TEST_CLIENT_ID`, `ECOLET_TEST_CLIENT_SECRET` are set (put them in the
+  gitignored `phpunit.xml`); run with `php vendor/bin/phpunit --group=smoke`.
+  `composer ci` must pass before done.

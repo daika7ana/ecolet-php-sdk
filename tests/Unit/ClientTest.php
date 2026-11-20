@@ -346,6 +346,21 @@ class ClientTest extends TestCase
         $this->assertSame(5.0, $httpClient->lastTimeout);
     }
 
+    public function testConfigTimeoutWithForeignPsr18ClientThrows(): void
+    {
+        $foreignClient = new class implements \Psr\Http\Client\ClientInterface {
+            public function sendRequest(\Psr\Http\Message\RequestInterface $request): \Psr\Http\Message\ResponseInterface
+            {
+                return new Response(200, [], '{}');
+            }
+        };
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('ClientConfig::timeout cannot be applied to a foreign PSR-18 client; configure the timeout on that client or leave it null.');
+
+        Client::create(config: new ClientConfig(timeout: 5.0), httpClient: $foreignClient);
+    }
+
     public function testNoTimeoutByDefault(): void
     {
         $httpClient = new FakeHttpClient(static fn() => new Response(200, [], '{}'));

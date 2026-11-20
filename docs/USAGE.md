@@ -16,7 +16,6 @@ Use this page as the entry point for package documentation.
 ## Notes
 
 - The package is framework-agnostic and PSR-first by design.
-- Laravel/Symfony support is optional and additive via bridge utilities.
 - Add Parcel v1 endpoints are intentionally not implemented.
 - Add Parcel operations are implemented on v2 endpoints.
 - General resources and auth endpoints use v1 paths unless documented otherwise.

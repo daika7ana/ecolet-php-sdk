@@ -35,13 +35,12 @@ A modern, type-safe PHP SDK for the **Ecolet Courier API**
 - ✅ **OAuth 2.0 Password Grant** — Industry-standard authentication
 - ✅ **Automatic Token Refresh** — No manual token management needed
 - ✅ **Token Inspection & Restore** — Read the current token or inject a cached one
-- ✅ **PSR-18 HTTP Client** — Pluggable, with Guzzle adapter by default
+- ✅ **PSR-18 HTTP Client** — Pluggable, Guzzle-backed by default
 - ✅ **Explicit Environment Selection** — Production by default, staging via `ClientConfig` when needed
 - ✅ **Fully Typed DTOs** — Type-safe request/response handling
 - ✅ **Static Analysis with PHPStan** — Strict type checks for the `src/` codebase
 - ✅ **Iterable Collections** — `count`, `first`, `last`, `get`, `keys`, `values`, `has`, `filter`, `map`, `mapWithKeys`, `pluck`
 - ✅ **Waybill Helpers** — Filename, contents, and download headers on `WaybillDocument`
-- ✅ **Symfony/Laravel Bridge** — Optional `HttpFoundationBridge` for seamless integration
 - ✅ **Comprehensive Tests** — Unit and smoke test suites included
 
 ### Perfect For
@@ -207,20 +206,22 @@ This package works equally well everywhere:
 - 🌐 **Microservices**
 - 🌐 Any **PHP 8.3+** environment
 
-### Optional: HttpFoundation Bridge
-
-Using Laravel or Symfony? Our optional `HttpFoundationBridge` provides seamless integration without breaking the PSR-based core API. It needs Symfony's HttpFoundation, which this package does not install: `composer require symfony/http-foundation`.
-
 ### Custom HTTP Client
 
-Need a custom HTTP client? Pass a client implementing `HttpClientInterface` (the bundled `GuzzleHttpClient` or your own):
+Pass any PSR-18 client (auto-wrapped), or an `HttpClientInterface` if you need per-request timeouts:
 
 ```php
 use Daika7ana\Ecolet\Client;
-use Daika7ana\Ecolet\Http\HttpClientInterface;
+use GuzzleHttp\Psr7\HttpFactory;
 
-/** @var HttpClientInterface $customClient */
-$client = Client::create(httpClient: $customClient);
+$factory = new HttpFactory();
+
+/** @var \Psr\Http\Client\ClientInterface $psr18 */
+$client = Client::create(
+    httpClient: $psr18,
+    requestFactory: $factory,
+    streamFactory: $factory,
+);
 ```
 
 `HttpClientInterface::sendRequest()` takes an optional timeout argument, so custom clients can honour per-request timeouts.
