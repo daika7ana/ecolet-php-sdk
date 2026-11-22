@@ -79,6 +79,19 @@ class ApiResponseMapperTest extends TestCase
         ApiResponseMapper::decodeJson($response);
     }
 
+    public function testValidationExceptionExposesTheResponse(): void
+    {
+        $response = new Response(422, [], '{"message":"Invalid input","errors":{"parcels":["Required"]}}');
+
+        try {
+            ApiResponseMapper::decodeJson($response);
+            $this->fail('Expected ValidationException to be thrown.');
+        } catch (ValidationException $exception) {
+            $this->assertSame($response, $exception->response);
+            $this->assertSame(422, $exception->response?->getStatusCode());
+        }
+    }
+
     public function testPayloadHelpersNormalizeUnexpectedShapes(): void
     {
         $this->assertSame([], ApiResponseMapper::arrayOrEmpty('invalid'));
@@ -87,5 +100,22 @@ class ApiResponseMapperTest extends TestCase
             ['id' => 2],
         ], ApiResponseMapper::listOfArrays(['invalid', ['id' => 1], 12, ['id' => 2]]));
         $this->assertSame(['one', '2', '1'], ApiResponseMapper::listOfStrings(['one', 2, ['skip'], true]));
+    }
+
+    public function testUnexpectedStatusExposesRetryAfterHeader(): void
+    {
+        try {
+            ApiResponseMapper::decodeJson(new Response(503, ['Retry-After' => '30'], 'down'));
+            $this->fail('Expected UnexpectedStatusException to be thrown.');
+        } catch (UnexpectedStatusException $exception) {
+            $this->assertSame(30, $exception->retryAfter);
+        }
+
+        try {
+            ApiResponseMapper::decodeJson(new Response(503, [], 'down'));
+            $this->fail('Expected UnexpectedStatusException to be thrown.');
+        } catch (UnexpectedStatusException $exception) {
+            $this->assertNull($exception->retryAfter);
+        }
     }
 }

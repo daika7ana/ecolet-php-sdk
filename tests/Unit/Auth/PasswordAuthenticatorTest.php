@@ -258,4 +258,32 @@ class PasswordAuthenticatorTest extends TestCase
         $this->expectException(AuthenticationException::class);
         $authenticator->authenticate();
     }
+
+    public function testEmptyAccessTokenExposesResponse(): void
+    {
+        $config = (new ClientConfig())->withOAuthCredentials('client-id', 'client-secret');
+
+        $httpClient = new FakeHttpClient(
+            static fn() => new Response(200, ['Retry-After' => '7'], '{"access_token":"","token_type":"Bearer"}'),
+        );
+        $factory = new HttpFactory();
+
+        $authenticator = new PasswordAuthenticator(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            username: 'user@example.com',
+            password: 'secret',
+            config: $config,
+        );
+
+        try {
+            $authenticator->authenticate();
+            $this->fail('Expected AuthenticationException.');
+        } catch (AuthenticationException $e) {
+            $this->assertNotNull($e->response);
+            $this->assertSame(7, $e->retryAfter);
+            $this->assertSame('Cannot build token: access_token is missing or empty.', $e->getMessage());
+        }
+    }
 }

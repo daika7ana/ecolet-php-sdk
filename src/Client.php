@@ -97,6 +97,27 @@ class Client
         return $this->currentToken();
     }
 
+    /**
+     * A client sharing this client's transport, PSR-17 factories, authenticator
+     * and token store, but with a different request timeout budget. The token
+     * is shared through the store, so the derived client never re-authenticates.
+     */
+    public function withTimeout(?float $timeout): self
+    {
+        if ($timeout !== null && $this->httpClient instanceof Psr18HttpClientAdapter) {
+            throw new \InvalidArgumentException('ClientConfig::timeout cannot be applied to a foreign PSR-18 client; configure the timeout on that client or leave it null.');
+        }
+
+        return new self(
+            $this->httpClient,
+            $this->requestFactory,
+            $this->streamFactory,
+            $this->config->withTimeout($timeout),
+            $this->authenticator,
+            $this->tokenStore,
+        );
+    }
+
     public function setToken(Token|string $token): self
     {
         $resolvedToken = is_string($token) ? new Token($token) : $token;

@@ -120,7 +120,10 @@ $client = Client::create(config: $config);
 
 ### Request Timeouts
 
-Set a default timeout via `new ClientConfig(timeout: 30.0)` or `withTimeout()`, or override it per request with `$client->send($request, 2.5)`.
+Set a default timeout via `new ClientConfig(timeout: 30.0)` or `ClientConfig::withTimeout()`, or override it per request with `$client->send($request, 2.5)`.
+
+For a different budget, `$slow = $client->withTimeout(30.0);` returns a new
+client sharing the transport; the original keeps its timeout.
 
 ## Authentication
 

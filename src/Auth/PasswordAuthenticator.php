@@ -8,6 +8,7 @@ use Daika7ana\Ecolet\Config\ClientConfig;
 use Daika7ana\Ecolet\Exceptions\AuthenticationException;
 use Daika7ana\Ecolet\Exceptions\TransportException;
 use Daika7ana\Ecolet\Http\HttpClientInterface;
+use Daika7ana\Ecolet\Support\ApiResponseMapper;
 use Daika7ana\Ecolet\Support\JsonHelper;
 use JsonException;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -76,20 +77,20 @@ class PasswordAuthenticator
                 $failureLabel,
                 $response->getStatusCode(),
                 (string) $response->getBody(),
-            ));
+            ), response: $response, retryAfter: ApiResponseMapper::retryAfter($response));
         }
 
         try {
             $data = JsonHelper::decode((string) $response->getBody());
         } catch (JsonException $e) {
-            throw new AuthenticationException(sprintf('%s returned invalid JSON: %s', $failureLabel, $e->getMessage()));
+            throw new AuthenticationException(sprintf('%s returned invalid JSON: %s', $failureLabel, $e->getMessage()), response: $response, retryAfter: ApiResponseMapper::retryAfter($response));
         }
 
         if (!isset($data['access_token'])) {
-            throw new AuthenticationException(sprintf('No access token in %s response', strtolower($failureLabel)));
+            throw new AuthenticationException(sprintf('No access token in %s response', strtolower($failureLabel)), response: $response, retryAfter: ApiResponseMapper::retryAfter($response));
         }
 
-        return Token::fromResponse($data);
+        return Token::fromResponse($data, $response);
     }
 
     /**

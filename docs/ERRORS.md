@@ -15,6 +15,10 @@ yields nothing instead of throwing.
 contains a string that is not valid UTF-8, for example bodies built by
 `AddParcelResource`, `OrderResource`, or `MapPointsResource`.
 
+Exceptions that carry a raw HTTP response also expose the response's numeric
+`Retry-After` value in seconds as `$exception->retryAfter`; it is `null` when the
+header is absent, non-numeric, or an HTTP date.
+
 Example handling:
 
 ```php
@@ -43,12 +47,14 @@ try {
 ## AuthenticationException
 
 - Thrown for invalid credentials, a failed token refresh, or an unauthenticated payload (`200 {"unauthenticated": true}`) from `GET /v1/me`, where the API does not return `401`.
+- Exposes the raw PSR-7 response on `$exception->response` when one was in scope (null for local failures such as a missing refresh token).
 
 ## ValidationException
 
 - Thrown for HTTP `422` responses.
 - Thrown locally by `ParcelDetails::fromArray()` and `CourierPickup::fromArray()` for an unknown `type` value.
 - Exposes field errors on `$exception->errors`.
+- Exposes the raw PSR-7 response on `$exception->response`; it is null for the local throws above.
 - Normalizes both standard `message` payloads and Ecolet `general_error` payloads into the exception message.
 
 ## UnexpectedStatusException

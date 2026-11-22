@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Daika7ana\Ecolet\Auth;
 
 use Daika7ana\Ecolet\Exceptions\AuthenticationException;
+use Daika7ana\Ecolet\Support\ApiResponseMapper;
 use DateTimeImmutable;
+use Psr\Http\Message\ResponseInterface;
 
 final readonly class Token
 {
@@ -82,7 +84,7 @@ final readonly class Token
     /**
      * @param array<string, mixed> $data
      */
-    public static function fromResponse(array $data): self
+    public static function fromResponse(array $data, ?ResponseInterface $response = null): self
     {
         $expiresAt = null;
 
@@ -93,7 +95,11 @@ final readonly class Token
         $accessToken = (string) ($data['access_token'] ?? '');
 
         if ($accessToken === '') {
-            throw new AuthenticationException('Cannot build token: access_token is missing or empty.');
+            throw new AuthenticationException(
+                'Cannot build token: access_token is missing or empty.',
+                response: $response,
+                retryAfter: $response !== null ? ApiResponseMapper::retryAfter($response) : null,
+            );
         }
 
         return new self(

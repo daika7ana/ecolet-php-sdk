@@ -346,6 +346,52 @@ class ClientTest extends TestCase
         $this->assertSame(5.0, $httpClient->lastTimeout);
     }
 
+    public function testWithTimeoutDerivesAClientSharingTransportAndTokenStore(): void
+    {
+        $loginCalls = 0;
+        $httpClient = new FakeHttpClient(static function ($request) use (&$loginCalls) {
+            if ($request->getUri()->getPath() === '/api/v1/oauth/token') {
+                $loginCalls++;
+
+                return new Response(200, [], json_encode([
+                    'token_type' => 'Bearer',
+                    'expires_in' => 3600,
+                    'access_token' => 'shared-token',
+                ], JSON_THROW_ON_ERROR));
+            }
+
+            return new Response(200, [], '{}');
+        });
+        $factory = new HttpFactory();
+
+        $client = Client::create(
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+            config: new ClientConfig(timeout: 10.0),
+        );
+
+        $client->authenticate('test-user', 'test-pass', 'client-id', 'client-secret');
+
+        $derived = $client->withTimeout(30.0);
+
+        $this->assertSame(30.0, $derived->getConfig()->timeout);
+        $this->assertSame(10.0, $client->getConfig()->timeout);
+        $this->assertSame('shared-token', $derived->getToken()?->accessToken);
+        $this->assertSame('client-id', $derived->getConfig()->clientId);
+
+        // A token stored later through the original must be visible to the
+        // derived client: the store is shared, so no second login happens.
+        $client->setToken('later-token');
+        $this->assertSame('later-token', $derived->getToken()?->accessToken);
+
+        $derived->send($derived->createRequest('GET', '/v1/me'));
+
+        $this->assertSame('Bearer later-token', $httpClient->lastRequest?->getHeaderLine('Authorization'));
+        $this->assertSame(30.0, $httpClient->lastTimeout);
+        $this->assertSame(1, $loginCalls);
+    }
+
     public function testConfigTimeoutWithForeignPsr18ClientThrows(): void
     {
         $foreignClient = new class implements \Psr\Http\Client\ClientInterface {
@@ -517,5 +563,24 @@ class ClientTest extends TestCase
 
         $this->expectException(AuthenticationException::class);
         $client->refreshToken();
+    }
+
+    public function testWithTimeoutRejectsForeignPsr18ClientTransport(): void
+    {
+        $foreignClient = new class implements \Psr\Http\Client\ClientInterface {
+            public function sendRequest(\Psr\Http\Message\RequestInterface $request): \Psr\Http\Message\ResponseInterface
+            {
+                return new Response(200, [], '{}');
+            }
+        };
+
+        $client = Client::create(config: new ClientConfig(), httpClient: $foreignClient);
+
+        $client->withTimeout(null);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('ClientConfig::timeout cannot be applied to a foreign PSR-18 client; configure the timeout on that client or leave it null.');
+
+        $client->withTimeout(30.0);
     }
 }

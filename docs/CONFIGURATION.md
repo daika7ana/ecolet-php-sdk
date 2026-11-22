@@ -83,6 +83,12 @@ $config = $config->withTimeout(5.0);
 $client->send($request, 2.5);
 ```
 
+When some calls need a different budget than the rest, derive a client:
+`$other = $client->withTimeout(30.0);` returns a new client sharing the
+transport, the PSR-17 factories, the authenticator and the token store, so no
+new transport is built and no second login happens; the original client keeps
+its timeout. `withTimeout(null)` returns to the transport default.
+
 ## Default HTTP Client (Guzzle)
 
 When you call `Client::create()` without passing a custom client, the package uses the built-in Guzzle-backed adapter and PSR-17 factories.

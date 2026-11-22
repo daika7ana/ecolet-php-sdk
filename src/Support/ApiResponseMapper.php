@@ -27,6 +27,7 @@ final class ApiResponseMapper
             throw new UnexpectedStatusException(
                 $response,
                 'Response body is not valid JSON: ' . $e->getMessage(),
+                retryAfter: self::retryAfter($response),
             );
         }
     }
@@ -111,12 +112,24 @@ final class ApiResponseMapper
                 errors: $payload['errors'],
                 message: $payload['message'],
                 code: 422,
+                response: $response,
+                retryAfter: self::retryAfter($response),
             );
         }
 
         if ($statusCode !== $expectedStatus) {
-            throw new UnexpectedStatusException($response);
+            throw new UnexpectedStatusException(
+                $response,
+                retryAfter: self::retryAfter($response),
+            );
         }
+    }
+
+    public static function retryAfter(ResponseInterface $response): ?int
+    {
+        $value = trim($response->getHeaderLine('Retry-After'));
+
+        return ctype_digit($value) ? (int) $value : null;
     }
 
     /**
