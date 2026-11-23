@@ -36,6 +36,7 @@ class UserResource
                 'GET /v1/me returned an unauthenticated response: the access token is missing, expired, or invalid.',
                 response: $response,
                 retryAfter: ApiResponseMapper::retryAfter($response),
+                error: ApiResponseMapper::errorFromResponse($response),
             );
         }
 

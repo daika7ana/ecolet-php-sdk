@@ -295,9 +295,10 @@ Available Composer scripts:
 - `composer pint` runs Pint in test mode
 - `composer stan` runs PHPStan against `src/`
 - `composer test:unit` runs the unit test suite
+- `composer test:smoke` runs the smoke test suite (self-skips without credentials)
 - `composer ci` runs the same local checks as CI
 
-Smoke tests hit the live staging API and require valid credentials in `phpunit.xml`. Run `cp phpunit.xml.dist phpunit.xml` first, then fill in the values.
+Smoke tests hit the live staging API and require valid credentials in `phpunit.xml`; without them the suite self-skips. Run `cp phpunit.xml.dist phpunit.xml` first, then fill in the values.
 
 ### Test Environment Variables
 

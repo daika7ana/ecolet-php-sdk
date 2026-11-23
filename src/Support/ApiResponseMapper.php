@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Daika7ana\Ecolet\Support;
 
+use Daika7ana\Ecolet\DTOs\Common\Errors\EcoletError;
+use Daika7ana\Ecolet\Exceptions\AuthenticationException;
 use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
 use Daika7ana\Ecolet\Exceptions\ValidationException;
 use JsonException;
@@ -14,6 +16,7 @@ final class ApiResponseMapper
     /**
      * @return array<string, mixed>
      *
+     * @throws AuthenticationException
      * @throws UnexpectedStatusException
      * @throws ValidationException
      */
@@ -28,6 +31,7 @@ final class ApiResponseMapper
                 $response,
                 'Response body is not valid JSON: ' . $e->getMessage(),
                 retryAfter: self::retryAfter($response),
+                error: self::errorFromResponse($response),
             );
         }
     }
@@ -39,6 +43,7 @@ final class ApiResponseMapper
      *
      * @return T
      *
+     * @throws AuthenticationException
      * @throws UnexpectedStatusException
      * @throws ValidationException
      */
@@ -98,6 +103,7 @@ final class ApiResponseMapper
     }
 
     /**
+     * @throws AuthenticationException
      * @throws UnexpectedStatusException
      * @throws ValidationException
      */
@@ -105,24 +111,50 @@ final class ApiResponseMapper
     {
         $statusCode = $response->getStatusCode();
 
-        if ($statusCode === 422) {
+        if ($statusCode === $expectedStatus) {
+            return;
+        }
+
+        if ($statusCode === 401) {
+            $error = self::errorFromResponse($response);
+
+            throw new AuthenticationException(
+                $error->message,
+                response: $response,
+                retryAfter: self::retryAfter($response),
+                error: $error,
+            );
+        }
+
+        if ($statusCode === 400 || $statusCode === 422) {
             $payload = self::decodeValidationPayload((string) $response->getBody());
 
             throw new ValidationException(
                 errors: $payload['errors'],
                 message: $payload['message'],
-                code: 422,
                 response: $response,
                 retryAfter: self::retryAfter($response),
+                error: EcoletError::fromArray($payload['raw'], $statusCode),
             );
         }
 
-        if ($statusCode !== $expectedStatus) {
-            throw new UnexpectedStatusException(
-                $response,
-                retryAfter: self::retryAfter($response),
-            );
+        throw new UnexpectedStatusException(
+            $response,
+            retryAfter: self::retryAfter($response),
+            error: self::errorFromResponse($response),
+        );
+    }
+
+    public static function errorFromResponse(ResponseInterface $response): EcoletError
+    {
+        try {
+            $data = JsonHelper::decode((string) $response->getBody());
+        } catch (\Throwable) {
+            // A malformed body must not hide the status-based exception.
+            $data = [];
         }
+
+        return EcoletError::fromArray($data, $response->getStatusCode());
     }
 
     public static function retryAfter(ResponseInterface $response): ?int
@@ -133,7 +165,7 @@ final class ApiResponseMapper
     }
 
     /**
-     * @return array{message: string, errors: array<string, string[]>}
+     * @return array{message: string, errors: array<string, string[]>, raw: array<string, mixed>}
      */
     private static function decodeValidationPayload(string $payload): array
     {
@@ -143,6 +175,7 @@ final class ApiResponseMapper
             return [
                 'message' => 'Validation failed',
                 'errors' => [],
+                'raw' => [],
             ];
         }
 
@@ -172,6 +205,7 @@ final class ApiResponseMapper
         return [
             'message' => $message,
             'errors' => $errors,
+            'raw' => $decoded,
         ];
     }
 }

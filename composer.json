@@ -52,6 +52,7 @@
         "stan": "@php vendor/bin/phpstan --no-progress",
         "test": "@php vendor/bin/phpunit",
         "test:unit": "@php vendor/bin/phpunit tests/Unit",
+        "test:smoke": "@php vendor/bin/phpunit tests/Smoke",
         "ci": [
             "composer validate --strict",
             "@pint",

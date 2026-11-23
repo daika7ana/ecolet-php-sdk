@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Daika7ana\Ecolet\Exceptions;
 
+use Daika7ana\Ecolet\DTOs\Common\Errors\EcoletError;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 
@@ -19,7 +20,8 @@ class ValidationException extends EcoletException
         ?Exception $previous = null,
         public readonly ?ResponseInterface $response = null,
         public readonly ?int $retryAfter = null,
+        public readonly ?EcoletError $error = null,
     ) {
-        parent::__construct($message ?: 'Validation failed', $code, $previous);
+        parent::__construct($message ?: 'Validation failed', $response?->getStatusCode() ?? $code, $previous);
     }
 }

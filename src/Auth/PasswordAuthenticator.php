@@ -77,17 +77,17 @@ class PasswordAuthenticator
                 $failureLabel,
                 $response->getStatusCode(),
                 (string) $response->getBody(),
-            ), response: $response, retryAfter: ApiResponseMapper::retryAfter($response));
+            ), response: $response, retryAfter: ApiResponseMapper::retryAfter($response), error: ApiResponseMapper::errorFromResponse($response));
         }
 
         try {
             $data = JsonHelper::decode((string) $response->getBody());
         } catch (JsonException $e) {
-            throw new AuthenticationException(sprintf('%s returned invalid JSON: %s', $failureLabel, $e->getMessage()), response: $response, retryAfter: ApiResponseMapper::retryAfter($response));
+            throw new AuthenticationException(sprintf('%s returned invalid JSON: %s', $failureLabel, $e->getMessage()), response: $response, retryAfter: ApiResponseMapper::retryAfter($response), error: ApiResponseMapper::errorFromResponse($response));
         }
 
         if (!isset($data['access_token'])) {
-            throw new AuthenticationException(sprintf('No access token in %s response', strtolower($failureLabel)), response: $response, retryAfter: ApiResponseMapper::retryAfter($response));
+            throw new AuthenticationException(sprintf('No access token in %s response', strtolower($failureLabel)), response: $response, retryAfter: ApiResponseMapper::retryAfter($response), error: ApiResponseMapper::errorFromResponse($response));
         }
 
         return Token::fromResponse($data, $response);

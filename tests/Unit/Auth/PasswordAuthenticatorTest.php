@@ -259,6 +259,40 @@ class PasswordAuthenticatorTest extends TestCase
         $authenticator->authenticate();
     }
 
+    public function testEveryAuthenticationFailureCarriesErrorAndStatus(): void
+    {
+        $factory = new HttpFactory();
+
+        $cases = [
+            [401, '{"error":"invalid_grant"}'],
+            [200, '<html>not json</html>'],
+            [200, '{"token_type":"Bearer"}'],
+        ];
+
+        foreach ($cases as [$status, $body]) {
+            $httpClient = new FakeHttpClient(static fn() => new Response($status, [], $body));
+
+            $authenticator = new PasswordAuthenticator(
+                httpClient: $httpClient,
+                requestFactory: $factory,
+                streamFactory: $factory,
+                username: 'user@example.com',
+                password: 'secret',
+                config: (new ClientConfig())->withOAuthCredentials('client-id', 'client-secret'),
+            );
+
+            try {
+                $authenticator->authenticate();
+                $this->fail('Expected AuthenticationException.');
+            } catch (AuthenticationException $e) {
+                $this->assertSame($status, $e->getCode());
+                $this->assertNotNull($e->response);
+                $this->assertNotNull($e->error);
+                $this->assertSame($status, $e->error->code);
+            }
+        }
+    }
+
     public function testEmptyAccessTokenExposesResponse(): void
     {
         $config = (new ClientConfig())->withOAuthCredentials('client-id', 'client-secret');

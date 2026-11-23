@@ -5,6 +5,20 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-11-23
+
+### Added
+
+- `DTOs\Common\Errors\EcoletError` with `code`, `message`, `id`, `raw`, `context` and `component` fields plus `isValidationRelated()`/`isAuthenticationRelated()`.
+- `AuthenticationException`, `ValidationException` and `UnexpectedStatusException` expose the parsed error payload on `$exception->error`, populated from the response body where available.
+
+### Changed
+
+- HTTP exceptions derive `getCode()` from the response status when a response is present, and fall back to the passed code otherwise.
+- **Breaking:** HTTP `401` now throws `AuthenticationException` and `400`/`422` throw `ValidationException`; all other unexpected statuses, including `403`, stay `UnexpectedStatusException`.
+- **Breaking:** `AuthenticationException`, `ValidationException` and `UnexpectedStatusException` thrown for an HTTP response now carry the HTTP status in `getCode()` instead of `0`.
+- **Breaking:** `UnexpectedStatusException::$response` is now nullable and defaults to `null`, so the exception can be raised without a response in scope.
+
 ## [2.2.0] - 2026-11-22
 
 ### Added

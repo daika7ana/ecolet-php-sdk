@@ -23,21 +23,26 @@ final class AddParcelWorkflowSmokeTest extends TestCase
         $client = $this->makeAuthenticatedClient('add-parcel-workflow');
         ['orderToSend' => $orderToSend, 'order' => $order] = $this->completeWorkflow($client);
 
-        $this->assertNotNull($orderToSend->orderId);
-        $this->assertNotSame('', $order->number);
-        $this->assertNotNull($order->status);
+        try {
+            $this->assertNotNull($orderToSend->orderId);
+            $this->assertNotSame('', $order->number);
+            $this->assertNotNull($order->status);
 
-        $waybill = $client->orders()->downloadWaybill($orderToSend->orderId);
-        $waybillContent = (string) $waybill->stream;
+            $waybill = $client->orders()->downloadWaybill($orderToSend->orderId);
+            $waybillContent = (string) $waybill->stream;
 
-        $this->assertNotSame('', $waybillContent);
-        $this->assertStringStartsWith('%PDF', $waybillContent);
-        $this->assertNotNull($waybill->contentType);
-        $this->assertStringContainsString('pdf', strtolower($waybill->contentType));
-        $this->assertNotNull($waybill->contentDisposition);
-        $this->assertStringContainsString('attachment', strtolower($waybill->contentDisposition));
-        $this->assertStringContainsString('filename=', strtolower($waybill->contentDisposition));
-        $this->assertStringContainsString('.pdf', strtolower($waybill->contentDisposition));
+            $this->assertNotSame('', $waybillContent);
+            $this->assertStringStartsWith('%PDF', $waybillContent);
+            $this->assertNotNull($waybill->contentType);
+            $this->assertStringContainsString('pdf', strtolower($waybill->contentType));
+            $this->assertNotNull($waybill->contentDisposition);
+            $this->assertStringContainsString('attachment', strtolower($waybill->contentDisposition));
+            $this->assertStringContainsString('filename=', strtolower($waybill->contentDisposition));
+            $this->assertStringContainsString('.pdf', strtolower($waybill->contentDisposition));
+        } finally {
+            // smoke orders live on staging; delete ours so nothing lingers for prying eyes
+            $client->orders()->deleteOrder($orderToSend->orderId);
+        }
     }
 
     /**

@@ -99,6 +99,7 @@ final readonly class Token
                 'Cannot build token: access_token is missing or empty.',
                 response: $response,
                 retryAfter: $response !== null ? ApiResponseMapper::retryAfter($response) : null,
+                error: $response !== null ? ApiResponseMapper::errorFromResponse($response) : null,
             );
         }
 

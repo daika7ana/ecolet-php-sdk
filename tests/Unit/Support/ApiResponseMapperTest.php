@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Daika7ana\Ecolet\Tests\Unit\Support;
 
+use Daika7ana\Ecolet\Exceptions\AuthenticationException;
 use Daika7ana\Ecolet\Exceptions\UnexpectedStatusException;
 use Daika7ana\Ecolet\Exceptions\ValidationException;
 use Daika7ana\Ecolet\Support\ApiResponseMapper;
@@ -89,6 +90,112 @@ class ApiResponseMapperTest extends TestCase
         } catch (ValidationException $exception) {
             $this->assertSame($response, $exception->response);
             $this->assertSame(422, $exception->response?->getStatusCode());
+        }
+    }
+
+    public function testValidationExceptionCarriesEcoletError(): void
+    {
+        $response = new Response(422, [], '{"message":"Invalid input","errors":{"parcels":["Required"]}}');
+
+        try {
+            ApiResponseMapper::decodeJson($response);
+            $this->fail('Expected ValidationException to be thrown.');
+        } catch (ValidationException $exception) {
+            $this->assertNotNull($exception->error);
+            $this->assertSame(422, $exception->error->code);
+            $this->assertSame('Invalid input', $exception->error->message);
+            $this->assertTrue($exception->error->isValidationRelated());
+            $this->assertSame(['parcels' => ['Required']], $exception->error->raw['errors']);
+        }
+    }
+
+    public function testDecodeJsonThrowsAuthenticationExceptionFor401(): void
+    {
+        $response = new Response(401, [], '{"error":"invalid_grant"}');
+
+        try {
+            ApiResponseMapper::decodeJson($response);
+            $this->fail('Expected AuthenticationException to be thrown.');
+        } catch (AuthenticationException $exception) {
+            $this->assertSame(401, $exception->getCode());
+            $this->assertSame($response, $exception->response);
+            $this->assertSame('invalid_grant', $exception->getMessage());
+            $this->assertNotNull($exception->error);
+            $this->assertTrue($exception->error->isAuthenticationRelated());
+        }
+    }
+
+    public function testDecodeJsonThrowsValidationExceptionFor400(): void
+    {
+        $response = new Response(400, [], '{"error":"bad request"}');
+
+        try {
+            ApiResponseMapper::decodeJson($response);
+            $this->fail('Expected ValidationException to be thrown.');
+        } catch (ValidationException $exception) {
+            $this->assertSame(400, $exception->getCode());
+            $this->assertSame($response, $exception->response);
+            $this->assertNotNull($exception->error);
+            $this->assertSame(400, $exception->error->code);
+        }
+    }
+
+    public function testDecodeJsonThrowsUnexpectedStatusFor403WithAuthenticationFlag(): void
+    {
+        $response = new Response(403, [], '{"message":"Access rights missing"}');
+
+        try {
+            ApiResponseMapper::decodeJson($response);
+            $this->fail('Expected UnexpectedStatusException to be thrown.');
+        } catch (UnexpectedStatusException $exception) {
+            $this->assertSame(403, $exception->getCode());
+            $this->assertNotNull($exception->error);
+            $this->assertTrue($exception->error->isAuthenticationRelated());
+        }
+    }
+
+    public function testHttpFailuresCarryTheHttpStatusAsCode(): void
+    {
+        try {
+            ApiResponseMapper::decodeJson(new Response(503, [], 'down'));
+            $this->fail('Expected UnexpectedStatusException to be thrown.');
+        } catch (UnexpectedStatusException $exception) {
+            $this->assertSame(503, $exception->getCode());
+        }
+
+        try {
+            ApiResponseMapper::decodeJson(new Response(200, [], '<html>not json</html>'));
+            $this->fail('Expected UnexpectedStatusException to be thrown.');
+        } catch (UnexpectedStatusException $exception) {
+            $this->assertSame(200, $exception->getCode());
+        }
+    }
+
+    public function testUnexpectedStatusExceptionCarriesEcoletError(): void
+    {
+        $response = new Response(503, [], '{"general_error":"Service unavailable."}');
+
+        try {
+            ApiResponseMapper::decodeJson($response);
+            $this->fail('Expected UnexpectedStatusException to be thrown.');
+        } catch (UnexpectedStatusException $exception) {
+            $this->assertNotNull($exception->error);
+            $this->assertSame(503, $exception->error->code);
+            $this->assertSame('Service unavailable.', $exception->error->message);
+        }
+    }
+
+    public function testInvalidJsonUnexpectedStatusCarriesEcoletErrorWithoutPayload(): void
+    {
+        $response = new Response(200, [], '<html>not json</html>');
+
+        try {
+            ApiResponseMapper::decodeJson($response);
+            $this->fail('Expected UnexpectedStatusException to be thrown.');
+        } catch (UnexpectedStatusException $exception) {
+            $this->assertNotNull($exception->error);
+            $this->assertSame(200, $exception->error->code);
+            $this->assertSame([], $exception->error->raw);
         }
     }
 

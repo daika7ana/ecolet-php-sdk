@@ -21,6 +21,7 @@ composer pint       # style check only, never fixes
 composer stan       # PHPStan level 8 over src/
 composer test       # full PHPUnit suite, smoke self-skips without credentials
 composer test:unit  # tests/Unit only
+composer test:smoke # tests/Smoke only, self-skips without credentials
 vendor/bin/pint     # the only way to auto-fix style
 ```
 
@@ -103,5 +104,6 @@ user guides.
   mapping. `phpunit.xml.dist` is strict: output, risky and warning tests fail.
 - `tests/Smoke` self-skips unless `ECOLET_TEST_USERNAME`, `ECOLET_TEST_PASSWORD`,
   `ECOLET_TEST_CLIENT_ID`, `ECOLET_TEST_CLIENT_SECRET` are set (put them in the
-  gitignored `phpunit.xml`); run with `php vendor/bin/phpunit --group=smoke`.
+  gitignored `phpunit.xml`); run with `composer test:smoke` or
+  `php vendor/bin/phpunit --group=smoke`.
   `composer ci` must pass before done.

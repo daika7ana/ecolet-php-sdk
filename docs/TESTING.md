@@ -54,6 +54,7 @@ Available Composer scripts:
 - `composer pint`
 - `composer stan`
 - `composer test:unit`
+- `composer test:smoke`
 - `composer ci`
 
 ## Run Unit Tests Only
@@ -67,8 +68,12 @@ php vendor/bin/phpunit tests/Unit/
 ## Run Smoke Tests Only
 
 ```bash
+composer test:smoke
+# or
 php vendor/bin/phpunit --group=smoke
 ```
+
+Without credentials in `phpunit.xml` every smoke test self-skips.
 
 ## Run Specific Smoke Test
 
