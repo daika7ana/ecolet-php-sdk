@@ -28,7 +28,7 @@ final readonly class CourierPickup
         $pickupType = $type === '' ? CourierPickupType::Courier : CourierPickupType::tryFrom($type);
 
         if ($pickupType === null) {
-            throw new ValidationException([], sprintf("Unknown pickup type '%s'.", $type));
+            throw new ValidationException(message: sprintf("Unknown pickup type '%s'.", $type));
         }
 
         return new self(

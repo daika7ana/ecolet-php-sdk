@@ -30,7 +30,8 @@ vendor/bin/pint     # the only way to auto-fix style
 - Quality gates: PHPStan level 8 over `src/` (vendor/tests excluded), Laravel
   Pint (`per` preset), PHPUnit strict (`.dist`), `composer validate --strict`.
   CI runs validate, Pint and PHPStan on PHP 8.3 and unit tests on 8.3/8.4/8.5,
-  branch `master`; smoke never runs in CI.
+  branch `master`; smoke never runs in CI. CI skips every job for commits/PRs starting `docs` or
+  `chore`, and for messages containing `[skip ci]` / `[skip-ci]`.
 
 ## Layout
 

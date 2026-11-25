@@ -36,7 +36,7 @@ final readonly class ParcelDetails
         $parcelType = $type === '' ? ParcelType::Package : ParcelType::tryFrom($type);
 
         if ($parcelType === null) {
-            throw new ValidationException([], sprintf("Unknown parcel type '%s'.", $type));
+            throw new ValidationException(message: sprintf("Unknown parcel type '%s'.", $type));
         }
 
         return new self(
