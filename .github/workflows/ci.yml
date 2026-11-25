@@ -19,6 +19,13 @@ jobs:
   phpstan:
     name: PHPStan (PHP 8.3)
     runs-on: ubuntu-latest
+    if: >-
+      ${{
+        !startsWith(github.event.head_commit.message || github.event.pull_request.title || '', 'docs')
+        && !startsWith(github.event.head_commit.message || github.event.pull_request.title || '', 'chore')
+        && !contains(github.event.head_commit.message || github.event.pull_request.title || '', '[skip ci]')
+        && !contains(github.event.head_commit.message || github.event.pull_request.title || '', '[skip-ci]')
+      }}
 
     steps:
       - name: Checkout repository
@@ -40,6 +47,13 @@ jobs:
   pint:
     name: Pint (PHP 8.3)
     runs-on: ubuntu-latest
+    if: >-
+      ${{
+        !startsWith(github.event.head_commit.message || github.event.pull_request.title || '', 'docs')
+        && !startsWith(github.event.head_commit.message || github.event.pull_request.title || '', 'chore')
+        && !contains(github.event.head_commit.message || github.event.pull_request.title || '', '[skip ci]')
+        && !contains(github.event.head_commit.message || github.event.pull_request.title || '', '[skip-ci]')
+      }}
 
     steps:
       - name: Checkout repository
@@ -64,6 +78,13 @@ jobs:
   unit-tests:
     name: PHPUnit (PHP ${{ matrix.php-version }})
     runs-on: ubuntu-latest
+    if: >-
+      ${{
+        !startsWith(github.event.head_commit.message || github.event.pull_request.title || '', 'docs')
+        && !startsWith(github.event.head_commit.message || github.event.pull_request.title || '', 'chore')
+        && !contains(github.event.head_commit.message || github.event.pull_request.title || '', '[skip ci]')
+        && !contains(github.event.head_commit.message || github.event.pull_request.title || '', '[skip-ci]')
+      }}
 
     strategy:
       fail-fast: false
